@@ -246,6 +246,35 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .flat{color:var(--muted)}
 .wrow .wx{width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-size:17px}
 .watch .wempty{margin:0;padding:16px;color:var(--muted);font-size:17px}
+.wrow .go{font-size:24px;color:var(--muted);margin-left:-4px}
+.wd-head{text-align:center;margin:4px 0 14px}
+.wd-head h1{margin:0 0 2px}
+.wd-head .cd{font-family:var(--num);font-size:16px;color:var(--muted)}
+.wd-head .big{font-family:var(--num);font-size:40px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+.wd-head .chg{font-family:var(--num);font-size:20px;font-weight:700}
+.wd-sec{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 14px;margin-bottom:14px}
+.wd-sec h2{margin:0 0 10px;font-size:21px}
+.wd-sec p{margin:6px 0 0;font-size:16px;line-height:1.55}
+.wd-sec .muted{color:var(--muted);font-size:15px}
+.wd-sec svg{width:100%;height:auto;display:block}
+.wd-sec svg text{font-family:var(--num);font-size:11px;fill:var(--muted)}
+.wd-kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wd-kpi div{background:var(--bg);border-radius:8px;padding:12px;text-align:center}
+.wd-kpi b{display:block;font-family:var(--num);font-size:28px}
+.wd-kpi span{font-size:15px;color:var(--muted)}
+.wd-tbl{width:100%;border-collapse:collapse;font-size:17px}
+.wd-tbl td{padding:9px 4px;border-top:1px solid var(--line)}
+.wd-tbl td:last-child{text-align:right;font-family:var(--num);font-weight:700}
+.wd-bars{display:grid;gap:8px}
+.wd-bars div{display:grid;grid-template-columns:86px 1fr 70px;align-items:center;gap:8px;font-size:16px}
+.wd-bars i{display:block;height:18px;border-radius:4px;background:var(--gold)}
+.wd-bars i.neg{background:var(--down)}
+.wd-bars em{font-style:normal;font-family:var(--num);font-weight:700;text-align:right}
+.wd-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:14px;margin-top:8px}
+.wd-legend span{display:inline-flex;align-items:center;gap:5px}
+.wd-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.wd-vals{margin:0 0 8px!important;font-size:17px!important;font-family:var(--num)}
+.wd-vals .wd-legend{margin:0;font-size:17px;font-weight:700}
 .idxh{font-size:17px;margin:18px 0 8px}
 .imini .cd{display:block;font-family:var(--num);font-size:11px;color:var(--muted);white-space:nowrap}
 .imini h2{margin:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -341,6 +370,12 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
     </div>
+  </section>
+
+  <!-- 自選股詳細頁 -->
+  <section id="wdetail" class="page" hidden>
+    <div class="bar"><button class="back" data-go="watch">‹ 自選股</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div id="wd-body"></div>
   </section>
 
   <!-- 大盤高低指標 -->
@@ -458,7 +493,7 @@ const pct=n=>(n>=0?"+":"")+(n*100).toFixed(2)+"%";
 const short=n=>n>=1e8?(n/1e8).toFixed(1)+"億":n>=1e4?Math.round(n/1e4)+"萬":Math.round(n)+"";
 
 /* 路由：#stock #compound #fire #nav #dca #mkt #idx */
-const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch"];
+const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch","wdetail"];
 function show(p){
   if(!pages.includes(p))p="home";
   pages.forEach(x=>$(x).hidden=x!==p);
@@ -1162,8 +1197,7 @@ function watchRender(){
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br>${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%`;
-    const tag=watchEdit?"button":"div";
-    return `<${tag} class="wrow"${watchEdit?` data-c="${esc(c)}" aria-label="移除 ${esc(it.name)}"`:""}><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>`}</${tag}>`}).join("");
+    return `<button class="wrow" data-c="${esc(c)}" aria-label="${watchEdit?"移除":"查看"} ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>`}</button>`}).join("");
   $("watch-cards").innerHTML=rows||'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
 }
 async function watchLoad(){
@@ -1188,7 +1222,8 @@ function watchInit(){
   watchRender();watchLoad();
   $("watch-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;watchTab=+b.dataset.t;try{localStorage.setItem("facai-watch-tab",watchTab)}catch(_){}watchRender()});
   $("watch-edit").addEventListener("click",()=>{watchEdit=!watchEdit;$("watch-edit").setAttribute("aria-pressed",watchEdit);$("watch-edit").textContent=watchEdit?"完成":"編輯";$("watch-add").hidden=!watchEdit;if(!watchEdit){$("watch-q").value="";$("watch-sug").hidden=true}watchRender()});
-  $("watch-cards").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b||!watchEdit)return;
+  $("watch-cards").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;
+    if(!watchEdit){wdOpen(b.dataset.c);return}
     const g=watchGroups[watchTab];g.list=g.list.filter(c=>c!==b.dataset.c);watchSave();watchRender()});
   const q=$("watch-q"),sug=$("watch-sug");
   q.addEventListener("input",()=>{
@@ -1202,6 +1237,102 @@ function watchInit(){
     const c=li.dataset.code,g=watchGroups[watchTab];if(!g.list.includes(c)){g.list.push(c);watchSave()}
     q.value="";sug.hidden=true;watchRender();watchLoad()});
   q.addEventListener("blur",()=>setTimeout(()=>sug.hidden=true,150));
+}
+
+/* 自選股詳細頁：點一檔才向 Cloudflare 的 /api/detail 抓那一檔（K 線、配息、EPS、本益比、河流圖） */
+const wdCache={};
+let wdCode="";
+function wdOpen(c){wdCode=c;try{sessionStorage.setItem("facai-wd",c)}catch(_){}show("wdetail")}
+calc.wdetail=()=>{if(!wdCode)try{wdCode=sessionStorage.getItem("facai-wd")||""}catch(_){}
+  if(wdCode&&STOCK)wdRender(wdCode);else setTimeout(()=>show("watch"))};
+async function wdRender(c){
+  const r=idxOf[c],body=$("wd-body");if(!r){show("watch");return}
+  if(!stkData[c])await loadShard(r[3]).catch(()=>null);
+  const it=watchItem(c)||{},us=!!r[4],etf=r[2]===1;
+  const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
+  const head=`<div class="wd-head"><h1>${esc(r[1])}</h1><span class="cd">${esc(c)}${us?"・美元":""}</span><div class="big ${cls}">${f2(it.last)}</div><div class="chg ${cls}">${d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}</div></div>`;
+  if(!ON_CF){body.innerHTML=head+'<div class="wd-sec"><p>K 線圖、配息、EPS、本益比和河流圖要用你的網站（money.h24511355.workers.dev）打開才看得到，這裡沒辦法即時抓資料。</p></div>';return}
+  body.innerHTML=head+'<div class="wd-sec"><p class="muted">資料載入中…</p></div>';
+  const x=wdCache[c]||(wdCache[c]=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}`));
+  if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}
+  if(curPage()!=="wdetail")return;
+  const last=it.last!=null?it.last:(x.kline.length?x.kline[x.kline.length-1][4]:null);
+  let html=head;
+  // K 線（近半年日 K）
+  html+=`<section class="wd-sec"><h2>K 線圖</h2>${wdKline(x.kline.slice(-120))}<p class="muted">近半年日 K，紅色收盤比開盤高，綠色收盤比開盤低。</p></section>`;
+  html+=wdTech(x.kline,us);
+  // 本益比
+  if(!etf){
+    const pe=x.ttm>0&&last?Math.round(last/x.ttm*10)/10:null;
+    let lv="";if(pe&&x.river){const m=x.river.mult;lv=pe<=m[1]?"偏低（便宜）":pe>=m[3]?"偏高（貴）":"中間"}
+    html+=`<section class="wd-sec"><h2>本益比</h2><div class="wd-kpi"><div><b>${pe??"—"}</b><span>目前本益比（倍）</span></div><div><b>${x.ttm!=null?f2(x.ttm):"—"}</b><span>近四季 EPS</span></div></div>${x.ttm!=null&&x.ttm<=0?'<p>近四季虧損，所以沒有本益比。</p>':lv?`<p>和近 3 年比，目前本益比<b>${lv}</b>。</p>`:""}</section>`;
+    if(x.river)html+=`<section class="wd-sec"><h2>本益比河流圖</h2>${wdRiver(x.river)}<p class="muted">黑線是股價。色帶是「近四季 EPS × 倍數」，股價在越下面的色帶越便宜。</p></section>`;
+    if(x.eps&&x.eps.length){
+      const e=x.eps.slice(x.epsKind==="季"?-8:-5),mx=Math.max(...e.map(v=>Math.abs(v[1])))||1;
+      html+=`<section class="wd-sec"><h2>EPS（每股盈餘）</h2><div class="wd-bars">${e.map(([dt,v])=>`<div><span>${x.epsKind==="季"?`${dt.slice(0,4)} Q${Math.ceil(+dt.slice(5,7)/3)}`:`${dt.slice(0,4)} 年度`}</span><i class="${v<0?"neg":""}" style="width:${Math.max(2,Math.abs(v)/mx*100)}%"></i><em>${f2(v)}</em></div>`).join("")}</div><p class="muted">${x.epsKind==="季"?"每一季":"每個會計年度"}的 EPS${us?"（美元）":"（元）"}。</p></section>`;
+    }
+  }else html+='<section class="wd-sec"><h2>本益比、EPS</h2><p>ETF 沒有 EPS，所以沒有本益比和河流圖。</p></section>';
+  // 配息
+  const dv=x.divs||[],yr=new Date(Date.now()-365*864e5).toISOString().slice(0,10),sum=dv.filter(v=>v[0]>=yr).reduce((a,v)=>a+v[1],0);
+  html+=`<section class="wd-sec"><h2>配息</h2>${dv.length?`<div class="wd-kpi"><div><b>${f2(sum)}</b><span>近一年配息${us?"（美元）":"（元）"}</span></div><div><b>${last?(sum/last*100).toFixed(2)+"%":"—"}</b><span>殖利率</span></div></div><table class="wd-tbl"><tbody>${dv.slice(-8).reverse().map(v=>`<tr><td>${v[0].replace(/-/g,"/")}</td><td>${f2(v[1])}</td></tr>`).join("")}</tbody></table><p class="muted">左邊是除息日，右邊是每股配多少。</p>`:"<p>近 5 年沒有配息。</p>"}</section>`;
+  body.innerHTML=html;
+}
+// K 線下方的技術指標：成交量、KDJ(9,3,3)、MACD(12,26,9)、布林 %B(20,2)；用近一年日 K 算，畫近半年
+function wdTech(k,us){
+  if(k.length<40)return"";
+  const N=Math.min(120,k.length),cl=k.map(b=>b[4]),hi=k.map(b=>b[2]),lo=k.map(b=>b[3]);
+  const ema=(a,n)=>{const r=[];a.forEach((v,i)=>r.push(i?r[i-1]+(v-r[i-1])*2/(n+1):v));return r};
+  let K=50,D=50;const kk=[],dd=[],jj=[];
+  cl.forEach((c,i)=>{const h=Math.max(...hi.slice(Math.max(0,i-8),i+1)),l=Math.min(...lo.slice(Math.max(0,i-8),i+1)),rsv=h===l?50:(c-l)/(h-l)*100;
+    K=K*2/3+rsv/3;D=D*2/3+K/3;kk.push(K);dd.push(D);jj.push(3*K-2*D)});
+  const e12=ema(cl,12),e26=ema(cl,26),dif=cl.map((_,i)=>e12[i]-e26[i]),dea=ema(dif,9),osc=dif.map((v,i)=>v-dea[i]);
+  const pb=cl.map((c,i)=>{if(i<19)return null;const w=cl.slice(i-19,i+1),m=w.reduce((a,v)=>a+v,0)/20,sd=Math.sqrt(w.reduce((a,v)=>a+(v-m)**2,0)/20);return sd?(c-(m-2*sd))/(4*sd)*100:50});
+  const tail=a=>a.slice(-N),last=a=>a[a.length-1],r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),r2=v=>(Math.round(v*100)/100).toString();
+  const vol=tail(k.map(b=>b[5]||0)),up=tail(k.map(b=>b[4]>=b[1]));
+  const lv=v=>us?(v>=1e6?(v/1e6).toFixed(1)+" 百萬股":Math.round(v).toLocaleString()+" 股"):(Math.round(v/1000).toLocaleString()+" 張");
+  const kd=last(kk),kdNote=kd>=80?"偏高（過熱）":kd<=20?"偏低（超賣）":"中間";
+  const p=last(pb),pbNote=p==null?"":p>100?"突破上軌（偏強、偏貴）":p<0?"跌破下軌（偏弱、偏便宜）":p>=80?"靠近上軌":p<=20?"靠近下軌":"在中間";
+  const sec=(t,vals,svg,note)=>`<section class="wd-sec"><h2>${t}</h2><p class="wd-vals">${vals}</p>${svg}${note?`<p class="muted">${note}</p>`:""}</section>`;
+  const C={k:"#e0a100",d:"#2f7de1",j:"#c040c0",dif:"#2f7de1",dea:"#e0a100",pb:"#8a5cf6"};
+  const dot=(c,t)=>`<span><i style="background:${c}"></i>${t}</span>`;
+  return sec("成交量",`${k[k.length-1][0].slice(5).replace("-","/")} <b>${lv(last(vol))}</b>`,wdSub(N,[],{bars:vol,barCol:up.map(u=>`var(${u?"--up":"--down"})`),min0:1}),"")
+   +sec("KDJ",`<span class="wd-legend">${dot(C.k,"K "+r1(kd))}${dot(C.d,"D "+r1(last(dd)))}${dot(C.j,"J "+r1(last(jj)))}</span>`,wdSub(N,[[tail(kk),C.k],[tail(dd),C.d],[tail(jj),C.j]],{ref:[20,80],fix:[0,100]}),`K 值目前${kdNote}。80 以上偏熱，20 以下偏冷。`)
+   +sec("MACD",`<span class="wd-legend">${dot(C.dif,"DIF "+r2(last(dif)))}${dot(C.dea,"MACD "+r2(last(dea)))}${dot("var(--muted)","柱 "+r2(last(osc)))}</span>`,wdSub(N,[[tail(dif),C.dif],[tail(dea),C.dea]],{bars:tail(osc),barCol:tail(osc).map(v=>`var(${v>=0?"--up":"--down"})`),ref:[0]}),`柱子在 0 以上（紅）代表短線比長線強，0 以下（綠）代表轉弱。`)
+   +sec("布林 %B",`<span class="wd-legend">${dot(C.pb,"%B "+r1(p)+"%")}</span>`,wdSub(N,[[tail(pb),C.pb]],{ref:[0,50,100]}),`目前股價${pbNote}。100% 是布林上軌，0% 是下軌。`);
+}
+function wdSub(n,lines,o){
+  const W=360,H=100,P=36,vals=[...lines.flatMap(l=>l[0]),...(o.bars||[]),...(o.ref||[])].filter(v=>v!=null);
+  let lo=o.fix?Math.min(o.fix[0],...vals):Math.min(...vals),hi=o.fix?Math.max(o.fix[1],...vals):Math.max(...vals);
+  if(o.min0)lo=0;const sp=hi-lo||1;
+  const X=i=>P/2+(i+.5)*(W-P-P/2)/n,Y=v=>6+(hi-v)/sp*(H-12),bw=Math.max(1,(W-P-P/2)/n*.7);
+  let g=(o.ref||[]).map(v=>`<line x1="${P/2}" x2="${W-P}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-dasharray="3 3"/><text x="${W-2}" y="${Y(v)+4}" text-anchor="end">${v}</text>`).join("");
+  if(o.bars){const z=Y(Math.max(lo,Math.min(hi,0)));o.bars.forEach((v,i)=>{const y=Y(v);g+=`<rect x="${X(i)-bw/2}" y="${Math.min(y,z)}" width="${bw}" height="${Math.max(1,Math.abs(z-y))}" fill="${o.barCol[i]}" opacity=".8"/>`})}
+  lines.forEach(([a,c])=>{let d="";a.forEach((v,i)=>{if(v==null)return;d+=`${d?"L":"M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`});g+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="1.6"/>`});
+  return `<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+function wdKline(b){
+  if(b.length<2)return'<p class="muted">沒有 K 線資料。</p>';
+  const W=360,H=200,P=36,lo=Math.min(...b.map(x=>x[3])),hi=Math.max(...b.map(x=>x[2])),sp=hi-lo||1;
+  const X=i=>P/2+(i+.5)*(W-P-P/2)/b.length,Y=v=>10+(hi-v)/sp*(H-30),bw=Math.max(1,(W-P-P/2)/b.length*.7);
+  let g="";
+  b.forEach((x,i)=>{const up=x[4]>=x[1],col=`var(${up?"--up":"--down"})`,y1=Y(Math.max(x[1],x[4])),y2=Y(Math.min(x[1],x[4]));
+    g+=`<line x1="${X(i)}" x2="${X(i)}" y1="${Y(x[2])}" y2="${Y(x[3])}" stroke="${col}"/><rect x="${X(i)-bw/2}" y="${y1}" width="${bw}" height="${Math.max(1,y2-y1)}" fill="${col}"/>`});
+  const lab=[0,Math.floor(b.length/2),b.length-1].map(i=>`<text x="${X(i)}" y="${H-4}" text-anchor="middle">${b[i][0].slice(5).replace("-","/")}</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="K 線圖">${g}<text x="${W-2}" y="16" text-anchor="end">${hi}</text><text x="${W-2}" y="${H-24}" text-anchor="end">${lo}</text>${lab}</svg>`;
+}
+function wdRiver(r){
+  const W=360,H=220,P=40,n=r.months.length,lines=r.mult.map(m=>r.eps.map(e=>e*m));
+  const all=[...r.price,...lines.flat()],lo=Math.max(0,Math.min(...all)),hi=Math.max(...all),sp=hi-lo||1;
+  const X=i=>6+i*(W-P-6)/(n-1),Y=v=>10+(hi-v)/sp*(H-34);
+  const path=a=>a.map((v,i)=>`${i?"L":"M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+  const cols=["#3fa36b","#9cc65a","#e9c24a","#e88a3c","#d9443c"];
+  let g="";
+  for(let k=0;k<4;k++){const top=lines[k+1],bot=lines[k];g+=`<path d="${path(top)}${bot.map((v,i)=>`L${X(n-1-i).toFixed(1)},${Y(bot[n-1-i]).toFixed(1)}`).join("")}Z" fill="${cols[k]}" opacity=".45"/>`}
+  lines.forEach((l,k)=>{g+=`<path d="${path(l)}" fill="none" stroke="${cols[k]}" stroke-width="1"/><text x="${W-P+4}" y="${Y(l[n-1])+4}">${r.mult[k]}倍</text>`});
+  g+=`<path d="${path(r.price)}" fill="none" stroke="var(--ink)" stroke-width="2.2"/>`;
+  const lab=[[0,"start"],[Math.floor(n/2),"middle"],[n-1,"end"]].map(([i,a])=>`<text x="${a==="end"?W-P:X(i)}" y="${H-6}" text-anchor="${a}">${r.months[i].replace("-","/")}</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="本益比河流圖">${g}${lab}</svg>`;
 }
 
 stockInit();

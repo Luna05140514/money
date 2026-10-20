@@ -1,5 +1,5 @@
 // 賺大錢發發發：Cloudflare 上的即時報價。
-// /api/idx 大盤台美股、/api/quote 首頁自選股、/api/stk 股票報酬比較與回測、/api/nav 淨值查詢、/api/mkt 大盤高低指標；其他網址交給靜態檔案。
+// /api/idx 大盤台美股、/api/quote 首頁自選股、/api/detail 自選股詳細頁、/api/stk 股票報酬比較與回測、/api/nav 淨值查詢、/api/mkt 大盤高低指標；其他網址交給靜態檔案。
 // 報價類每 60 秒最多真的去抓一次（大盤高低指標 30 分鐘），期間大家共用同一份結果。
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
 const US = [["^GSPC", "標普500"], ["^SOX", "費城半導體"], ["^DJI", "道瓊工業指數"], ["^IXIC", "那斯達克"]];
@@ -268,6 +268,70 @@ async function quotes(tw, us) {
   return out;
 }
 
+// ───── 自選股詳細頁：一檔的 K 線、配息、EPS、本益比、河流圖 ─────
+// 台股 EPS 用 FinMind 季報（抓不到改用 Yahoo 近幾季）；美股用 Yahoo 年報 EPS 加最近的近四季 EPS
+async function yahooSeries(sym, types) {
+  const j = await (await get(`https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(sym)}?type=${types}&period1=1400000000&period2=${Math.floor(Date.now() / 1000) + 86400}`)).json();
+  const out = {};
+  for (const r of j.timeseries.result || []) {
+    const k = r.meta.type[0];
+    out[k] = (r[k] || []).filter(Boolean).map(v => [v.asOfDate, v.reportedValue.raw]);
+  }
+  return out;
+}
+async function twEps(code) {
+  try {
+    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockFinancialStatements&data_id=${code}&start_date=${new Date().getUTCFullYear() - 7}-01-01`)).json();
+    const q = (j.data || []).filter(x => x.type === "EPS").map(x => [x.date, x.value]).sort();
+    if (q.length >= 4) return q;
+  } catch (_) {}
+  return null;
+}
+async function detail(code, us) {
+  let sym = us ? code : code + ".TW", d = await chart(sym);
+  if (!us && (!d || !(d.timestamp || []).length)) { sym = code + ".TWO"; d = await chart(sym); }
+  if (!d || !(d.timestamp || []).length) throw new Error("no data");
+  const tz = us ? "America/New_York" : "Asia/Taipei", q = d.indicators.quote[0], ts = d.timestamp;
+  const bars = ts.map((t, i) => [ymd(t, tz), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
+  const divs = Object.values((d.events || {}).dividends || {}).sort((a, b) => a.date - b.date).map(v => [ymd(v.date, tz), rp(v.amount)]);
+  const out = { sym, cur: d.meta.currency, kline: bars.slice(-250), divs, eps: null, epsKind: null, ttm: null };
+  // 月收盤（河流圖用）
+  const month = {};
+  bars.forEach(b => { month[b[0].slice(0, 7)] = [b[0], b[4]]; });
+  const monthly = Object.values(month);
+  // 近四季 EPS 序列 [[生效日, ttm]]
+  let ttmSeries = [];
+  const sumLast4 = qs => qs.map((x, i) => i < 3 ? null : [x[0], Math.round(qs.slice(i - 3, i + 1).reduce((a, y) => a + y[1], 0) * 100) / 100]).filter(Boolean);
+  if (!us) {
+    let qs = await twEps(code);
+    if (!qs) { const y = await yahooSeries(sym, "quarterlyDilutedEPS").catch(() => ({})); qs = y.quarterlyDilutedEPS || []; }
+    out.eps = qs.slice(-12); out.epsKind = "季";
+    ttmSeries = sumLast4(qs);
+  } else {
+    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS").catch(() => ({}));
+    const ann = (y.annualDilutedEPS || []).map(([dt, v]) => [dt, Math.round(v * 100) / 100]);
+    const last = ann.length ? ann[ann.length - 1][0] : "";
+    const tr = (y.trailingDilutedEPS || []).filter(x => x[0] > last).map(([dt, v]) => [dt, Math.round(v * 100) / 100]);
+    out.eps = ann; out.epsKind = "年";
+    ttmSeries = [...ann, ...tr];
+  }
+  if (ttmSeries.length) {
+    out.ttm = ttmSeries[ttmSeries.length - 1][1];
+    const last = bars[bars.length - 1][4];
+    out.pe = out.ttm > 0 ? Math.round(last / out.ttm * 10) / 10 : null;
+    // 河流圖（近 3 年）：每個月用當時最新的近四季 EPS，倍數取這段期間本益比的 10%～90%
+    const pts = monthly.slice(-37).map(([dt, c]) => { const e = [...ttmSeries].reverse().find(x => x[0] <= dt); return e ? [dt.slice(0, 7), c, e[1]] : null; }).filter(Boolean);
+    const pes = pts.filter(p => p[2] > 0).map(p => p[1] / p[2]).sort((a, b) => a - b);
+    if (pes.length >= 6 && out.ttm > 0) {
+      const at = f => pes[Math.min(pes.length - 1, Math.floor(f * (pes.length - 1)))];
+      const lo = at(0.1), hi = at(0.9), step = (hi - lo) / 4;
+      out.river = { months: pts.map(p => p[0]), price: pts.map(p => p[1]), eps: pts.map(p => p[2]),
+        mult: [0, 1, 2, 3, 4].map(i => Math.round((lo + step * i) * 10) / 10) };
+    }
+  }
+  return out;
+}
+
 // 同一個網址在 sec 秒內大家共用同一份結果
 async function cached(request, ctx, sec, make) {
   const cache = caches.default, key = new Request(request.url);
@@ -300,6 +364,13 @@ export default {
         const tw = (url.searchParams.get("c") || "").split(",").filter(c => /^[0-9A-Z]{4,7}$/.test(c)).slice(0, 40);
         const us = (url.searchParams.get("us") || "").split(",").filter(c => /^[A-Z.]{1,6}$/.test(c)).slice(0, 40);
         return cached(request, ctx, CACHE_SEC, () => quotes(tw, us));
+      }
+      case "/api/detail": {
+        // ?c=2330 或 ?us=NVDA → 一檔的詳細資料，1 小時內共用
+        const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 3600, () => detail(c, false));
+        if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 3600, () => detail(u, true));
+        return new Response("{}", { status: 400 });
       }
       case "/api/stk": {
         // ?c=2330,00981A&us=SOXX → 最多 6 檔

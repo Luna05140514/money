@@ -265,6 +265,11 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-tbl{width:100%;border-collapse:collapse;font-size:17px}
 .wd-tbl td{padding:9px 4px;border-top:1px solid var(--line)}
 .wd-tbl td:last-child{text-align:right;font-family:var(--num);font-weight:700}
+.wd-div{margin-top:12px}
+.wd-h3{font-size:19px;margin:20px 0 8px}
+.wd-div th{font-size:15px;color:var(--muted);font-weight:500;text-align:left;padding:6px 4px}
+.wd-div th:last-child{text-align:right}
+.wd-div td{font-family:var(--num);font-size:16px}
 .wd-bars{display:grid;gap:8px}
 .wd-bars div{display:grid;grid-template-columns:86px 1fr 70px;align-items:center;gap:8px;font-size:16px}
 .wd-bars i{display:block;height:18px;border-radius:4px;background:var(--gold)}
@@ -273,12 +278,13 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:14px;margin-top:8px}
 .wd-legend span{display:inline-flex;align-items:center;gap:5px}
 .wd-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
-.wd-seg{display:flex;gap:6px;margin:4px 0 10px;flex-wrap:wrap}
+.wd-seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 10px}
+.wd-seg button{text-align:center;padding:8px 2px!important;white-space:nowrap}
 .wd-seg button{all:unset;cursor:pointer;padding:8px 16px;border-radius:999px;border:1px solid var(--line);font-size:17px;font-weight:700;color:var(--ink)}
 .wd-seg button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
 .wd-seg button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .wd-ind{margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr)}
-.wd-ind button{padding:8px 2px;text-align:center;font-size:16px}
+.wd-ind button{padding:8px 2px;text-align:center;font-size:15px;white-space:nowrap}
 .wd-info{font-family:var(--num);font-size:16px;line-height:1.7}
 .wd-ma{font-family:var(--num);font-size:14px!important;margin:4px 0 6px}
 .wd-chart{touch-action:pan-y;cursor:crosshair}
@@ -1277,22 +1283,20 @@ async function wdRender(c){
   let html=head;
   // K 線（近半年日 K）
   html+=`<section class="wd-sec" id="wd-k"></section>`;
+  let peH="",rvH="";
   // 本益比
   if(!etf){
     const pe=x.ttm>0&&last?Math.round(last/x.ttm*10)/10:null;
     let lv="";if(pe&&x.river){const m=x.river.mult;lv=pe<=m[1]?"偏低（便宜）":pe>=m[3]?"偏高（貴）":"中間"}
-    html+=`<section class="wd-sec"><h2>本益比</h2><div class="wd-kpi"><div><b>${pe??"—"}</b><span>目前本益比（倍）</span></div><div><b>${x.ttm!=null?f2(x.ttm):"—"}</b><span>近四季 EPS</span></div></div>${x.ttm!=null&&x.ttm<=0?'<p>近四季虧損，所以沒有本益比。</p>':lv?`<p>和近 3 年比，目前本益比<b>${lv}</b>。</p>`:""}</section>`;
-    if(x.river)html+=`<section class="wd-sec"><h2>本益比河流圖</h2>${wdRiver(x.river)}<p class="muted">黑線是股價。色帶是「近四季 EPS × 倍數」，股價在越下面的色帶越便宜。</p></section>`;
+    peH+=`<div class="wd-kpi"><div><b>${pe??"—"}</b><span>目前本益比（倍）</span></div><div><b>${x.ttm!=null?f2(x.ttm):"—"}</b><span>近四季 EPS</span></div></div>${x.ttm!=null&&x.ttm<=0?'<p>近四季虧損，所以沒有本益比。</p>':lv?`<p>和近 3 年比，目前本益比<b>${lv}</b>。</p>`:""}`;
+    if(x.river)rvH=`${wdRiver(x.river)}<p class="muted">黑線是股價。色帶是「近四季 EPS × 倍數」，股價在越下面的色帶越便宜。</p>`;
     if(x.eps&&x.eps.length){
       const e=x.eps.slice(x.epsKind==="季"?-8:-5),mx=Math.max(...e.map(v=>Math.abs(v[1])))||1;
-      html+=`<section class="wd-sec"><h2>EPS（每股盈餘）</h2><div class="wd-bars">${e.map(([dt,v])=>`<div><span>${x.epsKind==="季"?`${dt.slice(0,4)} Q${Math.ceil(+dt.slice(5,7)/3)}`:`${dt.slice(0,4)} 年度`}</span><i class="${v<0?"neg":""}" style="width:${Math.max(2,Math.abs(v)/mx*100)}%"></i><em>${f2(v)}</em></div>`).join("")}</div><p class="muted">${x.epsKind==="季"?"每一季":"每個會計年度"}的 EPS${us?"（美元）":"（元）"}。</p></section>`;
+      peH+=`<h3 class="wd-h3">EPS（每股盈餘）</h3><div class="wd-bars">${e.map(([dt,v])=>`<div><span>${x.epsKind==="季"?`${dt.slice(0,4)} Q${Math.ceil(+dt.slice(5,7)/3)}`:`${dt.slice(0,4)} 年度`}</span><i class="${v<0?"neg":""}" style="width:${Math.max(2,Math.abs(v)/mx*100)}%"></i><em>${f2(v)}</em></div>`).join("")}</div><p class="muted">${x.epsKind==="季"?"每一季":"每個會計年度"}的 EPS${us?"（美元）":"（元）"}。</p>`;
     }
-  }else html+='<section class="wd-sec"><h2>本益比、EPS</h2><p>ETF 沒有 EPS，所以沒有本益比和河流圖。</p></section>';
-  // 配息
-  const dv=x.divs||[],yr=new Date(Date.now()-365*864e5).toISOString().slice(0,10),sum=dv.filter(v=>v[0]>=yr).reduce((a,v)=>a+v[1],0);
-  html+=`<section class="wd-sec"><h2>配息</h2>${dv.length?`<div class="wd-kpi"><div><b>${f2(sum)}</b><span>近一年配息${us?"（美元）":"（元）"}</span></div><div><b>${last?(sum/last*100).toFixed(2)+"%":"—"}</b><span>殖利率</span></div></div><table class="wd-tbl"><tbody>${dv.slice(-8).reverse().map(v=>`<tr><td>${v[0].replace(/-/g,"/")}</td><td>${f2(v[1])}</td></tr>`).join("")}</tbody></table><p class="muted">左邊是除息日，右邊是每股配多少。</p>`:"<p>近 5 年沒有配息。</p>"}</section>`;
+  }
   body.innerHTML=html;
-  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdKDraw();
+  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=peH;wdK.rv=rvH;if((wdK.period==="pe"&&!peH)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();
 }
 // 還原 K 線（日／週／月）＋均線，下方分頁切換成交量、KDJ(9,3,3)、MACD(12,26,9)、布林 %B(20,2)，和 K 線同一天對齊；點圖可看那一天的數字
 const wdK={daily:[],us:false,period:"d",ind:"vol",sel:null};
@@ -1317,6 +1321,25 @@ function wdCalc(k){
 }
 function wdKDraw(){
   const box=$("wd-k");if(!box||!wdK.daily.length)return;
+  const nv=STOCK&&STOCK.nav&&STOCK.nav[wdK.code];
+  const seg=`<div class="wd-seg">${[["d","日"],["w","週"],["m","月"],["div","配息"],...(nv?[["prem","折溢價"]]:[]),...(wdK.pe?[["pe","本益比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[])].map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("")}</div>`;
+  if(wdK.period==="pe"&&wdK.pe){box.innerHTML=`<h2>本益比</h2>${seg}${wdK.pe}`;wdKBind();return}
+  if(wdK.period==="rv"&&wdK.rv){box.innerHTML=`<h2>本益比河流圖</h2>${seg}${wdK.rv}`;wdKBind();return}
+  if(wdK.period==="prem"&&nv){
+    const [,px,nav,prem,prev,,,at]=nv,f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
+    const cls=prem>0?"up":prem<0?"down":"flat",word=prem==null?"":prem>0?`溢價：市價比淨值貴 ${Math.abs(prem).toFixed(2)}%`:prem<0?`折價：市價比淨值便宜 ${Math.abs(prem).toFixed(2)}%`:"市價等於淨值";
+    box.innerHTML=`<h2>折溢價</h2>${seg}<div class="wd-kpi"><div style="grid-column:1/-1"><b class="${cls}" style="font-size:36px">${prem==null?"—":(prem>0?"+":"")+prem.toFixed(2)+"%"}</b><span>${word}</span></div><div><b>${f2(px)}</b><span>市價</span></div><div><b>${f2(nav)}</b><span>預估淨值</span></div><div><b>${f2(prev)}</b><span>前日淨值</span></div><div><b style="font-size:18px">${at||"—"}</b><span>資料時間</span></div></div>
+    <p class="muted">折溢價 =（市價 − 預估淨值）÷ 預估淨值。溢價超過 1% 時買進要小心，可能買貴。資料來自證交所。</p>`;
+    wdKBind();return;
+  }
+  if(wdK.period==="div"){
+    const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),dv=wdK.divs,last=wdK.last;
+    const yr=new Date(Date.now()-365*864e5).toISOString().slice(0,10),sum=dv.filter(v=>v[0]>=yr).reduce((a,v)=>a+v[1],0),ds=v=>v?v.replace(/-/g,"/"):"—";
+    box.innerHTML=`<h2>配息</h2>${seg}${dv.length?`<div class="wd-kpi"><div><b>${f2(sum)}</b><span>近一年配息${wdK.us?"（美元）":"（元）"}</span></div><div><b>${last?(sum/last*100).toFixed(2)+"%":"—"}</b><span>殖利率</span></div></div>
+    <table class="wd-tbl wd-div"><thead><tr><th>除息日</th><th>發放日</th><th>每股配息</th></tr></thead><tbody>${dv.slice(-12).reverse().map(v=>`<tr><td>${ds(v[0])}</td><td>${ds(v[2])}</td><td>${f2(v[1])}</td></tr>`).join("")}</tbody></table>
+    <p class="muted">除息日前一天買進才領得到；發放日是錢匯進帳戶的日子。${dv.some(v=>!v[2])?"有些查不到發放日，顯示「—」。":""}</p>`:"<p>近 5 年沒有配息。</p>"}`;
+    wdKBind();return;
+  }
   const all=wdAgg(wdK.daily,wdK.period),c=wdCalc(all),N=Math.min(wdK.period==="m"?60:100,all.length),s0=all.length-N;
   const k=all.slice(s0),T=a=>a.slice(s0),sel=wdK.sel==null||wdK.sel>=N?N-1:wdK.sel,b=k[sel],pv=all[s0+sel-1];
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1343,7 +1366,7 @@ function wdKDraw(){
     vals2=`<span class="wd-legend">${dot("#e0a100","K "+r1(T(c.kk)[sel]))}${dot("#2f7de1","D "+r1(T(c.dd)[sel]))}${dot("#c040c0","J "+r1(T(c.jj)[sel]))}</span>`}
   if(wdK.ind==="macd"){sl=[[T(c.dif),"#e0a100"],[T(c.dea),"#2f7de1"]];sb=T(c.osc);sbc=sb.map(v=>`var(${v>=0?"--up":"--down"})`);ref=[0];
     vals2=`<span class="wd-legend">${dot("#e0a100","DIF "+r2(T(c.dif)[sel]))}${dot("#2f7de1","MACD "+r2(T(c.dea)[sel]))}${dot("var(--muted)","柱 "+r2(T(c.osc)[sel]))}</span>`}
-  if(wdK.ind==="pb"){sl=[[T(c.pb),"#8a5cf6"]];ref=[0,50,100];vals2=`<span class="wd-legend">${dot("#8a5cf6","%B "+r1(T(c.pb)[sel])+"%")}</span>`}
+  if(wdK.ind==="pb"){sl=[[T(c.pb),"#8a5cf6"]];ref=[0,50,100];vals2=`<span class="wd-legend">${dot("#8a5cf6","布林%b "+r1(T(c.pb)[sel])+"%")}</span>`}
   const v2=[...sl.flatMap(l=>l[0]),...(sb||[]),...ref].filter(v=>v!=null);
   let lo2=fix?Math.min(fix[0],...v2):Math.min(...v2),hi2=fix?Math.max(fix[1],...v2):Math.max(...v2);if(wdK.ind==="vol")lo2=0;
   const sp2=hi2-lo2||1,Y2=v=>6+(hi2-v)/sp2*(SH-12);let g2="";
@@ -1353,14 +1376,17 @@ function wdKDraw(){
   const sub=`<svg class="wd-chart" viewBox="0 0 ${W} ${SH}" data-n="${N}">${g2}<line x1="${X(sel)}" x2="${X(sel)}" y1="0" y2="${SH}" stroke="var(--muted)" stroke-dasharray="3 3"/></svg>`;
   const tab=(grp,v,t,cur)=>`<button data-${grp}="${v}" aria-pressed="${v===cur}">${t}</button>`;
   box.innerHTML=`<h2>K 線圖 <small class="muted">還原</small></h2>
-  <div class="wd-seg">${tab("per","d","日",wdK.period)}${tab("per","w","週",wdK.period)}${tab("per","m","月",wdK.period)}</div>
+  ${seg}
   <div class="wd-info"><b>${b[0].replace(/-/g,"/")}</b>　開 <b>${f2(b[1])}</b>　高 <b>${f2(b[2])}</b>　低 <b>${f2(b[3])}</b>　收 <b class="${cls}">${f2(b[4])}</b>${d==null?"":`　<b class="${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</b>`}</div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
   ${main}
-  <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","%B",wdK.ind)}</div>
+  <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","布林%b",wdK.ind)}</div>
   <div class="wd-vals">${vals2}</div>
   ${sub}
   <p class="muted">${wdK.period==="m"?"月 K":wdK.period==="w"?"週 K":"日 K"}，紅 K 收盤比開盤高、綠 K 收盤比開盤低。用手指點圖可以看那一天的數字。</p>`;
+  wdKBind();
+}
+function wdKBind(){
   if(!wdKDraw.bound){wdKDraw.bound=1;
     $("wd-body").addEventListener("click",e=>{const pb=e.target.closest("[data-per]"),ib=e.target.closest("[data-ind]");
       if(pb){wdK.period=pb.dataset.per;wdK.sel=null;wdKDraw();return}

@@ -297,7 +297,21 @@ async function detail(code, us) {
   // 還原 K 線：開高低收都乘上「還原收盤 ÷ 收盤」（除權息、分割都還原）
   const fixed = ts.map((t, i) => { const c = q.close[i], a = adj[i]; if ([q.open[i], q.high[i], q.low[i], c, a].some(v => v == null) || !c) return null; const f = a / c;
     return [ymd(t, tz), rp(q.open[i] * f), rp(q.high[i] * f), rp(q.low[i] * f), rp(a), q.volume[i] || 0]; }).filter(Boolean);
-  const divs = Object.values((d.events || {}).dividends || {}).sort((a, b) => a.date - b.date).map(v => [ymd(v.date, tz), rp(v.amount)]);
+  let divs = Object.values((d.events || {}).dividends || {}).sort((a, b) => a.date - b.date).map(v => [ymd(v.date, tz), rp(v.amount), ""]);
+  // 發放日：台股用 FinMind 股利政策（除息日、發放日、金額）；美股用 Nasdaq 的配息紀錄對上除息日
+  try {
+    if (!us) {
+      const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${code}&start_date=${new Date().getUTCFullYear() - 6}-01-01`)).json();
+      const fm = (j.data || []).filter(x => x.CashExDividendTradingDate && (x.CashEarningsDistribution + x.CashStatutorySurplus) > 0)
+        .map(x => [x.CashExDividendTradingDate, rp(x.CashEarningsDistribution + x.CashStatutorySurplus), x.CashDividendPaymentDate || ""]).sort();
+      if (fm.length) divs = fm;
+    } else {
+      const j = await (await get(`https://api.nasdaq.com/api/quote/${code}/dividends?assetclass=stocks`, { headers: { Accept: "application/json" } })).json();
+      const iso = s => s && s.includes("/") ? `${s.slice(6)}-${s.slice(0, 2)}-${s.slice(3, 5)}` : "";
+      const pay = Object.fromEntries((((j.data || {}).dividends || {}).rows || []).map(r => [iso(r.exOrEffDate), iso(r.paymentDate)]));
+      divs = divs.map(([dt, a]) => [dt, a, pay[dt] || ""]);
+    }
+  } catch (_) {}
   // 日線有時還沒有今天那根：用今天的 5 分 K 補上（開盤取第一根，高低量用報價資料）
   try {
     const td = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=5m`)).json()).chart.result[0];

@@ -1,5 +1,5 @@
 // 賺大錢發發發：Cloudflare 上的即時報價。
-// /api/idx 大盤台美股、/api/stk 股票報酬比較與回測、/api/nav 淨值查詢、/api/mkt 大盤高低指標；其他網址交給靜態檔案。
+// /api/idx 大盤台美股、/api/quote 首頁自選股、/api/stk 股票報酬比較與回測、/api/nav 淨值查詢、/api/mkt 大盤高低指標；其他網址交給靜態檔案。
 // 報價類每 60 秒最多真的去抓一次（大盤高低指標 30 分鐘），期間大家共用同一份結果。
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
 const US = [["^GSPC", "標普500"], ["^SOX", "費城半導體"], ["^DJI", "道瓊工業指數"], ["^IXIC", "那斯達克"]];
@@ -239,6 +239,35 @@ async function market() {
   return out;
 }
 
+// ───── 首頁自選股：當日 5 分 K 和昨收（台股先試 .TW，沒有再試 .TWO）─────
+async function sparkMap(syms) {
+  const out = {};
+  for (let i = 0; i < syms.length; i += 20) {
+    const r = await (await get("https://query1.finance.yahoo.com/v8/finance/spark?range=1d&interval=5m&symbols=" + syms.slice(i, i + 20).map(encodeURIComponent).join(","))).json();
+    Object.assign(out, r);
+  }
+  return out;
+}
+async function quotes(tw, us) {
+  const one = (v, tz) => {
+    const ts = v.timestamp || [], cl = v.close || [];
+    const pts = ts.map((t, k) => [t, cl[k]]).filter(x => x[1] != null);
+    if (!pts.length) return null;
+    return { prev: rp(v.chartPreviousClose ?? v.previousClose), last: rp(pts.at(-1)[1]), date: ymd(pts.at(-1)[0], tz),
+      pts: pts.map(([t, c]) => [hm(t, tz), rp(c)]) };
+  };
+  const out = {};
+  let r = await sparkMap([...tw.map(c => c + ".TW"), ...us]);
+  tw.forEach(c => { const x = r[c + ".TW"] && one(r[c + ".TW"], "Asia/Taipei"); if (x) out[c] = x; });
+  us.forEach(c => { const x = r[c] && one(r[c], "America/New_York"); if (x) out[c] = { ...x, us: 1 }; });
+  const miss = tw.filter(c => !out[c]);
+  if (miss.length) {
+    r = await sparkMap(miss.map(c => c + ".TWO"));
+    miss.forEach(c => { const x = r[c + ".TWO"] && one(r[c + ".TWO"], "Asia/Taipei"); if (x) out[c] = x; });
+  }
+  return out;
+}
+
 // 同一個網址在 sec 秒內大家共用同一份結果
 async function cached(request, ctx, sec, make) {
   const cache = caches.default, key = new Request(request.url);
@@ -260,6 +289,12 @@ export default {
       case "/api/idx": return cached(request, ctx, CACHE_SEC, build);
       case "/api/nav": return cached(request, ctx, CACHE_SEC, navTable);
       case "/api/mkt": return cached(request, ctx, 1800, market);
+      case "/api/quote": {
+        // ?c=2330,00981A&us=TSM → 最多 40 檔
+        const tw = (url.searchParams.get("c") || "").split(",").filter(c => /^[0-9A-Z]{4,7}$/.test(c)).slice(0, 40);
+        const us = (url.searchParams.get("us") || "").split(",").filter(c => /^[A-Z.]{1,6}$/.test(c)).slice(0, 40);
+        return cached(request, ctx, CACHE_SEC, () => quotes(tw, us));
+      }
       case "/api/stk": {
         // ?c=2330,00981A&us=SOXX → 最多 6 檔
         const tw = (url.searchParams.get("c") || "").split(",").filter(c => /^[0-9A-Z]{4,7}$/.test(c));

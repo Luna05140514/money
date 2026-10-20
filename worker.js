@@ -292,9 +292,20 @@ async function detail(code, us) {
   if (!us && (!d || !(d.timestamp || []).length)) { sym = code + ".TWO"; d = await chart(sym); }
   if (!d || !(d.timestamp || []).length) throw new Error("no data");
   const tz = us ? "America/New_York" : "Asia/Taipei", q = d.indicators.quote[0], ts = d.timestamp;
+  const adj = d.indicators.adjclose[0].adjclose;
   const bars = ts.map((t, i) => [ymd(t, tz), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
+  // 還原 K 線：開高低收都乘上「還原收盤 ÷ 收盤」（除權息、分割都還原）
+  const fixed = ts.map((t, i) => { const c = q.close[i], a = adj[i]; if ([q.open[i], q.high[i], q.low[i], c, a].some(v => v == null) || !c) return null; const f = a / c;
+    return [ymd(t, tz), rp(q.open[i] * f), rp(q.high[i] * f), rp(q.low[i] * f), rp(a), q.volume[i] || 0]; }).filter(Boolean);
   const divs = Object.values((d.events || {}).dividends || {}).sort((a, b) => a.date - b.date).map(v => [ymd(v.date, tz), rp(v.amount)]);
-  const out = { sym, cur: d.meta.currency, kline: bars.slice(-250), divs, eps: null, epsKind: null, ttm: null };
+  // 日線有時還沒有今天那根：用今天的 5 分 K 補上（開盤取第一根，高低量用報價資料）
+  try {
+    const td = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=5m`)).json()).chart.result[0];
+    const m = td.meta, day = ymd(m.regularMarketTime, tz), o = (td.indicators.quote[0].open || []).find(v => v != null);
+    if (fixed.length && day > fixed[fixed.length - 1][0] && o != null && m.regularMarketPrice)
+      fixed.push([day, rp(o), rp(m.regularMarketDayHigh), rp(m.regularMarketDayLow), rp(m.regularMarketPrice), m.regularMarketVolume || 0]);
+  } catch (_) {}
+  const out = { sym, cur: d.meta.currency, kline: fixed, divs, eps: null, epsKind: null, ttm: null };
   // 月收盤（河流圖用）
   const month = {};
   bars.forEach(b => { month[b[0].slice(0, 7)] = [b[0], b[4]]; });

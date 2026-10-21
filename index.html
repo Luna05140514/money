@@ -240,6 +240,14 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .nm{min-width:0}
 .wrow .nm b{display:block;font-size:20px;line-height:1.3}
+.watch-signote{font-size:15px;color:var(--muted);margin:6px 0 10px;line-height:1.5}
+.wrow .sigs{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:-4px}
+.wrow .sg{font-style:normal;font-size:17px;font-weight:700;padding:6px 8px;text-align:center;border-radius:6px;line-height:1.35;background:var(--bg);color:var(--muted)}
+.wrow .sg.buy{background:#fbe3e6;color:#a10d26}
+.wrow .sg.sell{background:#e3f4ea;color:#11683a}
+.wrow .sg small{display:block;font-size:14px;font-weight:600;opacity:.8}
+.wrow .sg.low{background:#fdf0f1;color:#a10d26;font-weight:600}
+.wrow .sg.high{background:#eef8f1;color:#11683a;font-weight:600}
 .wrow .nm small{font-family:var(--num);font-size:15px;color:var(--muted)}
 .wrow .px{font-family:var(--num);font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
 .wrow .chg{font-family:var(--num);font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;min-width:96px;line-height:1.3}
@@ -358,8 +366,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <p>常用的投資試算與查詢工具，輸入數字就能看到結果。</p>
     </header>
     <div class="grid">
-      <button class="entry" data-go="watch"><span class="glyph">選</span><div><h2>自選股</h2><p>ETF、權值股、美股分頁，看價格和當天漲跌</p></div><span class="go">›</span></button>
       <button class="entry" data-go="idx"><span class="glyph">盤</span><div><h2>大盤台美股</h2><p>加權、台指期、櫃買、美股四大指數和 TSM、TSMX 的當天走勢</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="watch"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="stock"><span class="glyph">比</span><div><h2>股票報酬比較</h2><p>ETF 與個股的含息報酬走勢、殖利率、費用並排比較</p></div><span class="go">›</span></button>
       <button class="entry" data-go="mkt"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
       <button class="entry" data-go="nav"><span class="glyph">淨</span><div><h2>淨值查詢</h2><p>輸入 ETF 代號或名字，查市價、淨值和折溢價</p></div><span class="go">›</span></button>
@@ -424,6 +432,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <h1>自選股</h1>
     <div class="watch">
       <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit" id="watch-edit" aria-pressed="false">編輯</button></div>
+      <p class="watch-signote">短線看日 KD、長線看週 KD。K 在 30 以下往上穿過 D 是「分批買入」，K 在 70 以上往下穿過 D 是「分批賣出」；沒有交叉時，K 20 以下是「相對低點」、80 以上是「相對高點」，其他「觀望」。只是參考，不是保證。</p>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
@@ -1248,6 +1257,25 @@ function watchItem(c){
   const pts=it.intraday||[];
   return{key:c,name:r[1],prev:it.dayPrev||it.prevClose,last:pts.length?pts[pts.length-1][1]:it.last};
 }
+// 短線看日 KD、長線看週 KD（9,3,3）
+// K 往上穿過 D 且 K 在 30 以下 → 分批買入；K 往下穿過 D 且 K 在 70 以上 → 分批賣出；
+// 沒有交叉時，K 20 以下是相對低點、80 以上是相對高點，其他觀望
+let watchKd={},watchKdAt={};
+function kdSig(o){if(!o||o.k==null)return null;
+  const zone=o.k<=20?"相對低點":o.k>=80?"相對高點":"";
+  const up=o.pk!=null&&o.pk<=o.pd&&o.k>o.d&&Math.min(o.pk,o.k)<30,dn=o.pk!=null&&o.pk>=o.pd&&o.k<o.d&&Math.max(o.pk,o.k)>70;
+  const act=up?"分批買入":dn?"分批賣出":"";
+  if(act)return[up?"buy":"sell",zone?`${zone}<br>${act}`:act];
+  return zone?[o.k<=20?"low":"high",zone]:["wait","觀望"]}
+function watchSig(c){const x=watchKd[c],sd=stkData[c];
+  const sh=kdSig(x&&x.day),lg=kdSig(x?x.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null));
+  const one=(t,v)=>`<i class="sg ${v?v[0]:"na"}"><small>${t}</small>${v?v[1]:"—"}</i>`;
+  return `<span class="sigs">${one("短線",sh)}${one("長線",lg)}</span>`}
+async function watchKdLoad(){
+  if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
+  const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=2`);
+  if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 function watchRender(){
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("");
@@ -1255,7 +1283,7 @@ function watchRender(){
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br>${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%`;
-    return `<button class="wrow" data-c="${esc(c)}" aria-label="${watchEdit?"移除":"查看"} ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>`}</button>`}).join("");
+    return `<button class="wrow" data-c="${esc(c)}" aria-label="${watchEdit?"移除":"查看"} ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>${watchSig(c)}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows||'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
 }
 async function watchLoad(){
@@ -1263,6 +1291,7 @@ async function watchLoad(){
   await Promise.all(codes.map(c=>stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null)));
   watchRender();
   if(!ON_CF)return;
+  watchKdLoad();
   const need=codes;if(!need.length)return;
   const d=await api(`/api/quote?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}`);
   if(!d)return;
@@ -1281,7 +1310,7 @@ function watchInit(){
   watchGroups.forEach(g=>g.list=g.list.filter(c=>idxOf[c]));
   $("watch-time").textContent=ON_CF?"":`資料 ${STOCK.updated}`;
   watchRender();watchLoad();
-  $("watch-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;watchTab=+b.dataset.t;try{localStorage.setItem("facai-watch-tab",watchTab)}catch(_){}watchRender()});
+  $("watch-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;watchTab=+b.dataset.t;try{localStorage.setItem("facai-watch-tab",watchTab)}catch(_){}watchRender();watchKdLoad()});
   $("watch-edit").addEventListener("click",()=>{watchEdit=!watchEdit;$("watch-edit").setAttribute("aria-pressed",watchEdit);$("watch-edit").textContent=watchEdit?"完成":"編輯";$("watch-add").hidden=!watchEdit;if(!watchEdit){$("watch-q").value="";$("watch-sug").hidden=true}watchRender()});
   $("watch-cards").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;
     if(!watchEdit){wdOpen(b.dataset.c);return}

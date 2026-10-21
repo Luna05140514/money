@@ -402,6 +402,42 @@ async function detail(code, us) {
   return out;
 }
 
+// 自選股的短線／長線訊號：日 KD 和週 KD（9,3,3），回傳今天和前一根的 K、D（判斷交叉用）
+function kdLast2(bars, n = 9) {
+  if (bars.length < n + 1) return null;
+  let k = 50, dv = 50, prev = null;
+  bars.forEach((b, i) => {
+    const win = bars.slice(Math.max(0, i - n + 1), i + 1), H = Math.max(...win.map(x => x[0])), L = Math.min(...win.map(x => x[1]));
+    const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100;
+    if (i === bars.length - 1) prev = [k, dv];
+    k = k * 2 / 3 + rsv / 3; dv = dv * 2 / 3 + k / 3;
+  });
+  const r = v => Math.round(v * 10) / 10;
+  return { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]) };
+}
+async function kdList(list) {
+  const one = async ([code, us]) => {
+    for (const sym of us ? [code] : [code + ".TW", code + ".TWO"]) {
+      try {
+        const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2y&interval=1d`)).json()).chart.result[0];
+        const q = r.indicators.quote[0], ts = r.timestamp || []; if (!ts.length) continue;
+        const day = [], weeks = new Map();
+        ts.forEach((t, i) => {
+          const b = [q.high[i], q.low[i], q.close[i]]; if (b.some(v => v == null)) return;
+          day.push(b);
+          const d = new Date((t + 8 * 3600) * 1000), wd = (d.getUTCDay() + 6) % 7;
+          const mon = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - wd)).toISOString().slice(0, 10);
+          const w = weeks.get(mon); if (!w) weeks.set(mon, [...b]); else { w[0] = Math.max(w[0], b[0]); w[1] = Math.min(w[1], b[1]); w[2] = b[2]; }
+        });
+        const wk = [...weeks.keys()].sort().map(k => weeks.get(k));
+        return [code, { day: kdLast2(day), week: kdLast2(wk) }];
+      } catch (_) {}
+    }
+    return [code, null];
+  };
+  return Object.fromEntries((await Promise.all(list.map(one))).filter(x => x[1]));
+}
+
 // 同一個網址在 sec 秒內大家共用同一份結果
 async function cached(request, ctx, sec, make) {
   const cache = caches.default, key = new Request(request.url);
@@ -441,6 +477,12 @@ export default {
         if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 3600, () => detail(c, false));
         if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 3600, () => detail(u, true));
         return new Response("{}", { status: 400 });
+      }
+      case "/api/kd": {
+        // ?c=2330,0050&us=NVDA → 每檔的日 KD、週 KD，最多 20 檔，10 分鐘更新一次
+        const tw = (url.searchParams.get("c") || "").split(",").filter(c => /^[0-9A-Z]{4,7}$/.test(c));
+        const us = (url.searchParams.get("us") || "").split(",").filter(c => /^[A-Z.]{1,6}$/.test(c));
+        return cached(request, ctx, 600, () => kdList([...tw.map(c => [c, false]), ...us.map(c => [c, true])].slice(0, 20)));
       }
       case "/api/stk": {
         // ?c=2330,00981A&us=SOXX → 最多 6 檔

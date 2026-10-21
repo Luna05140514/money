@@ -68,7 +68,8 @@ async function build() {
   const got = Object.fromEntries(await Promise.all(Object.entries(jobs).map(([k, p]) => p.then(v => [k, v], () => [k, null]))));
   const items = [];
   for (const k of ["twii", "txf", "otc"]) if (got[k]) items.push({ key: k, ...got[k] });
-  if (got.us) items.push(...got.us);
+  if (got.tw2330) items.push({ key: "2330", pick: 1, ...got.tw2330 }); // Luna：大盤台股最下面放台積電
+  if (got.us) items.push(...got.us.map(x => PICKS.some(p => p[0] === x.key) ? { ...x, pick: 1 } : x));
   const now = new Date(Date.now() + 8 * 3600e3).toISOString();
   const data = { updated: `${now.slice(0, 10)} ${now.slice(11, 16)}`, live: 1, items: items.filter(x => x.pts.length) };
   const tsm = got.us && got.us.find(x => x.key === "TSM"), tw = got.tw2330, fx = got.fx && got.fx[0];
@@ -472,6 +473,65 @@ async function kdList(list) {
 }
 
 // 同一個網址在 sec 秒內大家共用同一份結果
+// 大盤 K 線：加權、櫃買用 FinMind（成交量用成交金額），台指期用 FinMind 近月合約（日盤、量最大的那一個月），美股指數用 Yahoo
+async function indexKline(key) {
+  const ymd5 = `${new Date().getUTCFullYear() - 5}-01-01`;
+  if (key === "twii" || key === "otc") {
+    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${key === "twii" ? "TAIEX" : "TPEx"}&start_date=${ymd5}`)).json();
+    const k = (j.data || []).filter(x => x.close > 0).map(x => [x.date, x.open, x.max, x.min, x.close, x.Trading_money]);
+    if (!k.length) throw new Error("no data");
+    return { kline: k, volUnit: "money" };
+  }
+  if (key === "txf") {
+    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${new Date().getUTCFullYear() - 2}-01-01`)).json();
+    const best = {};
+    for (const x of j.data || []) {
+      if (x.trading_session !== "position" || !/^\d{6}$/.test(x.contract_date) || !(x.close > 0)) continue;
+      const b = best[x.date]; if (!b || x.volume > b.volume) best[x.date] = x;
+    }
+    const k = Object.keys(best).sort().map(d => { const x = best[d]; return [d, x.open, x.max, x.min, x.close, x.volume]; });
+    if (!k.length) throw new Error("no data");
+    return { kline: k, volUnit: "lots" };
+  }
+  if (key === "2330") {
+    const d = await chart("2330.TW"); if (!d || !(d.timestamp || []).length) throw new Error("no data");
+    const q = d.indicators.quote[0];
+    const k = d.timestamp.map((t, i) => [ymd(t, "Asia/Taipei"), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
+    return { kline: k, volUnit: "twshares" };
+  }
+  if (/^\^?[A-Z]{2,6}$/.test(key)) {
+    const d = await chart(key); if (!d || !(d.timestamp || []).length) throw new Error("no data");
+    const q = d.indicators.quote[0];
+    const k = d.timestamp.map((t, i) => [ymd(t, "America/New_York"), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
+    return { kline: k, volUnit: "shares" };
+  }
+  throw new Error("bad key");
+}
+
+// 大盤的短線（日 KD）、長線（週 KD）：用上面的日 K，台股三個再接上今天盤中的最新價
+async function indexKd(keys) {
+  const one = async key => {
+    try {
+      const k = (await indexKline(key)).kline.map(b => [b[0], b[2], b[3], b[4]]);
+      if (key === "twii" || key === "otc" || key === "txf") {
+        const live = await (key === "txf" ? txf() : yahooTw(key === "twii" ? "^TWII" : "^TWOII", "")).catch(() => null);
+        if (live && live.pts.length && live.date > k[k.length - 1][0]) {
+          const v = live.pts.map(p => p[1]);
+          k.push([live.date, Math.max(...v), Math.min(...v), v[v.length - 1]]);
+        }
+      }
+      const day = k.map(b => b.slice(1)), weeks = new Map();
+      for (const b of k) {
+        const d = new Date(b[0] + "T00:00:00Z"), wd = (d.getUTCDay() + 6) % 7;
+        const mon = new Date(d.getTime() - wd * 864e5).toISOString().slice(0, 10);
+        const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(1)); else { w[0] = Math.max(w[0], b[1]); w[1] = Math.min(w[1], b[2]); w[2] = b[3]; }
+      }
+      return [key, { day: kdLast2(day.slice(-300)), week: kdLast2([...weeks.keys()].sort().map(x => weeks.get(x))) }];
+    } catch (_) { return [key, null]; }
+  };
+  return Object.fromEntries((await Promise.all(keys.map(one))).filter(x => x[1]));
+}
+
 // 另外留一份 3 天的備份：資料來源一時抓不到時，先給上一次成功的結果，不讓畫面空白
 async function cached(request, ctx, sec, make) {
   const cache = caches.default, key = new Request(request.url);
@@ -517,6 +577,17 @@ export default {
         if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 3600, () => detail(c, false));
         if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 3600, () => detail(u, true));
         return new Response("{}", { status: 400 });
+      }
+      case "/api/ixk": {
+        // ?k=twii | otc | txf | ^GSPC … → 大盤的日 K（1 小時內共用）
+        const k = url.searchParams.get("k") || "";
+        if (!/^(twii|otc|txf|2330|\^?[A-Z]{2,6})$/.test(k)) return new Response("{}", { status: 400 });
+        return cached(request, ctx, 3600, () => indexKline(k));
+      }
+      case "/api/ixkd": {
+        // ?k=twii,txf,otc,2330 → 大盤每一列的日 KD、週 KD，10 分鐘更新一次
+        const ks = (url.searchParams.get("k") || "").split(",").filter(k => /^(twii|otc|txf|2330|\^?[A-Z]{2,6})$/.test(k)).slice(0, 12);
+        return cached(request, ctx, 600, () => indexKd(ks));
       }
       case "/api/kd": {
         // ?c=2330,0050&us=NVDA → 每檔的日 KD、週 KD，最多 20 檔，10 分鐘更新一次

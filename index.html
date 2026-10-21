@@ -423,9 +423,10 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>大盤台美股</h1>
     <p class="lead" id="idx-lead">台股與美股主要指數的當天走勢。</p>
-    <div class="idxgrid" id="idx-cards"></div>
+    <div class="watch-tabs" id="idx-tabs" role="tablist"></div>
+    <div class="wlist" id="idx-cards" style="margin-top:12px"></div>
     <div class="ibig" id="idx-big" hidden></div>
-    <p class="note">加權、櫃買指數來自 Yahoo 奇摩股市，台指期為期交所近月合約日盤，美股指數來自 Yahoo Finance。美股走勢為美東時間，台灣白天看到的是前一個交易日。虛線是昨收。點任一張小卡可以放大看。</p>
+    <p class="note">加權、櫃買指數來自 Yahoo 奇摩股市，台指期為期交所近月合約日盤，美股指數來自 Yahoo Finance。美股是美東時間，台灣白天看到的是前一個交易日。點任一列可以看今天走勢和 K 線。</p>
   </section>
 
   <!-- 自選股 -->
@@ -1161,20 +1162,33 @@ function idxSvg(it,big){
     ${big?ticks.map((t,k)=>`<text x="${x(t)}" y="${H-4}" text-anchor="${k===0?"start":k===ticks.length-1?"end":"middle"}">${t}</text>`).join(""):""}</svg>`;
 }
 let idxItems=[];
+// 大盤每一列的短線（日 KD）、長線（週 KD），10 分鐘重抓一次
+let idxKd={},idxKdAt=0,idxKdBusy=0,idxKdKeys="";
+async function idxKdLoad(){
+  const keys=idxItems.map(it=>encodeURIComponent(it.key)).join(",");
+  if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
+  const d=await api(`/api/ixkd?k=${keys}&v=1`);idxKdBusy=0;
+  if(!d||!Object.keys(d).length)return;idxKd=d;idxInit()}
 function idxInit(){
   if(!IDX||!IDX.items.length){$("idx-cards").innerHTML='<p class="note">指數資料還沒載入。</p>';return}
   $("idx-lead").textContent=`台股與美股主要指數和台積電 ADR 的當天走勢，資料更新於 ${IDX.updated}。`;
   const items=idxItems=IDX.items.filter(it=>it.pts.length);
   const f2=v=>v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   const info=it=>{const last=it.pts[it.pts.length-1][1],d=last-it.prev;return {last,d,cls:d>0?"up":d<0?"down":"flat",ar:d>0?"▲":d<0?"▼":"－",pct:(d/it.prev*100).toFixed(2)}};
-  const mini=(it,i)=>{const o=info(it);
-    return `<button class="imini" data-big="${i}" aria-label="放大 ${esc(it.name)}"><h2>${esc(it.name.replace(/（.*）/,"").replace("台積電ADR 2倍","台積ADR2倍"))}</h2>${it.pick?`<span class="cd">${esc(it.key)}</span>`:""}<span class="px ${o.cls}">${f2(o.last)}</span><span class="chg ${o.cls}">${o.ar}${f2(Math.abs(o.d))}<br>${o.d>0?"+":o.d<0?"−":""}${o.pct.replace("-","")}%</span>${idxSvg(it,false)}</button>`};
-  $("idx-cards").innerHTML=items.map(mini).join("");
+  // 一列一檔（比照自選股），分台股／美股兩頁
+  let tab=0;try{tab=+localStorage.getItem("facai-idx-tab")||0}catch(_){}
+  $("idx-tabs").innerHTML=["台股","美股"].map((t,i)=>`<button role="tab" data-it="${i}" aria-selected="${i===tab}">${t}</button>`).join("");
+  const row=(it,i)=>{const o=info(it),n=it.name.replace(/（.*）/,"");
+    return `<button class="wrow" data-big="${i}" aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(it.pick?it.key:it.us?"美股指數":it.key==="txf"?"近月合約":"台股指數")}</small></span><span class="px ${o.cls}">${f2(o.last)}</span><span class="chg ${o.cls}">${o.ar}${f2(Math.abs(o.d))}<br>${o.d>0?"+":o.d<0?"−":""}${o.pct.replace("-","")}%</span>${ON_CF?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week):""}</button>`};
+  $("idx-cards").innerHTML=items.map((it,i)=>!!it.us===(tab===1)?row(it,i):"").join("");
+  idxKdLoad();
+  if(!idxInit.tabs){idxInit.tabs=1;$("idx-tabs").addEventListener("click",e=>{const t=e.target.closest("[data-it]");if(!t)return;try{localStorage.setItem("facai-idx-tab",t.dataset.it)}catch(_){}idxInit()})}
   if(idxInit.bound)return;idxInit.bound=1;
   const box=$("idx-big");
   const close=()=>{box.hidden=true;box.innerHTML=""};
   $("idx").addEventListener("click",e=>{const btn=e.target.closest("[data-big]");if(!btn)return;
     const it=idxItems[+btn.dataset.big],o=info(it);
+    if(ON_CF){wdOpen("IX:"+it.key);return}
     box.innerHTML=`<div class="icard" role="dialog" aria-label="${esc(it.name)}"><button class="x" aria-label="關閉">✕</button><h2>${esc(it.name)}${it.pick?` <small class="cd" style="font-family:var(--num);color:var(--muted);font-size:14px">${esc(it.key)}</small>`:""}</h2><div class="row"><span class="px ${o.cls}">${f2(o.last)}</span><span class="chg ${o.cls}">${o.ar} ${f2(Math.abs(o.d))}（${o.pct}%）</span><span class="d">${it.date.replace(/-/g,"/")}${it.us?" 美東":""}</span></div>${idxSvg(it,true)}<p class="note" style="margin:6px 0 0">昨收 ${f2(it.prev)}（虛線）</p></div>`;
     box.hidden=false});
   box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".x"))close()});
@@ -1190,8 +1204,7 @@ const LIVE="（即時）";
 async function liveIdx(){
   const d=await api("/api/idx");if(!d||!d.items||!d.items.length)return;
   const by=Object.fromEntries(d.items.map(x=>[x.key,x]));
-  IDX.items=IDX.items.map(x=>by[x.key]||x);
-  d.items.forEach(x=>{if(!IDX.items.some(y=>y.key===x.key))IDX.items.push(x)});
+  IDX.items=[...d.items,...IDX.items.filter(y=>!by[y.key])];
   IDX.updated=d.updated+LIVE;if(d.adr)IDX.adr=d.adr;
   idxInit();if(navInit.refresh)navInit.refresh();
 }
@@ -1273,7 +1286,8 @@ function kdSig(o){if(!o||o.k==null)return null;
   if(act)return[up?"buy":"sell",zone?`${zone}<br>${act}`:act];
   return zone?[o.k<=20?"low":"high",zone]:["wait","觀望"]}
 function watchSig(c){const x=watchKd[c],sd=stkData[c];
-  const sh=kdSig(x&&x.day),lg=kdSig(x?x.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null));
+  return kdBoxes(x&&x.day,x?x.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null))}
+function kdBoxes(dy,wk){const sh=kdSig(dy),lg=kdSig(wk);
   const one=(t,v)=>`<i class="sg ${v?v[0]:"na"}"><small>${t}</small>${v?v[1]:"—"}</i>`;
   return `<span class="sigs">${one("短線",sh)}${one("長線",lg)}</span>`}
 async function watchKdLoad(){
@@ -1341,7 +1355,10 @@ document.addEventListener("click",e=>{const b=e.target.closest("#wd-body [data-w
 function wdOpen(c){wdCode=c;try{sessionStorage.setItem("facai-wd",c)}catch(_){}show("wdetail")}
 calc.wdetail=()=>{if(!wdCode)try{wdCode=sessionStorage.getItem("facai-wd")||""}catch(_){}
   if(wdCode&&STOCK)wdRender(wdCode);else setTimeout(()=>show("watch"))};
+function wdBack(go,t){const b=document.querySelector("#wdetail .back");b.dataset.go=go;b.textContent=t}
 async function wdRender(c){
+  if(c.startsWith("IX:"))return wdRenderIx(c);
+  wdBack("watch","‹ 自選股");wdK.ix=null;wdK.volUnit=null;
   const r=idxOf[c],body=$("wd-body");if(!r){show("watch");return}
   if(!stkData[c])await loadShard(r[3]).catch(()=>null);
   const it=watchItem(c)||{},us=!!r[4],etf=r[2]===1;
@@ -1435,6 +1452,37 @@ async function wdRender(c){
   body.innerHTML=html;
   wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();
 }
+// 大盤的 K 線頁：和自選股同一套 K 線（日週月、均線、成交量、KDJ、MACD、布林%b），沒有配息、EPS、本益比
+async function wdRenderIx(c){
+  const key=c.slice(3),body=$("wd-body"),items=(IDX&&IDX.items||[]).filter(x=>x.pts&&x.pts.length),it=items.find(x=>x.key===key);
+  wdBack("idx","‹ 大盤台美股");
+  if(!it){show("idx");return}
+  const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const codeOf=x=>"IX:"+x.key,list=items.map(codeOf),gi=list.indexOf(c);
+  const nm=x=>x.name.replace(/（.*）/,""),sh=x=>{const n=nm(x);return esc(n.length>6?n.slice(0,6)+"…":n)};
+  const pv=items[(gi-1+items.length)%items.length],nx=items[(gi+1)%items.length];
+  const nav=`<div class="wd-nav"><button data-wd="${esc(codeOf(pv))}">‹ 上一個<small>${sh(pv)}</small></button><span>${gi+1} / ${items.length}</span><button data-wd="${esc(codeOf(nx))}">下一個 ›<small>${sh(nx)}</small></button></div>`;
+  const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat";
+  const head=nav+`<div class="wd-head"><h1>${esc(nm(it))}</h1><span class="cd">${it.us?"美股":"台股"}</span><div class="big ${cls}">${f2(last)}</div><div class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）</div></div>
+    <div class="wd-sec"><h2>今天走勢</h2>${idxSvg(it,true)}</div>`;
+  if(!ON_CF){body.innerHTML=head+'<div class="wd-sec"><p>K 線圖要用你的網站（money.h24511355.workers.dev）打開才看得到。</p></div>';return}
+  body.innerHTML=head+'<div class="wd-sec"><p class="muted">資料載入中…</p></div>';
+  let x=wdCache[c];
+  for(let t=0;!x&&t<3;t++){
+    if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
+    x=await api(`/api/ixk?k=${encodeURIComponent(key)}&v=1`);
+  }
+  if(!x){body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到 K 線資料，請稍後按右上角「重新整理」。</p></div>';return}
+  wdCache[c]=x;
+  if(curPage()!=="wdetail"||wdCode!==c)return;
+  // 日 K 還沒有今天那根時，用今天的走勢補上（開＝第一筆、高低＝當天最高最低、收＝最新）
+  const k=x.kline.slice(),ps=it.pts.map(p=>p[1]);
+  if(it.date&&k.length&&it.date>k[k.length-1][0])k.push([it.date,ps[0],Math.max(...ps),Math.min(...ps),ps[ps.length-1],0]);
+  body.innerHTML=head+`<section class="wd-sec" id="wd-k"></section>`;
+  Object.assign(wdK,{daily:k,us:!!it.us,sel:null,code:c,ix:key,volUnit:x.volUnit,divs:[],last,pe:"",rv:"",pb:"",eps:"",peY:null});
+  if(!["d","w","m"].includes(wdK.period))wdK.period="d";
+  wdKDraw();
+}
 // 還原 K 線（日／週／月）＋均線，下方分頁切換成交量、KDJ(9,3,3)、MACD(12,26,9)、布林 %B(20,2)，和 K 線同一天對齊；點圖可看那一天的數字
 const wdK={daily:[],us:false,period:"d",ind:"vol",sel:null};
 const WD_MA=[[5,"#e0a100"],[10,"#2f9be0"],[20,"#e0559a"],[60,"#8a8f2a"]];
@@ -1461,7 +1509,7 @@ function wdKDraw(){
   const nv=STOCK&&STOCK.nav&&STOCK.nav[wdK.code];
   // 第一排：日 週 月 配息 EPS（ETF 是折溢價）；第二排：預估本益比 河流圖 股淨比
   const btns=a=>a.map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("");
-  const segR1=[["d","日"],["w","週"],["m","月"],["div","配息"],...(wdK.eps?[["eps","EPS"]]:[]),...(nv?[["prem","折溢價"]]:[])];
+  const segR1=[["d","日"],["w","週"],["m","月"],...(wdK.ix?[]:[["div","配息"]]),...(wdK.eps?[["eps","EPS"]]:[]),...(nv?[["prem","折溢價"]]:[])];
   const segR2=[...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[]),...(wdK.pb?[["pb","股淨比"]]:[])];
   const seg=`<div class="wd-seg r1" style="grid-template-columns:repeat(${Math.max(4,segR1.length)},1fr)">${btns(segR1)}</div>${segR2.length?`<div class="wd-seg r2" style="grid-template-columns:${segR2.length===3?"1.4fr 1fr 1fr":`repeat(${segR2.length},1fr)`}">${btns(segR2)}</div>`:""}`;
   if(wdK.period==="pe"&&wdK.pe){
@@ -1510,7 +1558,7 @@ function wdKDraw(){
   const SH=110;let sv=[],sl=[],sb=null,sbc=null,ref=[],fix=null,vals2="";
   const dot=(col,t)=>`<span><i style="background:${col}"></i>${t}</span>`;
   if(wdK.ind==="vol"){sb=k.map(x=>x[5]);sbc=k.map(x=>`var(${x[4]>=x[1]?"--up":"--down"})`);
-    const v=b[5],u=wdK.us?(v>=1e6?(v/1e6).toFixed(1)+" 百萬股":Math.round(v).toLocaleString()+" 股"):Math.round(v/1000).toLocaleString()+" 張";vals2=`成交量 <b>${u}</b>`}
+    const v=b[5],u=!v?"—（今天收盤後才有）":wdK.volUnit==="money"?(v/1e8).toLocaleString("zh-TW",{maximumFractionDigits:0})+" 億元":wdK.volUnit==="lots"?Math.round(v).toLocaleString()+" 口":wdK.volUnit==="twshares"?Math.round(v/1000).toLocaleString()+" 張":wdK.us?(v>=1e6?(v/1e6).toFixed(1)+" 百萬股":Math.round(v).toLocaleString()+" 股"):Math.round(v/1000).toLocaleString()+" 張";vals2=`成交量 <b>${u}</b>`}
   if(wdK.ind==="kdj"){sl=[[T(c.kk),"#e0a100"],[T(c.dd),"#2f7de1"],[T(c.jj),"#c040c0"]];ref=[20,80];fix=[0,100];
     vals2=`<span class="wd-legend">${dot("#e0a100","K "+r1(T(c.kk)[sel]))}${dot("#2f7de1","D "+r1(T(c.dd)[sel]))}${dot("#c040c0","J "+r1(T(c.jj)[sel]))}</span>`}
   if(wdK.ind==="macd"){sl=[[T(c.dif),"#e0a100"],[T(c.dea),"#2f7de1"]];sb=T(c.osc);sbc=sb.map(v=>`var(${v>=0?"--up":"--down"})`);ref=[0];
@@ -1524,7 +1572,7 @@ function wdKDraw(){
   sl.forEach(([a,col])=>g2+=line(a,col,Y2));
   const sub=`<svg class="wd-chart" viewBox="0 0 ${W} ${SH}" data-n="${N}">${g2}<line x1="${X(sel)}" x2="${X(sel)}" y1="0" y2="${SH}" stroke="var(--muted)" stroke-dasharray="3 3"/></svg>`;
   const tab=(grp,v,t,cur)=>`<button data-${grp}="${v}" aria-pressed="${v===cur}">${t}</button>`;
-  box.innerHTML=`<h2>K 線圖 <small class="muted">還原</small></h2>
+  box.innerHTML=`<h2>K 線圖 ${wdK.ix?"":`<small class="muted">還原</small>`}</h2>
   ${seg}
   <div class="wd-info"><b>${b[0].replace(/-/g,"/")}</b>　開 <b>${f2(b[1])}</b>　高 <b>${f2(b[2])}</b>　低 <b>${f2(b[3])}</b>　收 <b class="${cls}">${f2(b[4])}</b>${d==null?"":`　<b class="${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</b>`}</div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>

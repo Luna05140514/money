@@ -99,11 +99,17 @@ function weeklyKd(ts, hi, lo, cl, n = 9) { // 台股慣用 9 週 KD，和 update
   });
   return [Math.round(k * 10) / 10, Math.round(dv * 10) / 10];
 }
+// Yahoo 偶爾會擋（429）或逾時：換另一台主機再試，最多 3 次
 async function chart(sym) {
-  const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=5y&interval=1d&events=div`, { headers: { "User-Agent": UA } });
-  if (!r.ok) return null;
-  const j = await r.json();
-  return j.chart && j.chart.result && j.chart.result[0];
+  for (const host of ["query1", "query2", "query1"]) {
+    try {
+      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=5y&interval=1d&events=div`, { headers: { "User-Agent": UA } });
+      if (!r.ok) continue;
+      const j = await r.json(), res = j.chart && j.chart.result && j.chart.result[0];
+      if (res) return res;
+    } catch (_) {}
+  }
+  return null;
 }
 async function stockOne(code, us) {
   let sym = us ? code : code + ".TW", d = await chart(sym);
@@ -305,7 +311,10 @@ async function estimates(sym) {
   const tw = sym.match(/^(\w+)\.TWO?$/);
   if (tw) { const c = await twEstimates(tw[1]); if (c) return c; }
   try {
-    const h = (await (await get(`https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/analysis/`)).text()).replace(/\\"/g, '"');
+    // 頁面約 1MB：只取 earningsTrend 附近一小段再處理，省 CPU
+    const raw = await (await get(`https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/analysis/`)).text(), at = raw.indexOf("earningsTrend");
+    if (at < 0) return null;
+    const h = raw.slice(at, at + 40000).replace(/\\"/g, '"');
     const out = {};
     for (const [k, per] of [["y0", "0y"], ["y1", "+1y"]]) {
       const i = h.indexOf(`"period":"${per}","endDate":"`); if (i < 0) continue;
@@ -463,15 +472,22 @@ async function kdList(list) {
 }
 
 // 同一個網址在 sec 秒內大家共用同一份結果
+// 另外留一份 3 天的備份：資料來源一時抓不到時，先給上一次成功的結果，不讓畫面空白
 async function cached(request, ctx, sec, make) {
   const cache = caches.default, key = new Request(request.url);
+  const u = new URL(request.url); u.searchParams.set("__backup", "1");
+  const backupKey = new Request(u.toString());
   const hit = await cache.match(key);
   if (hit) return hit;
   try {
-    const res = new Response(JSON.stringify(await make()), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": `public, max-age=${sec}` } });
+    const body = JSON.stringify(await make());
+    const res = new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": `public, max-age=${sec}` } });
     ctx.waitUntil(cache.put(key, res.clone()));
+    ctx.waitUntil(cache.put(backupKey, new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=259200" } })));
     return res;
   } catch (e) {
+    const old = await cache.match(backupKey);
+    if (old) return new Response(old.body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
     return new Response(JSON.stringify({ error: String(e) }), { status: 502, headers: { "Content-Type": "application/json" } });
   }
 }

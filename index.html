@@ -1355,7 +1355,13 @@ async function wdRender(c){
   const head=nav+`<div class="wd-head"><h1>${esc(r[1])}</h1><span class="cd">${esc(c)}${us?"・美元":""}</span><div class="big ${cls}">${f2(it.last)}</div><div class="chg ${cls}">${d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}</div></div>`;
   if(!ON_CF){body.innerHTML=head+'<div class="wd-sec"><p>K 線圖、配息、EPS、本益比和河流圖要用你的網站（money.h24511355.workers.dev）打開才看得到，這裡沒辦法即時抓資料。</p></div>';return}
   body.innerHTML=head+'<div class="wd-sec"><p class="muted">資料載入中…</p></div>';
-  const x=wdCache[c]||(wdCache[c]=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=6`));
+  // 抓不到時自動再試 2 次（資料來源偶爾會忙線）
+  let x=wdCache[c];
+  for(let t=0;!x&&t<3;t++){
+    if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
+    x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=6`);if(x&&x.error)x=null;
+  }
+  if(x)wdCache[c]=x;
   if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}
   if(curPage()!=="wdetail"||wdCode!==c)return;
   const last=it.last!=null?it.last:(x.kline.length?x.kline[x.kline.length-1][4]:null);
@@ -1407,7 +1413,7 @@ async function wdRender(c){
         <polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${p.hist.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}"/>
         <text x="${P}" y="${H+16}" font-size="13" fill="var(--muted)">${p.months[0].replace("-","/")}</text>
         <text x="${W-P}" y="${H+16}" font-size="13" fill="var(--muted)" text-anchor="end">${p.months[n-1].replace("-","/")}</text></svg>`}
-    wdK.pb=`${p.avg?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${p.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${p.lo}～${p.hi}</span><small>倍之間</small></div><div class="hi"><b>昂貴</b><span>${p.hi} 倍</span><small>以上</small></div></div>`:""}
+    wdK.pb=`${p.avg?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${p.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${p.avg} 倍</span><small>5 年平均</small></div><div class="hi"><b>昂貴</b><span>${p.hi} 倍</span><small>以上</small></div></div>`:""}
       <div class="wd-kpi" style="margin-top:10px"><div><b>${p.cur}</b><span>現在股淨比（倍）</span></div><div><b>${p.avg??"—"}</b><span>近 5 年平均（倍）</span></div></div>
       ${lv?`<div class="wd-verdict ${lv[0]}">股淨比 ${p.cur} 倍：<b>${lv[1]}</b></div>`:""}
       ${ch?`${ch}<p class="muted">黑線是每個月的股淨比，金色帶是「合理」範圍，虛線是平均。</p>`:""}
@@ -1420,11 +1426,11 @@ async function wdRender(c){
       const end=e.end?`${e.end.slice(0,4)}/${e.end.slice(5,7)}`:"";
       const gr=e.prev&&e.prev>0?Math.round((e.avg/e.prev-1)*100):null;
       return `<div class="wd-kpi"><div><b>${e.pe??"—"}</b><span>${nm}（倍）</span></div><div><b>${f2(e.avg)}</b><span>法人預估 EPS</span></div></div>
-      ${b5&&e.pe>0&&e.avg>0?`<div class="wd-verdict ${lvC(e.pe)}">${nm} ${e.pe} 倍：<b>${lvT(e.pe)}</b></div><p>用${k==="y0"?"今年":"明年"}預估 EPS 換算：股價 <b>${f2(b5.lo*e.avg)}</b> 元以下算便宜，<b>${f2(b5.hi*e.avg)}</b> 元以上算昂貴。</p>`:""}
+      ${b5&&e.pe>0&&e.avg>0?`<div class="wd-verdict ${lvC(e.pe)}">${nm} ${e.pe} 倍：<b>${lvT(e.pe)}</b></div><p>用${k==="y0"?"今年":"明年"}預估 EPS 換算：合理價 <b>${f2(b5.avg*e.avg)}</b> 元，<b>${f2(b5.lo*e.avg)}</b> 元以下算便宜，<b>${f2(b5.hi*e.avg)}</b> 元以上算昂貴。</p>`:""}
       ${e.avg<=0?"<p>法人預估會虧損，所以沒有本益比。</p>":""}${gr!=null?`<p>${k==="y0"?"去年":"今年預估"} EPS ${f2(e.prev)} ${cur}，預估${gr>=0?"成長":"衰退"} <b>${Math.abs(gr)}%</b>。</p>`:""}
       <p class="muted">本益比 = 現在股價 ${f2(x.est.price)} ÷ 法人預估 EPS ${f2(e.avg)}，數字越低越便宜。預估的年度到 ${end} 為止，是${us?"Yahoo Finance":"鉅亨網（FactSet）"}整理的法人平均預估，會隨時調整。</p>`};
     const y0=pg("y0","今年本益比"),y1=pg("y1","明年本益比");
-    if(y0||y1)wdK.peY={y0,y1,band:b5?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${b5.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${b5.lo}～${b5.hi}</span><small>倍之間</small></div><div class="hi"><b>昂貴</b><span>${b5.hi} 倍</span><small>以上</small></div></div><p class="muted">近 5 年平均本益比 ${b5.avg} 倍（每月收盤 ÷ 當時近四季 EPS）。比平均低一段算便宜，高一段算昂貴。</p>`:""};
+    if(y0||y1)wdK.peY={y0,y1,band:b5?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${b5.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${b5.avg} 倍</span><small>5 年平均</small></div><div class="hi"><b>昂貴</b><span>${b5.hi} 倍</span><small>以上</small></div></div><p class="muted">近 5 年平均本益比 ${b5.avg} 倍（每月收盤 ÷ 當時近四季 EPS）。比平均低一段算便宜，高一段算昂貴。</p>`:""};
   }
   body.innerHTML=html;
   wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();

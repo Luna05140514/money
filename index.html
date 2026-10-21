@@ -230,7 +230,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wedit{all:unset;cursor:pointer;margin-left:auto;font-size:16px;color:var(--red);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 14px}
 .wedit[aria-pressed="true"]{background:var(--red);color:#fff;border-color:var(--red)}
 .wedit:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.watch-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.watch-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
 .watch-tabs button{all:unset;cursor:pointer;text-align:center;padding:12px 4px;border-radius:999px;font-size:19px;font-weight:700;color:var(--ink)}
 .watch-tabs button[aria-selected="true"]{background:var(--red);color:#fff}
 .watch-tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -311,8 +311,10 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-seg button{text-align:center;padding:8px 2px!important;white-space:nowrap}
 .wd-seg button{all:unset;cursor:pointer;padding:8px 16px;border-radius:999px;border:1px solid var(--line);font-size:17px;font-weight:700;color:var(--ink)}
 .wd-seg button{text-align:center}
-.wd-seg button[data-per="pe"]{grid-column:span 2}
+.wd-seg.r1{margin-bottom:6px}
+.wd-seg.r1 button{padding:8px 0!important;font-size:17px}
 .wd-seg button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.wd-pbch{width:100%;height:auto;margin-top:12px}
 .wd-band{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 4px;text-align:center}
 .wd-band div{border-radius:8px;padding:10px 4px}
 .wd-band b{display:block;font-size:22px}
@@ -1233,6 +1235,7 @@ async function liveStk(codes){
 const WATCH_KEY="facai-watch3",WATCH_DEFAULT=[
   {name:"ETF",list:["00878","00919","00713","0050","006208","00923","00894","009804","00981A","00685L"]},
   {name:"權值股",list:["2330","2454","2308","2317","3231","2891","2801"]},
+  {name:"期貨",list:["00763U","00642U","00738U","00753L"]},
   {name:"美股",list:["NVDA","GOOG","SPCX","SOXX","VOO","QQQ","TSM","TSMX"]}];
 const clone=x=>JSON.parse(JSON.stringify(x));
 let watchGroups=clone(WATCH_DEFAULT),watchLive={},watchEdit=false,watchTab=0;
@@ -1240,14 +1243,16 @@ const watchAll=()=>watchGroups.flatMap(g=>g.list);
 function watchSave(){try{localStorage.setItem(WATCH_KEY,JSON.stringify(watchGroups))}catch(_){}}
 function watchLoadSaved(){
   const ok=v=>Array.isArray(v)&&v.every(g=>g&&typeof g.name==="string"&&Array.isArray(g.list));
-  try{const v=JSON.parse(localStorage.getItem(WATCH_KEY));if(ok(v)){watchGroups=v;return}}catch(_){}
+  // 2026/10/21 加的「期貨」分頁：舊的自選股清單沒有就插在權值股後面
+  const addFut=v=>{if(!v.some(g=>g.name==="期貨")){const i=v.findIndex(g=>g.name==="權值股");v.splice(i<0?v.length:i+1,0,clone(WATCH_DEFAULT.find(g=>g.name==="期貨")))}return v};
+  try{const v=JSON.parse(localStorage.getItem(WATCH_KEY));if(ok(v)){watchGroups=addFut(v);watchSave();return}}catch(_){}
   // 上一版的分類（高股息／權值股／個股／美股…）：ETF 類併成 ETF、個股改叫權值股
   try{const v=JSON.parse(localStorage.getItem("facai-watch2"));if(!ok(v))return;
     const g=n=>(v.find(x=>x.name===n)||{list:[]}).list,uniq=a=>[...new Set(a)];
     const etf=uniq([...g("高股息"),...g("權值股"),...g("主動型"),...g("加權正二")]);
     const stk=g("個股").slice();if(!stk.includes("3231")){const i=stk.indexOf("2317");stk.splice(i<0?stk.length:i+1,0,"3231")}
-    const us=v.find(x=>x.name==="美股")?g("美股"):WATCH_DEFAULT[2].list.slice();
-    watchGroups=[{name:"ETF",list:etf},{name:"權值股",list:stk},{name:"美股",list:us}];watchSave()}catch(_){}
+    const us=v.find(x=>x.name==="美股")?g("美股"):WATCH_DEFAULT.find(x=>x.name==="美股").list.slice();
+    watchGroups=addFut([{name:"ETF",list:etf},{name:"權值股",list:stk},{name:"美股",list:us}]);watchSave()}catch(_){}
 }
 function watchItem(c){
   const r=idxOf[c];if(!r)return null;
@@ -1350,7 +1355,7 @@ async function wdRender(c){
   const head=nav+`<div class="wd-head"><h1>${esc(r[1])}</h1><span class="cd">${esc(c)}${us?"・美元":""}</span><div class="big ${cls}">${f2(it.last)}</div><div class="chg ${cls}">${d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}</div></div>`;
   if(!ON_CF){body.innerHTML=head+'<div class="wd-sec"><p>K 線圖、配息、EPS、本益比和河流圖要用你的網站（money.h24511355.workers.dev）打開才看得到，這裡沒辦法即時抓資料。</p></div>';return}
   body.innerHTML=head+'<div class="wd-sec"><p class="muted">資料載入中…</p></div>';
-  const x=wdCache[c]||(wdCache[c]=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=5`));
+  const x=wdCache[c]||(wdCache[c]=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=6`));
   if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}
   if(curPage()!=="wdetail"||wdCode!==c)return;
   const last=it.last!=null?it.last:(x.kline.length?x.kline[x.kline.length-1][4]:null);
@@ -1390,6 +1395,23 @@ async function wdRender(c){
         +`<p class="muted">左邊是全年加起來，右邊是每一季的 EPS（單位：${cur}）。${us?"美股用公司的會計年度，像輝達的財年到隔年 1 月。":"今年還沒過完的，左邊是到目前為止的累計。"}</p>`;
     }
   }
+  // 股淨比：現在的倍數，和近 5 年平均比便宜／合理／昂貴
+  wdK.pb="";
+  if(!etf&&x.pb&&x.pb.cur){const p=x.pb,lv=p.avg?(p.cur<=p.lo?["lo","便宜"]:p.cur>=p.hi?["hi","昂貴"]:["mid","合理"]):null;
+    let ch="";
+    if(p.hist&&p.hist.length>1){const W=360,H=150,P=8,n=p.hist.length,all=[...p.hist,p.lo,p.hi],mn=Math.min(...all)*.95,mx=Math.max(...all)*1.05,
+      X=i=>P+i*(W-2*P)/(n-1),Y=v=>H-P-(v-mn)/(mx-mn)*(H-2*P);
+      ch=`<svg class="wd-pbch" viewBox="0 0 ${W} ${H+20}" role="img" aria-label="近 5 年股淨比走勢">
+        <rect x="${P}" y="${Y(p.hi)}" width="${W-2*P}" height="${Y(p.lo)-Y(p.hi)}" fill="#f6e7c1" opacity=".7"/>
+        <line x1="${P}" x2="${W-P}" y1="${Y(p.avg)}" y2="${Y(p.avg)}" stroke="#c99a2e" stroke-dasharray="4 4"/>
+        <polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${p.hist.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}"/>
+        <text x="${P}" y="${H+16}" font-size="13" fill="var(--muted)">${p.months[0].replace("-","/")}</text>
+        <text x="${W-P}" y="${H+16}" font-size="13" fill="var(--muted)" text-anchor="end">${p.months[n-1].replace("-","/")}</text></svg>`}
+    wdK.pb=`${p.avg?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${p.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${p.lo}～${p.hi}</span><small>倍之間</small></div><div class="hi"><b>昂貴</b><span>${p.hi} 倍</span><small>以上</small></div></div>`:""}
+      <div class="wd-kpi" style="margin-top:10px"><div><b>${p.cur}</b><span>現在股淨比（倍）</span></div><div><b>${p.avg??"—"}</b><span>近 5 年平均（倍）</span></div></div>
+      ${lv?`<div class="wd-verdict ${lv[0]}">股淨比 ${p.cur} 倍：<b>${lv[1]}</b></div>`:""}
+      ${ch?`${ch}<p class="muted">黑線是每個月的股淨比，金色帶是「合理」範圍，虛線是平均。</p>`:""}
+      <p class="muted">股淨比 = 股價 ÷ 每股淨值（公司資產扣掉負債後，每一股分到多少）。數字越低越便宜，比較適合拿來看金融股、傳產股。${p.avg?"":"美股只有現在的數字，沒有 5 年資料可以比較。"}</p>`}
   // 今年／明年本益比：用法人（分析師）預估 EPS 算
   wdK.peY=null;
   if(!etf&&x.est){
@@ -1405,7 +1427,7 @@ async function wdRender(c){
     if(y0||y1)wdK.peY={y0,y1,band:b5?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${b5.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${b5.lo}～${b5.hi}</span><small>倍之間</small></div><div class="hi"><b>昂貴</b><span>${b5.hi} 倍</span><small>以上</small></div></div><p class="muted">近 5 年平均本益比 ${b5.avg} 倍（每月收盤 ÷ 當時近四季 EPS）。比平均低一段算便宜，高一段算昂貴。</p>`:""};
   }
   body.innerHTML=html;
-  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();
+  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();
 }
 // 還原 K 線（日／週／月）＋均線，下方分頁切換成交量、KDJ(9,3,3)、MACD(12,26,9)、布林 %B(20,2)，和 K 線同一天對齊；點圖可看那一天的數字
 const wdK={daily:[],us:false,period:"d",ind:"vol",sel:null};
@@ -1431,12 +1453,17 @@ function wdCalc(k){
 function wdKDraw(){
   const box=$("wd-k");if(!box||!wdK.daily.length)return;
   const nv=STOCK&&STOCK.nav&&STOCK.nav[wdK.code];
-  const seg=`<div class="wd-seg">${[["d","日"],["w","週"],["m","月"],["div","配息"],...(nv?[["prem","折溢價"]]:[]),...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.eps?[["eps","EPS"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[])].map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("")}</div>`;
+  // 第一排：日 週 月 配息 EPS（ETF 是折溢價）；第二排：預估本益比 河流圖 股淨比
+  const btns=a=>a.map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("");
+  const segR1=[["d","日"],["w","週"],["m","月"],["div","配息"],...(wdK.eps?[["eps","EPS"]]:[]),...(nv?[["prem","折溢價"]]:[])];
+  const segR2=[...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[]),...(wdK.pb?[["pb","股淨比"]]:[])];
+  const seg=`<div class="wd-seg r1" style="grid-template-columns:repeat(${Math.max(4,segR1.length)},1fr)">${btns(segR1)}</div>${segR2.length?`<div class="wd-seg r2" style="grid-template-columns:${segR2.length===3?"1.4fr 1fr 1fr":`repeat(${segR2.length},1fr)`}">${btns(segR2)}</div>`:""}`;
   if(wdK.period==="pe"&&wdK.pe){
     if(typeof wdK.pe==="string"){box.innerHTML=`<h2>預估本益比</h2>${seg}${wdK.pe}`;wdKBind();return}
     const ks=["y0","y1"].filter(k=>wdK.pe[k]);if(!ks.includes(wdK.pey))wdK.pey=ks[0];
     const sub=`<div class="wd-seg wd-sub">${ks.map(k=>`<button data-pey="${k}" aria-pressed="${k===wdK.pey}">${k==="y0"?"今年本益比":"明年本益比"}</button>`).join("")}</div>`;
     box.innerHTML=`<h2>預估本益比</h2>${seg}${wdK.pe.band}${sub}${wdK.pe[wdK.pey]}`;wdKBind();return}
+  if(wdK.period==="pb"&&wdK.pb){box.innerHTML=`<h2>股價淨值比</h2>${seg}${wdK.pb}`;wdKBind();return}
   if(wdK.period==="eps"&&wdK.eps){box.innerHTML=`<h2>EPS（每股盈餘）</h2>${seg}${wdK.eps}`;wdKBind();return}
   if(wdK.period==="rv"&&wdK.rv){box.innerHTML=`<h2>本益比河流圖</h2>${seg}${wdK.rv}`;wdKBind();return}
   if(wdK.period==="prem"&&nv){

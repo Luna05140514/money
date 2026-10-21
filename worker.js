@@ -399,6 +399,30 @@ async function detail(code, us) {
         mult: [0, 1, 2, 3, 4].map(i => Math.round((lo + step * i) * 10) / 10) };
     }
   }
+  // 股價淨值比：台股用 FinMind 每天的 PBR（近 5 年），美股用 Yahoo 的 P/B；都用最新股價換算成「現在」的股淨比
+  try {
+    const closeAt = Object.fromEntries(bars.map(b => [b[0], b[4]])), price = fixed.length ? fixed[fixed.length - 1][4] : bars[bars.length - 1][4];
+    let pts = [];
+    if (!us) {
+      const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${code}&start_date=${new Date().getUTCFullYear() - 5}-${String(new Date().getUTCMonth() + 1).padStart(2, "0")}-01`)).json();
+      pts = (j.data || []).filter(x => x.PBR > 0).map(x => [x.date, x.PBR]);
+    } else {
+      const y = await yahooSeries(sym, "trailingPbRatio").catch(() => ({}));
+      pts = (y.trailingPbRatio || []).filter(x => x[1] > 0);
+    }
+    if (pts.length) {
+      const [ld, lv] = pts[pts.length - 1], dates = Object.keys(closeAt).filter(d => d <= ld).sort(), c0 = dates.length ? closeAt[dates[dates.length - 1]] : null;
+      const cur = c0 ? price / (c0 / lv) : lv, r2 = v => Math.round(v * 100) / 100;
+      const pb = { cur: r2(cur), asOf: ld };
+      const mon = {}; pts.forEach(([d, v]) => { mon[d.slice(0, 7)] = v; });
+      const m = Object.entries(mon).slice(-60);
+      if (m.length >= 24) {
+        const v = m.map(x => x[1]), avg = v.reduce((a, b) => a + b, 0) / v.length, sd = Math.sqrt(v.reduce((a, b) => a + (b - avg) ** 2, 0) / v.length);
+        Object.assign(pb, { avg: r2(avg), lo: r2(Math.max(avg - sd, avg * 0.5)), hi: r2(avg + sd), months: m.map(x => x[0]), hist: m.map(x => r2(x[1])) });
+      }
+      out.pb = pb;
+    }
+  } catch (_) {}
   return out;
 }
 

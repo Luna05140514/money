@@ -241,6 +241,9 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .nm{min-width:0}
 .wrow .nm b{display:block;font-size:20px;line-height:1.3}
 .watch-signote{font-size:15px;color:var(--muted);margin:6px 0 10px;line-height:1.5}
+.wd-mv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 6px}
+.wd-mv button{font:inherit;font-size:20px;font-weight:700;min-height:52px;border-radius:12px;border:2px solid var(--gold);background:var(--gold-soft);color:var(--ink);cursor:pointer}
+.wd-mv button:disabled{opacity:.35;cursor:default}
 .wrow .sigs{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:-4px}
 .wrow .sg{font-style:normal;font-size:17px;font-weight:700;padding:6px 8px;text-align:center;border-radius:6px;line-height:1.35;background:var(--bg);color:var(--muted)}
 .wrow .sg.buy{background:#fbe3e6;color:#a10d26}
@@ -1543,7 +1546,7 @@ function wdKDraw(){
     wdKBind();return;
   }
   const all=wdAgg(wdK.daily,wdK.period),c=wdCalc(all),N=Math.min(wdK.period==="m"?60:100,all.length),s0=all.length-N;
-  const k=all.slice(s0),T=a=>a.slice(s0),sel=wdK.sel==null||wdK.sel>=N?N-1:wdK.sel,b=k[sel],pv=all[s0+sel-1];
+  const k=all.slice(s0),T=a=>a.slice(s0),sel=wdK.sel==null||wdK.sel>=N?N-1:wdK.sel,b=k[sel],pv=all[s0+sel-1];wdK.selN=N;wdK.selAt=sel;
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   const r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),r2=v=>v==null?"—":(Math.round(v*100)/100).toString();
   const d=pv?b[4]-pv[4]:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
@@ -1580,20 +1583,25 @@ function wdKDraw(){
   box.innerHTML=`<h2>K 線圖 ${wdK.ix?"":`<small class="muted">還原</small>`}</h2>
   ${seg}
   <div class="wd-info"><b>${b[0].replace(/-/g,"/")}</b>　開 <b>${f2(b[1])}</b>　高 <b>${f2(b[2])}</b>　低 <b>${f2(b[3])}</b>　收 <b class="${cls}">${f2(b[4])}</b>${d==null?"":`　<b class="${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</b>`}</div>
+  <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
   ${main}
   <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","布林%b",wdK.ind)}</div>
   <div class="wd-vals">${vals2}</div>
   ${sub}
-  <p class="muted">${wdK.period==="m"?"月 K":wdK.period==="w"?"週 K":"日 K"}，紅 K 收盤比開盤高、綠 K 收盤比開盤低。用手指點圖可以看那一天的數字。</p>`;
+  <p class="muted">${wdK.period==="m"?"月 K":wdK.period==="w"?"週 K":"日 K"}，紅 K 收盤比開盤高、綠 K 收盤比開盤低。用手指點圖，或按「前一天／後一天」移動虛線，可以看那一天的數字。</p>`;
   wdKBind();
 }
+// 左右箭頭：虛線往前／往後移一根 K 棒
+function wdKMove(dir){const n=wdK.selN||0;if(!n)return;const i=Math.max(0,Math.min(n-1,(wdK.selAt==null?n-1:wdK.selAt)+dir));if(i===wdK.selAt)return;wdK.sel=i;wdKDraw()}
 function wdKBind(){
   if(!wdKDraw.bound){wdKDraw.bound=1;
     $("wd-body").addEventListener("click",e=>{const pb=e.target.closest("[data-per]"),ib=e.target.closest("[data-ind]");
       if(pb){wdK.period=pb.dataset.per;wdK.sel=null;wdKDraw();return}
       if(ib){wdK.ind=ib.dataset.ind;wdKDraw();return}
-      const yb=e.target.closest("[data-pey]");if(yb){wdK.pey=yb.dataset.pey;wdKDraw();return}});
+      const yb=e.target.closest("[data-pey]");if(yb){wdK.pey=yb.dataset.pey;wdKDraw();return}
+      const mv=e.target.closest("[data-mv]");if(mv){wdKMove(+mv.dataset.mv);return}});
+    document.addEventListener("keydown",e=>{if(curPage()!=="wdetail"||!wdK.selN||!$("wd-k"))return;if(e.key==="ArrowLeft")wdKMove(-1);else if(e.key==="ArrowRight")wdKMove(1)});
     $("wd-body").addEventListener("pointerdown",e=>{const sv=e.target.closest(".wd-chart");if(!sv)return;
       const r=sv.getBoundingClientRect(),n=+sv.dataset.n,x=(e.clientX-r.left)/r.width*360,i=Math.round((x-4)/((360-44-4)/n)-.5);
       wdK.sel=Math.max(0,Math.min(n-1,i));wdKDraw()});}

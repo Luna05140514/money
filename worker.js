@@ -7,8 +7,15 @@ const PICKS = [["TSM", "台積電ADR"], ["TSMX", "台積電ADR 2倍"]];
 const CACHE_SEC = 60;
 
 const r2 = x => Math.round(x * 100) / 100;
-const hm = (t, tz) => new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(t * 1000));
-const ymd = (t, tz) => new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(t * 1000));
+// 日期格式器建一次重複用：每次都 new 一個很耗 CPU（Cloudflare 免費版每次只給很少的 CPU 時間，超過就會失敗）
+const fmts = {};
+const fmt = (kind, tz, opt) => fmts[kind + tz] || (fmts[kind + tz] = new Intl.DateTimeFormat(kind === "hm" ? "en-GB" : "en-CA", { timeZone: tz, ...opt }));
+const hm = (t, tz) => fmt("hm", tz, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(t * 1000));
+const ymdI = (t, tz) => fmt("ymd", tz, { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(t * 1000));
+const dayStr = {};
+const ymdOff = (t, h) => { const n = Math.floor((t + h * 3600) / 86400); return dayStr[n] || (dayStr[n] = new Date(n * 864e5).toISOString().slice(0, 10)); };
+// 台灣固定 +8；紐約夏令／冬令兩種時差算出同一天就直接用（日線都在白天），不同才用 Intl
+const ymd = (t, tz) => tz === "Asia/Taipei" ? ymdOff(t, 8) : tz === "America/New_York" && ymdOff(t, -4) === ymdOff(t, -5) ? ymdOff(t, -4) : ymdI(t, tz);
 
 async function get(url, init = {}) {
   const r = await fetch(url, { ...init, headers: { "User-Agent": UA, ...(init.headers || {}) } });
@@ -313,9 +320,17 @@ async function estimates(sym) {
   if (tw) { const c = await twEstimates(tw[1]); if (c) return c; }
   try {
     // 頁面約 1MB：只取 earningsTrend 附近一小段再處理，省 CPU
-    const raw = await (await get(`https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/analysis/`)).text(), at = raw.indexOf("earningsTrend");
+    // 邊讀邊找，找到 earningsTrend 後再多讀 4 萬字就停，不用整頁解碼
+    const rd = (await get(`https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/analysis/`)).body.getReader(), dec = new TextDecoder();
+    let raw = "", at = -1;
+    for (;;) {
+      const { done, value } = await rd.read(); if (done) break;
+      raw += dec.decode(value, { stream: true });
+      if (at < 0) { at = raw.indexOf("earningsTrend"); if (at < 0) raw = raw.slice(-20); else { raw = raw.slice(at); at = 0; } }
+      if (at >= 0 && raw.length > 40000) { rd.cancel().catch(() => {}); break; }
+    }
     if (at < 0) return null;
-    const h = raw.slice(at, at + 40000).replace(/\\"/g, '"');
+    const h = raw.slice(0, 40000).replace(/\\"/g, '"');
     const out = {};
     for (const [k, per] of [["y0", "0y"], ["y1", "+1y"]]) {
       const i = h.indexOf(`"period":"${per}","endDate":"`); if (i < 0) continue;
@@ -333,7 +348,8 @@ async function detail(code, us) {
   let sym = us ? code : code + ".TW", d = await chart(sym);
   if (!us && (!d || !(d.timestamp || []).length)) { sym = code + ".TWO"; d = await chart(sym); }
   if (!d || !(d.timestamp || []).length) throw new Error("no data");
-  const estP = estimates(sym);
+  const etf = d.meta.instrumentType === "ETF" || /^00/.test(code);
+  const estP = etf ? Promise.resolve(null) : estimates(sym); // ETF 沒有分析師預估，不用抓（分析頁很大）
   const tz = us ? "America/New_York" : "Asia/Taipei", q = d.indicators.quote[0], ts = d.timestamp;
   const adj = d.indicators.adjclose[0].adjclose;
   const bars = ts.map((t, i) => [ymd(t, tz), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
@@ -453,7 +469,7 @@ async function kdList(list) {
   const one = async ([code, us]) => {
     for (const sym of us ? [code] : [code + ".TW", code + ".TWO"]) {
       try {
-        const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2y&interval=1d`)).json()).chart.result[0];
+        const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
         const q = r.indicators.quote[0], ts = r.timestamp || []; if (!ts.length) continue;
         const day = [], weeks = new Map();
         ts.forEach((t, i) => {
@@ -474,7 +490,7 @@ async function kdList(list) {
 
 // 同一個網址在 sec 秒內大家共用同一份結果
 // 大盤 K 線：加權、櫃買用 FinMind（成交量用成交金額），台指期用 FinMind 近月合約（日盤、量最大的那一個月），美股指數用 Yahoo
-async function indexKline(key) {
+async function indexKline(key, part = 0) {
   const ymd5 = `${new Date().getUTCFullYear() - 5}-01-01`;
   if (key === "twii" || key === "otc") {
     const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${key === "twii" ? "TAIEX" : "TPEx"}&start_date=${ymd5}`)).json();
@@ -483,7 +499,9 @@ async function indexKline(key) {
     return { kline: k, volUnit: "money" };
   }
   if (key === "txf") {
-    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${new Date().getUTCFullYear() - 2}-01-01`)).json();
+    // 期貨資料很大（每天十幾個合約），分三段各 8 個月，網頁同時抓三段再接起來，每段計算量才不會超過上限
+    const day = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10), p = Math.min(2, Math.max(0, part | 0));
+    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${day((p + 1) * 243 - 1)}&end_date=${day(p * 243)}`)).json();
     const best = {};
     for (const x of j.data || []) {
       if (x.trading_session !== "position" || !/^\d{6}$/.test(x.contract_date) || !(x.close > 0)) continue;
@@ -510,23 +528,42 @@ async function indexKline(key) {
 
 // 大盤的短線（日 KD）、長線（週 KD）：用上面的日 K，台股三個再接上今天盤中的最新價
 async function indexKd(keys) {
+  const y1 = `${new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10)}`;
   const one = async key => {
     try {
-      const k = (await indexKline(key)).kline.map(b => [b[0], b[2], b[3], b[4]]);
-      if (key === "twii" || key === "otc" || key === "txf") {
-        const live = await (key === "txf" ? txf() : yahooTw(key === "twii" ? "^TWII" : "^TWOII", "")).catch(() => null);
-        if (live && live.pts.length && live.date > k[k.length - 1][0]) {
+      let k; // [[日期, 高, 低, 收]]，近一年就夠算 KD
+      if (key === "otc") {
+        const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TPEx&start_date=${y1}`)).json();
+        k = (j.data || []).filter(x => x.close > 0).map(x => [x.date, x.max, x.min, x.close]);
+      } else if (key === "txf") {
+        const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${y1}`)).json();
+        const best = {};
+        for (const x of j.data || []) {
+          if (x.trading_session !== "position" || !/^\d{6}$/.test(x.contract_date) || !(x.close > 0)) continue;
+          const b = best[x.date]; if (!b || x.volume > b.volume) best[x.date] = x;
+        }
+        k = Object.keys(best).sort().map(d => [d, best[d].max, best[d].min, best[d].close]);
+      } else {
+        const sym = key === "twii" ? "^TWII" : key === "2330" ? "2330.TW" : key, tz = /^\^TWII$|\.TW$/.test(sym) ? "Asia/Taipei" : "America/New_York";
+        const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
+        const q = r.indicators.quote[0];
+        k = (r.timestamp || []).map((t, i) => [ymd(t, tz), q.high[i], q.low[i], q.close[i]]).filter(b => b.every(v => v != null));
+      }
+      if (key === "otc" || key === "txf") { // 這兩個的日 K 只到昨天，接上今天盤中
+        const live = await (key === "txf" ? txf() : yahooTw("^TWOII", "")).catch(() => null);
+        if (live && live.pts.length && k.length && live.date > k[k.length - 1][0]) {
           const v = live.pts.map(p => p[1]);
           k.push([live.date, Math.max(...v), Math.min(...v), v[v.length - 1]]);
         }
       }
-      const day = k.map(b => b.slice(1)), weeks = new Map();
+      if (!k.length) return [key, null];
+      const weeks = new Map();
       for (const b of k) {
         const d = new Date(b[0] + "T00:00:00Z"), wd = (d.getUTCDay() + 6) % 7;
         const mon = new Date(d.getTime() - wd * 864e5).toISOString().slice(0, 10);
         const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(1)); else { w[0] = Math.max(w[0], b[1]); w[1] = Math.min(w[1], b[2]); w[2] = b[3]; }
       }
-      return [key, { day: kdLast2(day.slice(-300)), week: kdLast2([...weeks.keys()].sort().map(x => weeks.get(x))) }];
+      return [key, { day: kdLast2(k.map(b => b.slice(1))), week: kdLast2([...weeks.keys()].sort().map(x => weeks.get(x))) }];
     } catch (_) { return [key, null]; }
   };
   return Object.fromEntries((await Promise.all(keys.map(one))).filter(x => x[1]));
@@ -582,7 +619,7 @@ export default {
         // ?k=twii | otc | txf | ^GSPC … → 大盤的日 K（1 小時內共用）
         const k = url.searchParams.get("k") || "";
         if (!/^(twii|otc|txf|2330|\^?[A-Z]{2,6})$/.test(k)) return new Response("{}", { status: 400 });
-        return cached(request, ctx, 3600, () => indexKline(k));
+        return cached(request, ctx, 3600, () => indexKline(k, +(url.searchParams.get("p") || 0)));
       }
       case "/api/ixkd": {
         // ?k=twii,txf,otc,2330 → 大盤每一列的日 KD、週 KD，10 分鐘更新一次

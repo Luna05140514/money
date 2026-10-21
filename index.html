@@ -1168,8 +1168,10 @@ let idxKd={},idxKdAt=0,idxKdBusy=0,idxKdKeys="";
 async function idxKdLoad(){
   const keys=idxItems.map(it=>encodeURIComponent(it.key)).join(",");
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
-  const d=await api(`/api/ixkd?k=${keys}&v=1`);idxKdBusy=0;
-  if(!d||!Object.keys(d).length)return;idxKd=d;idxInit()}
+  // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
+  const got=await Promise.all(idxItems.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=2`)));idxKdBusy=0;
+  const d=Object.assign({},...got.filter(Boolean));
+  if(!Object.keys(d).length)return;Object.assign(idxKd,d);idxInit()}
 function idxInit(){
   if(!IDX||!IDX.items.length){$("idx-cards").innerHTML='<p class="note">指數資料還沒載入。</p>';return}
   $("idx-lead").textContent=`台股與美股主要指數和台積電，資料更新於 ${IDX.updated}。`;
@@ -1470,7 +1472,10 @@ async function wdRenderIx(c){
   let x=wdCache[c];
   for(let t=0;!x&&t<3;t++){
     if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
-    x=await api(`/api/ixk?k=${encodeURIComponent(key)}&v=1`);
+    if(key==="txf"){ // 台指期分三段抓再接起來
+      const ps=await Promise.all([2,1,0].map(p=>api(`/api/ixk?k=txf&p=${p}&v=2`)));
+      x=ps[2]?{volUnit:ps[2].volUnit,kline:[].concat(...ps.filter(Boolean).map(y=>y.kline))}:null;
+    }else x=await api(`/api/ixk?k=${encodeURIComponent(key)}&v=1`);
   }
   if(!x){body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到 K 線資料，請稍後按右上角「重新整理」。</p></div>';return}
   wdCache[c]=x;

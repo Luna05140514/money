@@ -226,7 +226,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .watch{display:grid;gap:10px;margin-bottom:18px}
 .watch-top{display:flex;align-items:center;gap:10px;min-height:30px}
 .watch-top h2{margin:0;font-family:var(--display);font-weight:900;font-size:22px;letter-spacing:.06em}
-.watch-time{font-size:15px;color:var(--muted)}
+.watch-time{font-size:17px;color:var(--muted);flex:1}
 .wedit{all:unset;cursor:pointer;margin-left:auto;font-size:16px;color:var(--red);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 14px}
 .wedit[aria-pressed="true"]{background:var(--red);color:#fff;border-color:var(--red)}
 .wedit:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -253,12 +253,12 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-eps .q div:last-child{border-bottom:0}
 .wd-eps .q div span small{display:block;font-size:14px;color:var(--muted)}
 .wd-eps .q div{align-items:center}
-.wd-dv{grid-template-columns:3fr 2fr}
+.wd-dv{grid-template-columns:2fr 3fr}
 .wd-kpi+.wd-eps{margin-top:10px}
 .wd-dv .q div{font-size:18px}
 .wd-dv .q div span{white-space:nowrap}
 .wd-eps .q b,.wd-eps .t b{font-family:var(--num)}
-.wd-eps .t{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-left:2px solid var(--line)}
+.wd-eps .t{order:-1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-right:2px solid var(--line)}
 .wd-eps .t span{font-size:19px;font-weight:700}
 .wd-eps .t b{font-size:30px;margin:4px 0}
 .wd-eps .t small{font-size:15px;color:var(--muted)}
@@ -1268,7 +1268,7 @@ async function watchLoad(){
   if(!d)return;
   Object.assign(watchLive,d);
   const now=new Date(Date.now()+8*3600e3).toISOString();
-  $("watch-time").textContent=`${now.slice(11,16)} 更新${LIVE}`;
+  $("watch-time").textContent=`資料更新於 ${now.slice(0,10)} ${now.slice(11,19)}${LIVE}，每分鐘自動更新`;
   watchRender();
 }
 // 開著自選股時每 60 秒自動抓一次最新價（Cloudflare 那邊也是 60 秒更新一次）；切回畫面時馬上補抓
@@ -1358,7 +1358,7 @@ async function wdRender(c){
     if(yrs.length){
       const cur=us?"美元":"元";
       wdK.eps=yrs.slice(-5).reverse().map(o=>`<div class="wd-eps"><div class="q">${o.q.length?o.q.map(([k,v])=>`<div><span>${k}</span><b class="${v<0?"down":""}">${f2(v)}</b></div>`).join(""):'<p class="muted">沒有各季資料</p>'}</div><div class="t"><span>${o.y}</span><b class="${o.tot<0?"down":""}">${f2(o.tot)}</b><small>${o.full?"全年合計":"今年累計"}</small></div></div>`).join("")
-        +`<p class="muted">左邊是每一季的 EPS，右邊是全年加起來（單位：${cur}）。${us?"美股用公司的會計年度，像輝達的財年到隔年 1 月。":"今年還沒過完的，右邊是到目前為止的累計。"}</p>`;
+        +`<p class="muted">左邊是全年加起來，右邊是每一季的 EPS（單位：${cur}）。${us?"美股用公司的會計年度，像輝達的財年到隔年 1 月。":"今年還沒過完的，左邊是到目前為止的累計。"}</p>`;
     }
   }
   // 今年／明年本益比：用法人（分析師）預估 EPS 算
@@ -1424,7 +1424,7 @@ function wdKDraw(){
     ${(()=>{const by={},seen={},ty=new Date().getFullYear()+"";dv.forEach(v=>{if(seen[v[0]])return;seen[v[0]]=1;(by[v[0].slice(0,4)]=by[v[0].slice(0,4)]||[]).push(v)});
       return Object.keys(by).sort().reverse().slice(0,5).map(y=>{const l=by[y],t=l.reduce((a,v)=>a+v[1],0);
         return `<div class="wd-eps wd-dv"><div class="q">${l.map(v=>`<div><span>除息 ${v[0].slice(5).replace("-","/")}${v[2]?`<small>發放 ${v[2].slice(5).replace("-","/")}</small>`:""}</span><b>${f2(v[1])}</b></div>`).join("")}</div><div class="t"><span>${y} 年</span><b>${f2(t)}</b><small>${y===ty?"今年累計":"全年合計"}</small></div></div>`}).join("")})()}
-    <p class="muted">左邊是每一次配息（除息日和發放日），右邊是全年加起來${wdK.us?"（美元）":"（元）"}。除息日前一天買進才領得到；發放日是錢匯進帳戶的日子。${dv.some(v=>!v[2])?"有些查不到發放日，顯示「—」。":""}</p>`:"<p>近 5 年沒有配息。</p>"}`;
+    <p class="muted">左邊是全年加起來，右邊是每一次配息（除息日和發放日）${wdK.us?"（美元）":"（元）"}。除息日前一天買進才領得到；發放日是錢匯進帳戶的日子。${dv.some(v=>!v[2])?"有些查不到發放日，顯示「—」。":""}</p>`:"<p>近 5 年沒有配息。</p>"}`;
     wdKBind();return;
   }
   const all=wdAgg(wdK.daily,wdK.period),c=wdCalc(all),N=Math.min(wdK.period==="m"?60:100,all.length),s0=all.length-N;

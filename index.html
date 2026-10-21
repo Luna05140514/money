@@ -248,6 +248,27 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .watch .wempty{margin:0;padding:16px;color:var(--muted);font-size:17px}
 .wrow .go{font-size:24px;color:var(--muted);margin-left:-4px}
 .wd-head{text-align:center;margin:4px 0 14px}
+.wd-eps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;padding:12px;border-radius:10px;background:var(--bg)}
+.wd-eps .q div{display:flex;justify-content:space-between;padding:4px 6px;font-size:19px;border-bottom:1px solid var(--line)}
+.wd-eps .q div:last-child{border-bottom:0}
+.wd-eps .q div span small{display:block;font-size:14px;color:var(--muted)}
+.wd-eps .q div{align-items:center}
+.wd-dv{grid-template-columns:3fr 2fr}
+.wd-kpi+.wd-eps{margin-top:10px}
+.wd-dv .q div{font-size:18px}
+.wd-dv .q div span{white-space:nowrap}
+.wd-eps .q b,.wd-eps .t b{font-family:var(--num)}
+.wd-eps .t{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-left:2px solid var(--line)}
+.wd-eps .t span{font-size:19px;font-weight:700}
+.wd-eps .t b{font-size:30px;margin:4px 0}
+.wd-eps .t small{font-size:15px;color:var(--muted)}
+.wd-eps .down{color:var(--down,#0a8a3a)}
+.wd-none{text-align:center;font-size:40px;font-weight:700;color:var(--muted);padding:24px 0 8px}
+.wd-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:0 0 6px}
+.wd-nav button{all:unset;cursor:pointer;padding:10px 12px;border-radius:12px;border:2px solid var(--gold);background:var(--gold-soft);font-size:19px;font-weight:700;color:var(--ink);text-align:center;line-height:1.25}
+.wd-nav button small{display:block;font-size:14px;font-weight:600;color:var(--muted)}
+.wd-nav button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.wd-nav span{font-family:var(--num);font-size:16px;color:var(--muted)}
 .wd-head h1{margin:0 0 2px}
 .wd-head .cd{font-family:var(--num);font-size:16px;color:var(--muted)}
 .wd-head .big{font-family:var(--num);font-size:40px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
@@ -281,7 +302,19 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 10px}
 .wd-seg button{text-align:center;padding:8px 2px!important;white-space:nowrap}
 .wd-seg button{all:unset;cursor:pointer;padding:8px 16px;border-radius:999px;border:1px solid var(--line);font-size:17px;font-weight:700;color:var(--ink)}
+.wd-seg button{text-align:center}
+.wd-seg button[data-per="pe"]{grid-column:span 2}
 .wd-seg button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.wd-band{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 4px;text-align:center}
+.wd-band div{border-radius:8px;padding:10px 4px}
+.wd-band b{display:block;font-size:22px}
+.wd-band span{display:block;font-size:16px;font-family:var(--num);font-weight:700;white-space:nowrap;letter-spacing:-.5px}
+.wd-band small{display:block;font-size:15px;font-weight:700}
+.wd-band .lo,.wd-verdict.lo{background:#e3f4ea;color:#11683a}
+.wd-band .mid,.wd-verdict.mid{background:#f6e7c1;color:#7a5a0e}
+.wd-band .hi,.wd-verdict.hi{background:#fbe3e6;color:#a10d26}
+.wd-verdict{margin-top:10px;border-radius:8px;padding:12px;text-align:center;font-size:20px;font-weight:700}
+.wd-verdict b{font-size:26px}
 .wd-sub{grid-template-columns:1fr 1fr;padding-top:10px;border-top:1px solid var(--line)}
 .wd-sub button{font-size:19px;padding:10px 2px!important}
 .wd-sub button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#fff}
@@ -1230,7 +1263,7 @@ async function watchLoad(){
   await Promise.all(codes.map(c=>stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null)));
   watchRender();
   if(!ON_CF)return;
-  const need=codes.filter(c=>!watchLive[c]);if(!need.length)return;
+  const need=codes;if(!need.length)return;
   const d=await api(`/api/quote?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}`);
   if(!d)return;
   Object.assign(watchLive,d);
@@ -1238,6 +1271,9 @@ async function watchLoad(){
   $("watch-time").textContent=`${now.slice(11,16)} 更新${LIVE}`;
   watchRender();
 }
+// 開著自選股時每 60 秒自動抓一次最新價（Cloudflare 那邊也是 60 秒更新一次）；切回畫面時馬上補抓
+setInterval(()=>{if(ON_CF&&!document.hidden&&curPage()==="watch"&&STOCK)watchLoad()},60000);
+document.addEventListener("visibilitychange",()=>{if(ON_CF&&!document.hidden&&curPage()==="watch"&&STOCK)watchLoad()});
 function watchInit(){
   watchLoadSaved();
   try{watchTab=Math.min(+localStorage.getItem("facai-watch-tab")||0,watchGroups.length-1)}catch(_){}
@@ -1267,6 +1303,7 @@ function watchInit(){
 /* 自選股詳細頁：點一檔才向 Cloudflare 的 /api/detail 抓那一檔（K 線、配息、EPS、本益比、河流圖） */
 const wdCache={};
 let wdCode="";
+document.addEventListener("click",e=>{const b=e.target.closest("#wd-body [data-wd]");if(!b)return;wdOpen(b.dataset.wd);window.scrollTo(0,0)});
 function wdOpen(c){wdCode=c;try{sessionStorage.setItem("facai-wd",c)}catch(_){}show("wdetail")}
 calc.wdetail=()=>{if(!wdCode)try{wdCode=sessionStorage.getItem("facai-wd")||""}catch(_){}
   if(wdCode&&STOCK)wdRender(wdCode);else setTimeout(()=>show("watch"))};
@@ -1276,12 +1313,17 @@ async function wdRender(c){
   const it=watchItem(c)||{},us=!!r[4],etf=r[2]===1;
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
-  const head=`<div class="wd-head"><h1>${esc(r[1])}</h1><span class="cd">${esc(c)}${us?"・美元":""}</span><div class="big ${cls}">${f2(it.last)}</div><div class="chg ${cls}">${d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}</div></div>`;
+  // 上一檔／下一檔：照目前分頁的順序，頭尾相接
+  const grp=(watchGroups[watchTab]&&watchGroups[watchTab].list.includes(c)?watchGroups[watchTab]:watchGroups.find(g=>g.list.includes(c))||{list:[]}).list.filter(k=>idxOf[k]);
+  const gi=grp.indexOf(c),nb=k=>{const n=idxOf[k][1];return esc(n.length>6?n.slice(0,6)+"…":n)};
+  const nav=grp.length>1&&gi>=0?(()=>{const pv=grp[(gi-1+grp.length)%grp.length],nx=grp[(gi+1)%grp.length];
+    return `<div class="wd-nav"><button data-wd="${esc(pv)}">‹ 上一檔<small>${nb(pv)}</small></button><span>${gi+1} / ${grp.length}</span><button data-wd="${esc(nx)}">下一檔 ›<small>${nb(nx)}</small></button></div>`})():"";
+  const head=nav+`<div class="wd-head"><h1>${esc(r[1])}</h1><span class="cd">${esc(c)}${us?"・美元":""}</span><div class="big ${cls}">${f2(it.last)}</div><div class="chg ${cls}">${d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}</div></div>`;
   if(!ON_CF){body.innerHTML=head+'<div class="wd-sec"><p>K 線圖、配息、EPS、本益比和河流圖要用你的網站（money.h24511355.workers.dev）打開才看得到，這裡沒辦法即時抓資料。</p></div>';return}
   body.innerHTML=head+'<div class="wd-sec"><p class="muted">資料載入中…</p></div>';
-  const x=wdCache[c]||(wdCache[c]=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}`));
+  const x=wdCache[c]||(wdCache[c]=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=4`));
   if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}
-  if(curPage()!=="wdetail")return;
+  if(curPage()!=="wdetail"||wdCode!==c)return;
   const last=it.last!=null?it.last:(x.kline.length?x.kline[x.kline.length-1][4]:null);
   let html=head;
   // K 線（近半年日 K）
@@ -1298,21 +1340,43 @@ async function wdRender(c){
       peH+=`<h3 class="wd-h3">EPS（每股盈餘）</h3><div class="wd-bars">${e.map(([dt,v])=>`<div><span>${x.epsKind==="季"?`${dt.slice(0,4)} Q${Math.ceil(+dt.slice(5,7)/3)}`:`${dt.slice(0,4)} 年度`}</span><i class="${v<0?"neg":""}" style="width:${Math.max(2,Math.abs(v)/mx*100)}%"></i><em>${f2(v)}</em></div>`).join("")}</div><p class="muted">${x.epsKind==="季"?"每一季":"每個會計年度"}的 EPS${us?"（美元）":"（元）"}。</p>`;
     }
   }
+  // EPS：每一年一格，左邊各季、右邊全年合計（今年還沒過完就是「累計」）
+  wdK.eps="";
+  if(!etf){
+    const r2=v=>Math.round(v*100)/100,yrs=[];
+    if(x.epsKind==="季"&&x.epsQ&&x.epsQ.length){
+      const by={};x.epsQ.forEach(([dt,v])=>{const y=dt.slice(0,4);(by[y]=by[y]||[]).push([`Q${Math.ceil(+dt.slice(5,7)/3)}`,v])});
+      const ys=Object.keys(by).sort();
+      ys.forEach((y,i)=>{const q=by[y];if(q[0][0]!=="Q1")return;yrs.push({y:`${y} 年`,q,tot:r2(q.reduce((a,b)=>a+b[1],0)),full:q.length===4})});
+    }else if(x.epsKind==="年"&&x.eps&&x.eps.length){
+      const ann=x.eps,qs=x.epsQ||[],mAdd=(d,m)=>{const t=new Date(d);t.setUTCMonth(t.getUTCMonth()+m);return t.toISOString().slice(0,10)};
+      const qOf=(prev,dt)=>Math.min(4,Math.max(1,Math.round((new Date(dt)-new Date(prev))/864e5/91.3)));
+      ann.forEach(([dt,v],i)=>{const prev=i?ann[i-1][0]:mAdd(dt,-12);yrs.push({y:`${dt.slice(0,4)} 財年`,q:qs.filter(([d])=>d>prev&&d<=dt).map(([d,e])=>[`Q${qOf(prev,d)}`,e]),tot:v,full:true})});
+      const lastA=ann[ann.length-1][0],cq=qs.filter(([d])=>d>lastA);
+      if(cq.length)yrs.push({y:`${+lastA.slice(0,4)+1} 財年`,q:cq.map(([d,e])=>[`Q${qOf(lastA,d)}`,e]),tot:r2(cq.reduce((a,b)=>a+b[1],0)),full:cq.length===4});
+    }
+    if(yrs.length){
+      const cur=us?"美元":"元";
+      wdK.eps=yrs.slice(-5).reverse().map(o=>`<div class="wd-eps"><div class="q">${o.q.length?o.q.map(([k,v])=>`<div><span>${k}</span><b class="${v<0?"down":""}">${f2(v)}</b></div>`).join(""):'<p class="muted">沒有各季資料</p>'}</div><div class="t"><span>${o.y}</span><b class="${o.tot<0?"down":""}">${f2(o.tot)}</b><small>${o.full?"全年合計":"今年累計"}</small></div></div>`).join("")
+        +`<p class="muted">左邊是每一季的 EPS，右邊是全年加起來（單位：${cur}）。${us?"美股用公司的會計年度，像輝達的財年到隔年 1 月。":"今年還沒過完的，右邊是到目前為止的累計。"}</p>`;
+    }
+  }
   // 今年／明年本益比：用法人（分析師）預估 EPS 算
   wdK.peY=null;
   if(!etf&&x.est){
+    const b5=x.pe5,lvT=v=>v<=b5.lo?"便宜":v>=b5.hi?"昂貴":"合理",lvC=v=>v<=b5.lo?"lo":v>=b5.hi?"hi":"mid";
     const cur=us?"美元":"元",pg=(k,nm)=>{const e=x.est[k];if(!e)return"";
       const end=e.end?`${e.end.slice(0,4)}/${e.end.slice(5,7)}`:"";
       const gr=e.prev&&e.prev>0?Math.round((e.avg/e.prev-1)*100):null;
       return `<div class="wd-kpi"><div><b>${e.pe??"—"}</b><span>${nm}（倍）</span></div><div><b>${f2(e.avg)}</b><span>法人預估 EPS</span></div></div>
-      <div class="wd-kpi" style="margin-top:10px"><div><b style="font-size:22px">${e.low!=null?f2(e.low):"—"}～${e.high!=null?f2(e.high):"—"}</b><span>預估最低～最高</span></div><div><b>${e.n??"—"} 位</b><span>分析師人數</span></div></div>
+      ${b5&&e.pe>0&&e.avg>0?`<div class="wd-verdict ${lvC(e.pe)}">${nm} ${e.pe} 倍：<b>${lvT(e.pe)}</b></div><p>用${k==="y0"?"今年":"明年"}預估 EPS 換算：股價 <b>${f2(b5.lo*e.avg)}</b> 元以下算便宜，<b>${f2(b5.hi*e.avg)}</b> 元以上算昂貴。</p>`:""}
       ${e.avg<=0?"<p>法人預估會虧損，所以沒有本益比。</p>":""}${gr!=null?`<p>${k==="y0"?"去年":"今年預估"} EPS ${f2(e.prev)} ${cur}，預估${gr>=0?"成長":"衰退"} <b>${Math.abs(gr)}%</b>。</p>`:""}
       <p class="muted">本益比 = 現在股價 ${f2(x.est.price)} ÷ 法人預估 EPS ${f2(e.avg)}，數字越低越便宜。預估的年度到 ${end} 為止，是 Yahoo Finance 整理的分析師平均預估，會隨時調整。</p>`};
     const y0=pg("y0","今年本益比"),y1=pg("y1","明年本益比");
-    if(y0||y1)wdK.peY={y0,y1};
+    if(y0||y1)wdK.peY={y0,y1,band:b5?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${b5.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${b5.lo}～${b5.hi}</span><small>倍之間</small></div><div class="hi"><b>昂貴</b><span>${b5.hi} 倍</span><small>以上</small></div></div><p class="muted">近 5 年平均本益比 ${b5.avg} 倍（每月收盤 ÷ 當時近四季 EPS）。比平均低一段算便宜，高一段算昂貴。</p>`:""};
   }
   body.innerHTML=html;
-  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||peH;wdK.rv=rvH;if((wdK.period==="pe"&&!peH)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();
+  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();
 }
 // 還原 K 線（日／週／月）＋均線，下方分頁切換成交量、KDJ(9,3,3)、MACD(12,26,9)、布林 %B(20,2)，和 K 線同一天對齊；點圖可看那一天的數字
 const wdK={daily:[],us:false,period:"d",ind:"vol",sel:null};
@@ -1338,12 +1402,13 @@ function wdCalc(k){
 function wdKDraw(){
   const box=$("wd-k");if(!box||!wdK.daily.length)return;
   const nv=STOCK&&STOCK.nav&&STOCK.nav[wdK.code];
-  const seg=`<div class="wd-seg">${[["d","日"],["w","週"],["m","月"],["div","配息"],...(nv?[["prem","折溢價"]]:[]),...(wdK.pe?[["pe","本益比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[])].map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("")}</div>`;
+  const seg=`<div class="wd-seg">${[["d","日"],["w","週"],["m","月"],["div","配息"],...(nv?[["prem","折溢價"]]:[]),...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.eps?[["eps","EPS"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[])].map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("")}</div>`;
   if(wdK.period==="pe"&&wdK.pe){
-    if(typeof wdK.pe==="string"){box.innerHTML=`<h2>本益比</h2>${seg}${wdK.pe}`;wdKBind();return}
+    if(typeof wdK.pe==="string"){box.innerHTML=`<h2>預估本益比</h2>${seg}${wdK.pe}`;wdKBind();return}
     const ks=["y0","y1"].filter(k=>wdK.pe[k]);if(!ks.includes(wdK.pey))wdK.pey=ks[0];
     const sub=`<div class="wd-seg wd-sub">${ks.map(k=>`<button data-pey="${k}" aria-pressed="${k===wdK.pey}">${k==="y0"?"今年本益比":"明年本益比"}</button>`).join("")}</div>`;
-    box.innerHTML=`<h2>本益比</h2>${seg}${sub}${wdK.pe[wdK.pey]}`;wdKBind();return}
+    box.innerHTML=`<h2>預估本益比</h2>${seg}${wdK.pe.band}${sub}${wdK.pe[wdK.pey]}`;wdKBind();return}
+  if(wdK.period==="eps"&&wdK.eps){box.innerHTML=`<h2>EPS（每股盈餘）</h2>${seg}${wdK.eps}`;wdKBind();return}
   if(wdK.period==="rv"&&wdK.rv){box.innerHTML=`<h2>本益比河流圖</h2>${seg}${wdK.rv}`;wdKBind();return}
   if(wdK.period==="prem"&&nv){
     const [,px,nav,prem,prev,,,at]=nv,f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1353,11 +1418,13 @@ function wdKDraw(){
     wdKBind();return;
   }
   if(wdK.period==="div"){
-    const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),dv=wdK.divs,last=wdK.last;
+    const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),dv=wdK.divs.filter((v,i,a)=>a.findIndex(w=>w[0]===v[0])===i),last=wdK.last;
     const yr=new Date(Date.now()-365*864e5).toISOString().slice(0,10),sum=dv.filter(v=>v[0]>=yr).reduce((a,v)=>a+v[1],0),ds=v=>v?v.replace(/-/g,"/"):"—";
     box.innerHTML=`<h2>配息</h2>${seg}${dv.length?`<div class="wd-kpi"><div><b>${f2(sum)}</b><span>近一年配息${wdK.us?"（美元）":"（元）"}</span></div><div><b>${last?(sum/last*100).toFixed(2)+"%":"—"}</b><span>殖利率</span></div></div>
-    <table class="wd-tbl wd-div"><thead><tr><th>除息日</th><th>發放日</th><th>每股配息</th></tr></thead><tbody>${dv.slice(-12).reverse().map(v=>`<tr><td>${ds(v[0])}</td><td>${ds(v[2])}</td><td>${f2(v[1])}</td></tr>`).join("")}</tbody></table>
-    <p class="muted">除息日前一天買進才領得到；發放日是錢匯進帳戶的日子。${dv.some(v=>!v[2])?"有些查不到發放日，顯示「—」。":""}</p>`:"<p>近 5 年沒有配息。</p>"}`;
+    ${(()=>{const by={},seen={},ty=new Date().getFullYear()+"";dv.forEach(v=>{if(seen[v[0]])return;seen[v[0]]=1;(by[v[0].slice(0,4)]=by[v[0].slice(0,4)]||[]).push(v)});
+      return Object.keys(by).sort().reverse().slice(0,5).map(y=>{const l=by[y],t=l.reduce((a,v)=>a+v[1],0);
+        return `<div class="wd-eps wd-dv"><div class="q">${l.map(v=>`<div><span>除息 ${v[0].slice(5).replace("-","/")}${v[2]?`<small>發放 ${v[2].slice(5).replace("-","/")}</small>`:""}</span><b>${f2(v[1])}</b></div>`).join("")}</div><div class="t"><span>${y} 年</span><b>${f2(t)}</b><small>${y===ty?"今年累計":"全年合計"}</small></div></div>`}).join("")})()}
+    <p class="muted">左邊是每一次配息（除息日和發放日），右邊是全年加起來${wdK.us?"（美元）":"（元）"}。除息日前一天買進才領得到；發放日是錢匯進帳戶的日子。${dv.some(v=>!v[2])?"有些查不到發放日，顯示「—」。":""}</p>`:"<p>近 5 年沒有配息。</p>"}`;
     wdKBind();return;
   }
   const all=wdAgg(wdK.daily,wdK.period),c=wdCalc(all),N=Math.min(wdK.period==="m"?60:100,all.length),s0=all.length-N;

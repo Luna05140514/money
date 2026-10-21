@@ -348,14 +348,14 @@ async function detail(code, us) {
   if (!us) {
     let qs = await twEps(code);
     if (!qs) { const y = await yahooSeries(sym, "quarterlyDilutedEPS").catch(() => ({})); qs = y.quarterlyDilutedEPS || []; }
-    out.eps = qs.slice(-12); out.epsKind = "季";
+    out.eps = qs.slice(-12); out.epsKind = "季"; out.epsQ = qs.slice(-20);
     ttmSeries = sumLast4(qs);
   } else {
-    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS").catch(() => ({}));
+    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS,quarterlyDilutedEPS").catch(() => ({}));
     const ann = (y.annualDilutedEPS || []).map(([dt, v]) => [dt, Math.round(v * 100) / 100]);
     const last = ann.length ? ann[ann.length - 1][0] : "";
     const tr = (y.trailingDilutedEPS || []).filter(x => x[0] > last).map(([dt, v]) => [dt, Math.round(v * 100) / 100]);
-    out.eps = ann; out.epsKind = "年";
+    out.eps = ann; out.epsKind = "年"; out.epsQ = (y.quarterlyDilutedEPS || []).map(([dt, v]) => [dt, Math.round(v * 100) / 100]);
     ttmSeries = [...ann, ...tr];
   }
   // 今年／明年本益比 = 現在股價 ÷ 法人預估 EPS
@@ -366,6 +366,12 @@ async function detail(code, us) {
     const last = bars[bars.length - 1][4];
     out.pe = out.ttm > 0 ? Math.round(last / out.ttm * 10) / 10 : null;
     // 河流圖（近 3 年）：每個月用當時最新的近四季 EPS，倍數取這段期間本益比的 10%～90%
+    // 近 5 年本益比平均：每個月收盤 ÷ 當時近四季 EPS；平均 ±1 個標準差當「便宜／昂貴」的分界
+    const p5 = monthly.slice(-60).map(([dt, c]) => { const e = [...ttmSeries].reverse().find(x => x[0] <= dt); return e && e[1] > 0 ? c / e[1] : null; }).filter(v => v != null && v < 300);
+    if (p5.length >= 12) {
+      const avg = p5.reduce((a, b) => a + b, 0) / p5.length, sd = Math.sqrt(p5.reduce((a, b) => a + (b - avg) ** 2, 0) / p5.length);
+      out.pe5 = { avg: Math.round(avg * 10) / 10, lo: Math.round(Math.max(avg - sd, avg * 0.5) * 10) / 10, hi: Math.round((avg + sd) * 10) / 10, months: p5.length };
+    }
     const pts = monthly.slice(-37).map(([dt, c]) => { const e = [...ttmSeries].reverse().find(x => x[0] <= dt); return e ? [dt.slice(0, 7), c, e[1]] : null; }).filter(Boolean);
     const pes = pts.filter(p => p[2] > 0).map(p => p[1] / p[2]).sort((a, b) => a - b);
     if (pes.length >= 6 && out.ttm > 0) {

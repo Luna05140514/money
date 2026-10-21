@@ -288,7 +288,22 @@ async function twEps(code) {
   return null;
 }
 // 法人（分析師）預估 EPS：Yahoo Finance 分析頁裡的「今年／明年」平均預估
+// 台股先用鉅亨網（FactSet 法人共識，涵蓋比較多檔），抓不到再用 Yahoo
+async function twEstimates(code) {
+  try {
+    const j = await (await get(`https://marketinfo.api.cnyes.com/mi/api/v1/financialIndicator/estimateProfit/TWS:${code}:STOCK?type=eps`)).json();
+    const by = Object.fromEntries((j.data || []).filter(x => x.feMean != null).map(x => [x.financialYear, x]));
+    const y = new Date(Date.now() + 8 * 3600e3).getUTCFullYear(), out = {};
+    for (const [k, yr] of [["y0", y], ["y1", y + 1]]) {
+      const e = by[yr]; if (!e) continue;
+      out[k] = { end: `${yr}-12-31`, avg: rp(e.feMean), low: rp(e.feLow), high: rp(e.feHigh), n: e.numEst, prev: by[yr - 1] ? rp(by[yr - 1].feMean) : null };
+    }
+    return out.y0 || out.y1 ? out : null;
+  } catch (_) { return null; }
+}
 async function estimates(sym) {
+  const tw = sym.match(/^(\w+)\.TWO?$/);
+  if (tw) { const c = await twEstimates(tw[1]); if (c) return c; }
   try {
     const h = (await (await get(`https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/analysis/`)).text()).replace(/\\"/g, '"');
     const out = {};
@@ -360,7 +375,10 @@ async function detail(code, us) {
   }
   // 今年／明年本益比 = 現在股價 ÷ 法人預估 EPS
   const est = await estP, price = (fixed.length && bars.length && fixed[fixed.length - 1][0] > bars[bars.length - 1][0]) ? fixed[fixed.length - 1][4] : bars[bars.length - 1][4];
-  if (est) { for (const k of ["y0", "y1"]) if (est[k]) est[k].pe = est[k].avg > 0 ? Math.round(price / est[k].avg * 10) / 10 : null; est.price = price; out.est = est; }
+  if (est) { for (const k of ["y0", "y1"]) if (est[k]) est[k].pe = est[k].avg > 0 ? Math.round(price / est[k].avg * 10) / 10 : null; est.price = price; out.est = est;
+    // 台股「去年 EPS」用實際四季加總
+    const ly = String(new Date(Date.now() + 8 * 3600e3).getUTCFullYear() - 1), lq = !us && (out.epsQ || []).filter(q => q[0].startsWith(ly));
+    if (est.y0 && lq && lq.length === 4) est.y0.prev = Math.round(lq.reduce((a, q) => a + q[1], 0) * 100) / 100; }
   if (ttmSeries.length) {
     out.ttm = ttmSeries[ttmSeries.length - 1][1];
     const last = bars[bars.length - 1][4];

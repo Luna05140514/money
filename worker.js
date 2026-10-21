@@ -287,10 +287,28 @@ async function twEps(code) {
   } catch (_) {}
   return null;
 }
+// 法人（分析師）預估 EPS：Yahoo Finance 分析頁裡的「今年／明年」平均預估
+async function estimates(sym) {
+  try {
+    const h = (await (await get(`https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/analysis/`)).text()).replace(/\\"/g, '"');
+    const out = {};
+    for (const [k, per] of [["y0", "0y"], ["y1", "+1y"]]) {
+      const i = h.indexOf(`"period":"${per}","endDate":"`); if (i < 0) continue;
+      const end = h.slice(i + per.length + 23, i + per.length + 33);
+      const a = h.indexOf('"earningsEstimate":{', i), b = h.indexOf('"revenueEstimate"', a);
+      if (a < 0 || a - i > 400) continue;
+      const seg = h.slice(a, b > a ? b : a + 600), num = f => { const m = seg.match(new RegExp(`"${f}":\\{"raw":(-?[\\d.]+)`)); return m ? +m[1] : null; };
+      const avg = num("avg"); if (avg == null) continue;
+      out[k] = { end, avg: rp(avg), low: rp(num("low")), high: rp(num("high")), n: num("numberOfAnalysts"), prev: rp(num("yearAgoEps")) };
+    }
+    return out.y0 || out.y1 ? out : null;
+  } catch (_) { return null; }
+}
 async function detail(code, us) {
   let sym = us ? code : code + ".TW", d = await chart(sym);
   if (!us && (!d || !(d.timestamp || []).length)) { sym = code + ".TWO"; d = await chart(sym); }
   if (!d || !(d.timestamp || []).length) throw new Error("no data");
+  const estP = estimates(sym);
   const tz = us ? "America/New_York" : "Asia/Taipei", q = d.indicators.quote[0], ts = d.timestamp;
   const adj = d.indicators.adjclose[0].adjclose;
   const bars = ts.map((t, i) => [ymd(t, tz), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
@@ -340,6 +358,9 @@ async function detail(code, us) {
     out.eps = ann; out.epsKind = "年";
     ttmSeries = [...ann, ...tr];
   }
+  // 今年／明年本益比 = 現在股價 ÷ 法人預估 EPS
+  const est = await estP, price = (fixed.length && bars.length && fixed[fixed.length - 1][0] > bars[bars.length - 1][0]) ? fixed[fixed.length - 1][4] : bars[bars.length - 1][4];
+  if (est) { for (const k of ["y0", "y1"]) if (est[k]) est[k].pe = est[k].avg > 0 ? Math.round(price / est[k].avg * 10) / 10 : null; est.price = price; out.est = est; }
   if (ttmSeries.length) {
     out.ttm = ttmSeries[ttmSeries.length - 1][1];
     const last = bars[bars.length - 1][4];

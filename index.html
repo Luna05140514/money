@@ -241,9 +241,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .nm{min-width:0}
 .wrow .nm b{display:block;font-size:20px;line-height:1.3}
 .watch-signote{font-size:15px;color:var(--muted);margin:6px 0 10px;line-height:1.5}
-.hits{margin:18px 0 0;padding:14px 16px;border-radius:14px;background:var(--gold-soft);border:2px solid var(--gold);display:grid;grid-template-columns:1fr 1fr;text-align:center;color:var(--ink)}
-.hits div{font-size:17px;font-weight:600}
-.hits b{display:block;font-family:var(--num);font-size:30px;font-weight:800;color:var(--red)}
+.hits{margin:10px 0 0;display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
 .wd-mv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 6px}
 .wd-mv button{font:inherit;font-size:20px;font-weight:700;min-height:52px;border-radius:12px;border:2px solid var(--gold);background:var(--gold-soft);color:var(--ink);cursor:pointer}
 .wd-mv button:disabled{opacity:.35;cursor:default}
@@ -1216,7 +1214,7 @@ async function liveHits(){
   let id="";try{id=localStorage.getItem("facai-vid")||"";if(!id){id=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem("facai-vid",id)}}catch(_){}
   const d=await api("/api/hit?id="+encodeURIComponent(id));if(!d||d.total==null)return;
   const n=v=>Number(v).toLocaleString("zh-TW");
-  $("hits").innerHTML=`<div>今天使用<b>${n(d.today)}</b>人</div><div>總使用<b>${n(d.total)}</b>人</div>`;$("hits").hidden=false}
+  $("hits").innerHTML=`<span>今天使用 ${n(d.today)} 人</span><span>總使用 ${n(d.total)} 人</span>`;$("hits").hidden=false}
 async function liveIdx(){
   const d=await api("/api/idx");if(!d||!d.items||!d.items.length)return;
   const by=Object.fromEntries(d.items.map(x=>[x.key,x]));

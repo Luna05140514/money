@@ -1320,9 +1320,14 @@ let watchKd={},watchKdAt={};
 const kdDiv=o=>o&&o.dv?(o.dv[0]>0?"頂背離，小心回檔":"底背離，留意止跌"):"";
 // 大字結論的判斷順序（由上往下，先符合的就是結論）；點開格子時列出來，符合的那列標出來
 const SG_LOGIC={
-  短線:[["金叉＋長線偏多＋站上月線","buy","買點出現，分批買進"],["死叉＋長線偏空＋跌破月線","sell","賣點出現，分批賣出"],["K 連 3 天 ≥80（高檔鈍化）","low","強勢，先別賣"],["K 連 3 天 ≤20（低檔鈍化）","high","弱勢，先別買"],
-    ["頂背離","sell","小心回檔，先減碼"],["底背離","buy","留意止跌，可小量試買"],["K ≤20，還沒金叉","low","接近低點，等金叉再買"],["K ≥80，還沒死叉","high","接近高點，等死叉再賣"],["以上都沒有","wait","沒有訊號，觀望"]],
-  長線:[["週 K 連 3 週 ≥80（高檔鈍化）","low","強勢，續抱"],["週 K 連 3 週 ≤20（低檔鈍化）","high","弱勢，先別買"],["週 K ≤20 或底背離","buy","相對低點，分批買進"],["週 K ≥80 或頂背離","sell","相對高點，分批賣出"],["週 K ≥50 或剛金叉（偏多）","low","偏多，續抱"],["以上都沒有（偏空）","high","偏空，觀望"]]};
+  // 背離也要等交叉（Luna 2026-10-22）：背離＋交叉才買賣，還沒交叉就等
+  短線:[["頂背離＋死叉","sell","頂背離＋死叉，分批賣出"],["底背離＋金叉","buy","底背離＋金叉，分批買進"],["金叉＋長線偏多＋站上月線","buy","買點出現，分批買進"],["死叉＋長線偏空＋跌破月線","sell","賣點出現，分批賣出"],
+    ["K 連 3 天 ≥80（高檔鈍化）","low","強勢，先別賣"],["K 連 3 天 ≤20（低檔鈍化）","high","弱勢，先別買"],["頂背離，還沒死叉","high","頂背離，等死叉再賣"],["底背離，還沒金叉","low","底背離，等金叉再買"],
+    ["K ≤20，還沒金叉","low","接近低點，等金叉再買"],["K ≥80，還沒死叉","high","接近高點，等死叉再賣"],["以上都沒有","wait","沒有訊號，觀望"]],
+  // 長線也等交叉才喊買賣（Luna 2026-10-22：只看週 K 到 80 就賣太早）
+  長線:[["頂背離＋死叉","sell","頂背離＋死叉，分批賣出"],["底背離＋金叉","buy","底背離＋金叉，分批買進"],["週 K 在 70 以上死叉","sell","死叉出現，分批賣出"],["週 K 在 30 以下金叉","buy","金叉出現，分批買進"],
+    ["週 K 連 3 週 ≥80（高檔鈍化）","low","強勢，續抱"],["週 K 連 3 週 ≤20（低檔鈍化）","high","弱勢，先別買"],["頂背離，還沒死叉","high","頂背離，等死叉再賣"],["底背離，還沒金叉","low","底背離，等金叉再買"],
+    ["週 K ≥80，還沒死叉","high","相對高點，等死叉再賣"],["週 K ≤20，還沒金叉","low","相對低點，等金叉再買"],["週 K ≥50 或剛金叉（偏多）","low","偏多，續抱"],["以上都沒有（偏空）","high","偏空，觀望"]]};
 function kdSig(o){if(!o||o.k==null)return null;
   // 鈍化：最近 3 根 K 都在 80 以上（高檔鈍化，強勢先別急著賣）或都在 20 以下（低檔鈍化，弱勢先別急著買），取代相對高點／低點
   const ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
@@ -1384,7 +1389,8 @@ function kdBoxes(dy,wk,name){
     const rows=kdRows(dy,true,tr);
     // 大字直接給結論（Luna 2026-10-22 同意的寫法），小字照舊放原因
     const dv=dy.dv?dy.dv[0]:0;
-    const hit=ok?(up?0:1):dh?2:dl?3:dv>0?4:dv<0?5:dy.k<=20?6:dy.k>=80?7:8,m=SG_LOGIC.短線[hit];
+    const xu=dy.pk!=null&&dy.pk<=dy.pd&&dy.k>dy.d,xd=dy.pk!=null&&dy.pk>=dy.pd&&dy.k<dy.d;
+    const hit=dv>0&&xd?0:dv<0&&xu?1:ok?(up?2:3):dh?4:dl?5:dv>0?6:dv<0?7:dy.k<=20?8:dy.k>=80?9:10,m=SG_LOGIC.短線[hit];
     sh=one("短線",m[1],m[2],ok?sub:[why,zone,dvt,macd].filter(Boolean).join("・"),rows,hit);
   }
   // 長線：大字偏多／偏空，小字放原本的相對高低點、鈍化或交叉
@@ -1392,7 +1398,9 @@ function kdBoxes(dy,wk,name){
   // 長線大字直接給結論（Luna：要明確，像「相對低點，買進」）；小字保留技術用語
   let lgMain=null;
   if(tr!=null){const ks=wk.ks&&wk.ks.length>=3?wk.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20),dv=wk.dv?wk.dv[0]:0;
-    lgMain=dh?0:dl?1:wk.k<=20||dv<0?2:wk.k>=80||dv>0?3:tr>0?4:5}
+    const gc=wk.pk!=null&&wk.pk<=wk.pd&&wk.k>wk.d&&Math.min(wk.pk,wk.k)<30,dc=wk.pk!=null&&wk.pk>=wk.pd&&wk.k<wk.d&&Math.max(wk.pk,wk.k)>70;
+    const xu=wk.pk!=null&&wk.pk<=wk.pd&&wk.k>wk.d,xd=wk.pk!=null&&wk.pk>=wk.pd&&wk.k<wk.d;
+    lgMain=dv>0&&xd?0:dv<0&&xu?1:dc?2:gc?3:dh?4:dl?5:dv>0?6:dv<0?7:wk.k>=80?8:wk.k<=20?9:tr>0?10:11}
   const lm=SG_LOGIC.長線[lgMain];
   const lgBox=tr==null?one("長線","na","—",""):one("長線",lm[1],lm[2],[tr>0?"偏多":"偏空",lgSub].filter(Boolean).join("・"),kdRows(wk,false,tr),lgMain);
   return `<span class="sigs">${sh}${lgBox}</span>`}

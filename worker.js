@@ -372,11 +372,16 @@ async function twEstimates(code) {
       out[k] = { end: `${yr}-12-31`, avg: rp(e.feMean), low: rp(e.feLow), high: rp(e.feHigh), n: e.numEst, prev: by[yr - 1] ? rp(by[yr - 1].feMean) : null };
     }
     return out.y0 || out.y1 ? out : null;
-  } catch (_) { return null; }
+  } catch (_) { return undefined; } // 抓失敗（不是沒資料）回 undefined，讓 valuation 不要快取
 }
 async function estimates(sym) {
   const tw = sym.match(/^(\w+)\.TWO?$/);
-  if (tw) { const c = await twEstimates(tw[1]); if (c) return c; }
+  let failed = false;
+  if (tw) { const c = await twEstimates(tw[1]); if (c) return c; failed = c === undefined; }
+  const y = await yahooEstimates(sym);
+  return y || (failed ? undefined : null);
+}
+async function yahooEstimates(sym) {
   try {
     // 頁面約 1MB：只取 earningsTrend 附近一小段再處理，省 CPU
     // 邊讀邊找，找到 earningsTrend 後再多讀 4 萬字就停，不用整頁解碼
@@ -458,7 +463,7 @@ async function valuation(code, us) {
     return [...ann, ...(y.trailingDilutedEPS || []).filter(x => x[0] > last).map(r)];
   })()]);
   // EPS 或股淨比的資料來源一時抓不到（FinMind 偶爾限流）：丟錯，不要把缺資料的結果快取 6 小時；cached() 會先給上次成功的備份
-  if (!ttm.length || (!us && !pb)) throw new Error("source busy");
+  if (!ttm.length || (!us && !pb) || est === undefined) throw new Error("source busy"); // 法人預估 EPS 一時抓不到也一樣（2454 曾因此 6 小時沒有本益比）
   const b5 = pe5Band(monthly, ttm), e = est && est.y0, out = {};
   if (b5 && e && e.avg > 0) Object.assign(out, { eps: e.avg, ...b5 });
   if (b5 && est && est.y1 && est.y1.avg > 0) Object.assign(out, { eps1: est.y1.avg, ...b5 }); // 明年本益比（Luna：分今年、明年）
@@ -542,6 +547,8 @@ async function detail(code, us) {
     // 台股「去年 EPS」用實際四季加總
     const ly = String(new Date(Date.now() + 8 * 3600e3).getUTCFullYear() - 1), lq = !us && (out.epsQ || []).filter(q => q[0].startsWith(ly));
     if (est.y0 && lq && lq.length === 4) est.y0.prev = Math.round(lq.reduce((a, q) => a + q[1], 0) * 100) / 100; }
+  // 法人預估或 EPS 一時抓不到：標記 __partial，cached() 不會把缺資料的結果存 1 小時（Luna：很多檔點進去沒有便宜／合理區間）
+  if (!etf && (est === undefined || !ttmSeries.length)) out.__partial = 1;
   if (ttmSeries.length) {
     out.ttm = ttmSeries[ttmSeries.length - 1][1];
     const last = bars[bars.length - 1][4];
@@ -741,7 +748,17 @@ async function cached(request, ctx, sec, make) {
   const hit = await cache.match(key);
   if (hit) return hit;
   try {
-    const body = JSON.stringify(await make());
+    const data = await make(), partial = data && data.__partial;
+    // 有資料來源一時沒抓到（__partial）：有完整的備份就先給備份，沒有就只快取 5 分鐘，也不蓋掉備份
+    if (partial) {
+      delete data.__partial;
+      const old = await cache.match(backupKey);
+      if (old) return new Response(old.body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+      const res = new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300" } });
+      ctx.waitUntil(cache.put(key, res.clone()));
+      return res;
+    }
+    const body = JSON.stringify(data);
     const res = new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": `public, max-age=${sec}` } });
     ctx.waitUntil(cache.put(key, res.clone()));
     ctx.waitUntil(cache.put(backupKey, new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=259200" } })));

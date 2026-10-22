@@ -41,7 +41,8 @@ async function txfYahoo() {
   const a = await (await get("https://tw.stock.yahoo.com/_td-stock/api/resource/FinanceChartService.ApacLibraCharts;symbols=%5B%22WTX%26%22%5D;type=tick?lang=zh-Hant-TW&region=TW")).json();
   const c = a[0].chart, ts = c.timestamp || [], cl = c.indicators.quote[0].close || [];
   // 只留日盤；半夜到早上開盤前，最新的日盤是前一天那段
-  const ds = ts.map((t, k) => [ymd(t, "Asia/Taipei"), hm(t, "Asia/Taipei"), cl[k]]).filter(p => p[2] != null && p[1] >= "08:45" && p[1] <= "13:45");
+  const tw = t => new Date((t + 8 * 3600) * 1000).toISOString(); // 台灣固定 +8，直接算比 Intl 省 CPU
+  const ds = ts.map((t, k) => { const x = tw(t); return [x.slice(0, 10), x.slice(11, 16), cl[k]]; }).filter(p => p[2] != null && p[1] >= "08:45" && p[1] <= "13:45");
   const day = ds.length ? ds[ds.length - 1][0] : "";
   const pts = ds.filter(p => p[0] === day).map(p => [p[1], r2(p[2])]);
   if (!pts.length) throw new Error("no txf");
@@ -514,14 +515,27 @@ async function detail(code, us) {
 function kdLast2(bars, n = 9) {
   if (bars.length < n + 1) return null;
   let k = 50, dv = 50, prev = null;
+  const ks = [];
   bars.forEach((b, i) => {
     const win = bars.slice(Math.max(0, i - n + 1), i + 1), H = Math.max(...win.map(x => x[0])), L = Math.min(...win.map(x => x[1]));
     const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100;
     if (i === bars.length - 1) prev = [k, dv];
     k = k * 2 / 3 + rsv / 3; dv = dv * 2 / 3 + k / 3;
+    if (i >= bars.length - 3) ks.push(k);
   });
   const r = v => Math.round(v * 10) / 10;
-  return { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]) };
+  // ks：最近 3 根的 K（判斷鈍化：連 3 根 K≥80 或 ≤20）
+  return { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]), ks: ks.map(r) };
+}
+// 短線過濾用：收盤在 20 日均線上／下、MACD 柱（正＝趨勢偏多）、最後一天量 ÷ 前 5 天平均量
+function dayExtras(cl, vol) {
+  const n = cl.length; if (n < 35) return {};
+  const ma20 = cl.slice(-20).reduce((a, b) => a + b, 0) / 20;
+  let e12 = cl[0], e26 = cl[0], dea = 0;
+  cl.forEach((c, i) => { e12 += (c - e12) * 2 / 13; e26 += (c - e26) * 2 / 27; if (i) dea += (e12 - e26 - dea) * 2 / 10; });
+  const out = { above20: cl[n - 1] >= ma20 ? 1 : 0, osc: Math.round((e12 - e26 - dea) * 1000) / 1000 };
+  if (vol && vol.length === n) { const p5 = vol.slice(-6, -1), a = p5.reduce((x, y) => x + y, 0) / 5; if (a > 0 && vol[n - 1] > 0) out.vr = Math.round(vol[n - 1] / a * 100) / 100; }
+  return out;
 }
 async function kdList(list) {
   const one = async ([code, us]) => {
@@ -529,16 +543,19 @@ async function kdList(list) {
       try {
         const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
         const q = r.indicators.quote[0], ts = r.timestamp || []; if (!ts.length) continue;
-        const day = [], weeks = new Map();
+        const day = [], vol = [], weeks = new Map();
         ts.forEach((t, i) => {
           const b = [q.high[i], q.low[i], q.close[i]]; if (b.some(v => v == null)) return;
-          day.push(b);
+          day.push(b); vol.push(q.volume[i] || 0);
           const d = new Date((t + 8 * 3600) * 1000), wd = (d.getUTCDay() + 6) % 7;
           const mon = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - wd)).toISOString().slice(0, 10);
           const w = weeks.get(mon); if (!w) weeks.set(mon, [...b]); else { w[0] = Math.max(w[0], b[0]); w[1] = Math.min(w[1], b[1]); w[2] = b[2]; }
         });
         const wk = [...weeks.keys()].sort().map(k => weeks.get(k));
-        return [code, { day: kdLast2(day), week: kdLast2(wk) }];
+        // 盤中今天的量還沒算完，不拿來比
+        const reg = ((r.meta || {}).currentTradingPeriod || {}).regular, now = Date.now() / 1000;
+        const open = reg && now >= reg.start && now < reg.end && ts[ts.length - 1] >= reg.start;
+        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol) }, week: kdLast2(wk) }];
       } catch (_) {}
     }
     return [code, null];
@@ -592,26 +609,26 @@ async function indexKd(keys) {
       let k; // [[日期, 高, 低, 收]]，近一年就夠算 KD
       if (key === "otc") {
         const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TPEx&start_date=${y1}`)).json();
-        k = (j.data || []).filter(x => x.close > 0).map(x => [x.date, x.max, x.min, x.close]);
+        k = (j.data || []).filter(x => x.close > 0).map(x => [x.date, x.max, x.min, x.close, x.Trading_money || 0]);
       } else if (key === "txf") {
-        const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${y1}`)).json();
+        const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${new Date(Date.now() - 220 * 864e5).toISOString().slice(0, 10)}`)).json();
         const best = {};
         for (const x of j.data || []) {
           if (x.trading_session !== "position" || !/^\d{6}$/.test(x.contract_date) || !(x.close > 0)) continue;
           const b = best[x.date]; if (!b || x.volume > b.volume) best[x.date] = x;
         }
-        k = Object.keys(best).sort().map(d => [d, best[d].max, best[d].min, best[d].close]);
+        k = Object.keys(best).sort().map(d => [d, best[d].max, best[d].min, best[d].close, best[d].volume || 0]);
       } else {
         const sym = key === "twii" ? "^TWII" : key === "2330" ? "2330.TW" : key, tz = /^\^TWII$|\.TW$/.test(sym) ? "Asia/Taipei" : "America/New_York";
         const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
         const q = r.indicators.quote[0];
-        k = (r.timestamp || []).map((t, i) => [ymd(t, tz), q.high[i], q.low[i], q.close[i]]).filter(b => b.every(v => v != null));
+        k = (r.timestamp || []).map((t, i) => [ymd(t, tz), q.high[i], q.low[i], q.close[i], q.volume[i] || 0]).filter(b => b.slice(0, 4).every(v => v != null));
       }
       if (key === "otc" || key === "txf") { // 這兩個的日 K 只到昨天，接上今天盤中
         const live = await (key === "txf" ? txfAny() : yahooTw("^TWOII", "")).catch(() => null);
         if (live && live.pts.length && k.length && live.date > k[k.length - 1][0]) {
           const v = live.pts.map(p => p[1]);
-          k.push([live.date, Math.max(...v), Math.min(...v), v[v.length - 1]]);
+          k.push([live.date, Math.max(...v), Math.min(...v), v[v.length - 1], 0]);
         }
       }
       if (!k.length) return [key, null];
@@ -621,7 +638,8 @@ async function indexKd(keys) {
         const mon = new Date(d.getTime() - wd * 864e5).toISOString().slice(0, 10);
         const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(1)); else { w[0] = Math.max(w[0], b[1]); w[1] = Math.min(w[1], b[2]); w[2] = b[3]; }
       }
-      return [key, { day: kdLast2(k.map(b => b.slice(1))), week: kdLast2([...weeks.keys()].sort().map(x => weeks.get(x))) }];
+      const vl = k.map(b => b[4]), hasV = vl[vl.length - 1] > 0;
+      return [key, { day: { ...kdLast2(k.map(b => b.slice(1, 4))), ...dayExtras(k.map(b => b[3]), hasV ? vl : null) }, week: kdLast2([...weeks.keys()].sort().map(x => weeks.get(x))) }];
     } catch (_) { return [key, null]; }
   };
   return Object.fromEntries((await Promise.all(keys.map(one))).filter(x => x[1]));

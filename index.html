@@ -253,10 +253,10 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-mv button{font:inherit;font-size:20px;font-weight:700;min-height:52px;border-radius:12px;border:2px solid var(--gold);background:var(--gold-soft);color:var(--ink);cursor:pointer}
 .wd-mv button:disabled{opacity:.35;cursor:default}
 .wrow .sigs{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:-4px}
-.wrow .sg{font-style:normal;font-size:17px;font-weight:700;padding:6px 8px;text-align:center;border-radius:6px;line-height:1.35;background:var(--bg);color:var(--muted)}
+.wrow .sg{font-style:normal;font-size:15px;font-weight:700;padding:3px 6px;text-align:center;border-radius:6px;line-height:1.35;background:var(--bg);color:var(--muted)}
 .wrow .sg.buy{background:#fbe3e6;color:#a10d26}
 .wrow .sg.sell{background:#e3f4ea;color:#11683a}
-.wrow .sg small{display:block;font-size:14px;font-weight:600;opacity:.8}
+.wrow .sg small{display:inline;font-size:13px;font-weight:600;opacity:.8;margin-right:6px}
 .sg-pop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:flex;align-items:flex-end;justify-content:center}
 .sg-pop[hidden]{display:none}
 .sg-card{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px 26px}
@@ -1353,15 +1353,14 @@ function kdBoxes(dy,wk,name){
   let sh="";
   if(!dy||dy.k==null)sh=one("短線","na","—","");
   else{
-    const DX=kdX(dy),ago=DX.age?`${DX.age} 天前${DX.xu?"金叉":"死叉"}`:"";
-    const hit=sgHit(dy),m=SG_LOGIC.短線[hit],sub=DX.xu||DX.xd?ago:"";
+    const hit=sgHit(dy),m=SG_LOGIC.短線[hit],sub="";
     const rows=kdRows(dy,true);
     sh=one("短線",m[1],m[2],sub,rows,hit);
   }
   // 長線：同一套，看週 KD
   let lgBox=one("長線","na","—","");
-  if(wk&&wk.k!=null){const WX=kdX(wk),hit=sgHit(wk),lm=SG_LOGIC.長線[hit],ago=WX.age&&(WX.xu||WX.xd)?`${WX.age} 週前${WX.xu?"金叉":"死叉"}`:"";
-    lgBox=one("長線",lm[1],lm[2],ago,kdRows(wk,false),hit)}
+  if(wk&&wk.k!=null){const hit=sgHit(wk),lm=SG_LOGIC.長線[hit];
+    lgBox=one("長線",lm[1],lm[2],"",kdRows(wk,false),hit)}
   return `<span class="sigs">${sh}${lgBox}</span>`}
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
@@ -1374,9 +1373,11 @@ const watchVal={},watchValAt={};
 function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
   const lv=(x,b)=>x<=b.lo?["lo","便宜"]:x>=b.hi?["hi","昂貴"]:["mid","合理"],out=[];
   // 本益比分今年、明年（Luna）：今年／明年法人預估 EPS 各算一次，都和近 5 年本益比區間比
-  const pe=[["今年",v.eps],["明年",v.eps1]].filter(x=>x[1]>0).map(([n,e])=>{const [k,t]=lv(last/e,v);return `${n}<i class="val ${k}">${t}</i>`});
+  const pe=[["今年",v.eps],["明年",v.eps1]].filter(x=>x[1]>0).map(([n,e])=>{const pe=last/e,[k,t]=lv(pe,v);return `${n} ${pe.toFixed(1)}<i class="val ${k}">${t}</i>`});
   if(pe.length)out.push(`<span>本益比 ${pe.join("")}</span>`);
   if(v.pb&&v.pb.bps){const pb=last/v.pb.bps,[k,t]=lv(pb,v.pb);out.push(`<span>股淨比<i class="val ${k}">${t}</i></span>`)}
+  // 合理價（Luna 2026-10-23）：近 5 年本益比區間（平均 ±1 個標準差）× 今年預估 EPS
+  const fe=v.eps>0?v.eps:v.eps1;if(fe>0&&v.lo>0&&v.hi>0){const f=x=>x>=100?Math.round(x).toLocaleString():x.toFixed(1);out.push(`<span>合理價 ${f(v.lo*fe)}～${f(v.hi*fe)}</span>`)}
   return out.length?`<span class="vals">${out.join("")}</span>`:""}
 // 詳細頁抓到的本益比、股淨比也拿來補清單（清單那邊一時沒抓到時，點進去看過就會出現）
 function watchValFromDetail(c,x){if(!x||!x.pe5)return;const k=x.kline||[],price=x.est&&x.est.price||(k.length?k[k.length-1][4]:null),v={...x.pe5};

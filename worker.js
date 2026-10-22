@@ -36,18 +36,31 @@ async function yahooTw(sym, name) {
   return { name, date: ymd(ts[ts.length - 1], "Asia/Taipei"), prev, pts };
 }
 
-// 台指期：先用奇摩股市「台指期近一」的 1 分鐘走勢（期交所的網站常擋 Cloudflare），只取今天日盤（08:45 起）
-async function txfYahoo() {
+// 台指期：先用奇摩股市「台指期近一」的 1 分鐘走勢（期交所的網站常擋 Cloudflare）。一次抓回來的是一個交易日：前一晚 15:00 起的夜盤＋當天日盤
+async function wtx() {
   const a = await (await get("https://tw.stock.yahoo.com/_td-stock/api/resource/FinanceChartService.ApacLibraCharts;symbols=%5B%22WTX%26%22%5D;type=tick?lang=zh-Hant-TW&region=TW")).json();
   const c = a[0].chart, ts = c.timestamp || [], cl = c.indicators.quote[0].close || [];
-  // 只留日盤；半夜到早上開盤前，最新的日盤是前一天那段
   const tw = t => new Date((t + 8 * 3600) * 1000).toISOString(); // 台灣固定 +8，直接算比 Intl 省 CPU
-  const ds = ts.map((t, k) => { const x = tw(t); return [x.slice(0, 10), x.slice(11, 16), cl[k]]; }).filter(p => p[2] != null && p[1] >= "08:45" && p[1] <= "13:45");
+  const rows = ts.map((t, k) => { const x = tw(t); return [x.slice(0, 10), x.slice(11, 16), cl[k]]; }).filter(p => p[2] != null);
+  return { rows, prev: c.meta.chartPreviousClose ?? c.meta.previousClose };
+}
+// 日盤（08:45–13:45）；晚上夜盤開始後抓不到當天日盤，就交給網頁沿用每天排程存下的那份
+function txfDay(w) {
+  const ds = w.rows.filter(p => p[1] >= "08:45" && p[1] <= "13:45");
   const day = ds.length ? ds[ds.length - 1][0] : "";
   const pts = ds.filter(p => p[0] === day).map(p => [p[1], r2(p[2])]);
   if (!pts.length) throw new Error("no txf");
-  return { name: "台指期（近月）", date: day, prev: c.meta.chartPreviousClose ?? c.meta.previousClose, pts };
+  return { name: "台指期（近月）", date: day, prev: w.prev, pts };
 }
+// 夜指期：同一個合約的夜盤（15:00–隔天 05:00），漲跌和前一個日盤收盤比；白天看到的是昨晚那一段
+function txfNight(w) {
+  const ns = w.rows.filter(p => p[1] >= "15:00" || p[1] <= "05:00");
+  const pts = ns.map(p => [p[1], r2(p[2])]);
+  if (!pts.length) throw new Error("no night");
+  const f = ns[0], start = f[1] >= "15:00" ? f[0] : new Date(Date.parse(f[0]) - 864e5).toISOString().slice(0, 10);
+  return { name: "夜指期（台指期夜盤）", date: start, prev: w.prev, pts };
+}
+const txfYahoo = async () => txfDay(await wtx());
 const txfAny = () => txfYahoo().catch(() => txf());
 
 async function taifex(path, body) {
@@ -84,12 +97,15 @@ async function spark(list) {
 
 async function build() {
   const jobs = {
-    twii: yahooTw("^TWII", "加權指數"), txf: txfAny(), otc: yahooTw("^TWOII", "櫃買指數"),
+    twii: yahooTw("^TWII", "加權指數"), otc: yahooTw("^TWOII", "櫃買指數"),
     us: spark([...US, ...PICKS]), tw2330: yahooTw("2330.TW", "台積電"), fx: spark([["TWD=X", "美元兌台幣"]]),
   };
+  const w = wtx();
+  jobs.txf = w.then(txfDay).catch(() => txf());
+  jobs.txfn = w.then(txfNight); // Luna：台股加夜指期，放在台指期下面
   const got = Object.fromEntries(await Promise.all(Object.entries(jobs).map(([k, p]) => p.then(v => [k, v], () => [k, null]))));
   const items = [];
-  for (const k of ["twii", "txf", "otc"]) if (got[k]) items.push({ key: k, ...got[k] });
+  for (const k of ["twii", "txf", "txfn", "otc"]) if (got[k]) items.push({ key: k, ...got[k] });
   if (got.tw2330) items.push({ key: "2330", pick: 1, ...got.tw2330 }); // Luna：大盤台股最下面放台積電
   if (got.us) items.push(...got.us.map(x => PICKS.some(p => p[0] === x.key) ? { ...x, pick: 1 } : x));
   const now = new Date(Date.now() + 8 * 3600e3).toISOString();
@@ -387,6 +403,65 @@ async function estimates(sym) {
     return out.y0 || out.y1 ? out : null;
   } catch (_) { return null; }
 }
+// 近 5 年本益比平均：每個月收盤 ÷ 當時近四季 EPS；平均 ±1 個標準差當「便宜／昂貴」的分界
+function pe5Band(monthly, ttmSeries) {
+  const p5 = monthly.slice(-60).map(([dt, c]) => { const e = [...ttmSeries].reverse().find(x => x[0] <= dt); return e && e[1] > 0 ? c / e[1] : null; }).filter(v => v != null && v < 300);
+  if (p5.length < 12) return null;
+  const avg = p5.reduce((a, b) => a + b, 0) / p5.length, sd = Math.sqrt(p5.reduce((a, b) => a + (b - avg) ** 2, 0) / p5.length);
+  return { avg: Math.round(avg * 10) / 10, lo: Math.round(Math.max(avg - sd, avg * 0.5) * 10) / 10, hi: Math.round((avg + sd) * 10) / 10, months: p5.length };
+}
+// 股淨比：bps＝推算的每股淨值（網頁用即時股價 ÷ bps 算現在的股淨比）；台股另有近 5 年平均 ±1 個標準差
+async function pbBand(code, us, sym, bars, price) {
+  try {
+    const closeAt = Object.fromEntries(bars.map(b => [b[0], b[4]]));
+    let pts = [];
+    if (!us) {
+      const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${code}&start_date=${new Date().getUTCFullYear() - 5}-${String(new Date().getUTCMonth() + 1).padStart(2, "0")}-01`)).json();
+      pts = (j.data || []).filter(x => x.PBR > 0).map(x => [x.date, x.PBR]);
+    } else {
+      const y = await yahooSeries(sym, "trailingPbRatio").catch(() => ({}));
+      pts = (y.trailingPbRatio || []).filter(x => x[1] > 0);
+    }
+    if (!pts.length) return null;
+    const [ld, lv] = pts[pts.length - 1], dates = Object.keys(closeAt).filter(d => d <= ld).sort(), c0 = dates.length ? closeAt[dates[dates.length - 1]] : null;
+    const cur = c0 ? price / (c0 / lv) : lv, r2 = v => Math.round(v * 100) / 100;
+    const pb = { cur: r2(cur), asOf: ld, bps: c0 ? c0 / lv : null };
+    const mon = {}; pts.forEach(([d, v]) => { mon[d.slice(0, 7)] = v; });
+    const m = Object.entries(mon).slice(-60);
+    if (m.length >= 24) {
+      const v = m.map(x => x[1]), avg = v.reduce((a, b) => a + b, 0) / v.length, sd = Math.sqrt(v.reduce((a, b) => a + (b - avg) ** 2, 0) / v.length);
+      Object.assign(pb, { avg: r2(avg), lo: r2(Math.max(avg - sd, avg * 0.5)), hi: r2(avg + sd), months: m.map(x => x[0]), hist: m.map(x => r2(x[1])) });
+    }
+    return pb;
+  } catch (_) { return null; }
+}
+// 自選股清單的便宜／合理／昂貴：今年法人預估 EPS ＋ 近 5 年本益比區間（網頁再用即時股價 ÷ EPS 比對）。ETF 沒有，回空的
+async function valuation(code, us) {
+  if (!us && /^00/.test(code)) return {};
+  let sym = us ? code : code + ".TW", d = await chart(sym);
+  if (!us && (!d || !(d.timestamp || []).length)) { sym = code + ".TWO"; d = await chart(sym); }
+  if (!d || !(d.timestamp || []).length || d.meta.instrumentType === "ETF") return {};
+  // 月收盤和詳細頁同一套算法，兩邊的便宜／昂貴才會一致
+  const tz = us ? "America/New_York" : "Asia/Taipei", q = d.indicators.quote[0], month = {};
+  const bars = d.timestamp.map((t, i) => [ymd(t, tz), q.open[i], q.high[i], q.low[i], rp(q.close[i])]).filter(b => b.slice(1, 5).every(v => v != null));
+  bars.forEach(b => { month[b[0].slice(0, 7)] = [b[0], b[4]]; });
+  const monthly = Object.values(month);
+  const [est, pb, ttm] = await Promise.all([estimates(sym), pbBand(code, us, sym, bars, bars[bars.length - 1][4]), (async () => {
+    const sumLast4 = qs => qs.map((x, i) => i < 3 ? null : [x[0], qs.slice(i - 3, i + 1).reduce((a, y) => a + y[1], 0)]).filter(Boolean);
+    if (!us) {
+      let qs = await twEps(code);
+      if (!qs) { const y = await yahooSeries(sym, "quarterlyDilutedEPS").catch(() => ({})); qs = y.quarterlyDilutedEPS || []; }
+      return sumLast4(qs);
+    }
+    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS").catch(() => ({}));
+    const r = ([dt, v]) => [dt, Math.round(v * 100) / 100], ann = (y.annualDilutedEPS || []).map(r), last = ann.length ? ann[ann.length - 1][0] : "";
+    return [...ann, ...(y.trailingDilutedEPS || []).filter(x => x[0] > last).map(r)];
+  })()]);
+  const b5 = pe5Band(monthly, ttm), e = est && est.y0, out = {};
+  if (b5 && e && e.avg > 0) Object.assign(out, { eps: e.avg, ...b5 });
+  if (pb && pb.bps && pb.avg) out.pb = { bps: Math.round(pb.bps * 1000) / 1000, avg: pb.avg, lo: pb.lo, hi: pb.hi };
+  return out;
+}
 async function detail(code, us) {
   let sym = us ? code : code + ".TW", d = await chart(sym);
   if (!us && (!d || !(d.timestamp || []).length)) { sym = code + ".TWO"; d = await chart(sym); }
@@ -470,11 +545,7 @@ async function detail(code, us) {
     out.pe = out.ttm > 0 ? Math.round(last / out.ttm * 10) / 10 : null;
     // 河流圖（近 3 年）：每個月用當時最新的近四季 EPS，倍數取這段期間本益比的 10%～90%
     // 近 5 年本益比平均：每個月收盤 ÷ 當時近四季 EPS；平均 ±1 個標準差當「便宜／昂貴」的分界
-    const p5 = monthly.slice(-60).map(([dt, c]) => { const e = [...ttmSeries].reverse().find(x => x[0] <= dt); return e && e[1] > 0 ? c / e[1] : null; }).filter(v => v != null && v < 300);
-    if (p5.length >= 12) {
-      const avg = p5.reduce((a, b) => a + b, 0) / p5.length, sd = Math.sqrt(p5.reduce((a, b) => a + (b - avg) ** 2, 0) / p5.length);
-      out.pe5 = { avg: Math.round(avg * 10) / 10, lo: Math.round(Math.max(avg - sd, avg * 0.5) * 10) / 10, hi: Math.round((avg + sd) * 10) / 10, months: p5.length };
-    }
+    const b5 = pe5Band(monthly, ttmSeries); if (b5) out.pe5 = b5;
     const pts = monthly.slice(-37).map(([dt, c]) => { const e = [...ttmSeries].reverse().find(x => x[0] <= dt); return e ? [dt.slice(0, 7), c, e[1]] : null; }).filter(Boolean);
     const pes = pts.filter(p => p[2] > 0).map(p => p[1] / p[2]).sort((a, b) => a - b);
     if (pes.length >= 6 && out.ttm > 0) {
@@ -485,29 +556,8 @@ async function detail(code, us) {
     }
   }
   // 股價淨值比：台股用 FinMind 每天的 PBR（近 5 年），美股用 Yahoo 的 P/B；都用最新股價換算成「現在」的股淨比
-  try {
-    const closeAt = Object.fromEntries(bars.map(b => [b[0], b[4]])), price = fixed.length ? fixed[fixed.length - 1][4] : bars[bars.length - 1][4];
-    let pts = [];
-    if (!us) {
-      const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${code}&start_date=${new Date().getUTCFullYear() - 5}-${String(new Date().getUTCMonth() + 1).padStart(2, "0")}-01`)).json();
-      pts = (j.data || []).filter(x => x.PBR > 0).map(x => [x.date, x.PBR]);
-    } else {
-      const y = await yahooSeries(sym, "trailingPbRatio").catch(() => ({}));
-      pts = (y.trailingPbRatio || []).filter(x => x[1] > 0);
-    }
-    if (pts.length) {
-      const [ld, lv] = pts[pts.length - 1], dates = Object.keys(closeAt).filter(d => d <= ld).sort(), c0 = dates.length ? closeAt[dates[dates.length - 1]] : null;
-      const cur = c0 ? price / (c0 / lv) : lv, r2 = v => Math.round(v * 100) / 100;
-      const pb = { cur: r2(cur), asOf: ld };
-      const mon = {}; pts.forEach(([d, v]) => { mon[d.slice(0, 7)] = v; });
-      const m = Object.entries(mon).slice(-60);
-      if (m.length >= 24) {
-        const v = m.map(x => x[1]), avg = v.reduce((a, b) => a + b, 0) / v.length, sd = Math.sqrt(v.reduce((a, b) => a + (b - avg) ** 2, 0) / v.length);
-        Object.assign(pb, { avg: r2(avg), lo: r2(Math.max(avg - sd, avg * 0.5)), hi: r2(avg + sd), months: m.map(x => x[0]), hist: m.map(x => r2(x[1])) });
-      }
-      out.pb = pb;
-    }
-  } catch (_) {}
+  const pb = await pbBand(code, us, sym, bars, fixed.length ? fixed[fixed.length - 1][4] : bars[bars.length - 1][4]);
+  if (pb) { delete pb.bps; out.pb = pb; }
   return out;
 }
 
@@ -515,17 +565,26 @@ async function detail(code, us) {
 function kdLast2(bars, n = 9) {
   if (bars.length < n + 1) return null;
   let k = 50, dv = 50, prev = null;
-  const ks = [];
+  const ks = [], all = [];
   bars.forEach((b, i) => {
     const win = bars.slice(Math.max(0, i - n + 1), i + 1), H = Math.max(...win.map(x => x[0])), L = Math.min(...win.map(x => x[1]));
     const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100;
     if (i === bars.length - 1) prev = [k, dv];
     k = k * 2 / 3 + rsv / 3; dv = dv * 2 / 3 + k / 3;
     if (i >= bars.length - 3) ks.push(k);
+    if (i >= bars.length - 20) all.push(k);
   });
   const r = v => Math.round(v * 10) / 10;
   // ks：最近 3 根的 K（判斷鈍化：連 3 根 K≥80 或 ≤20）
-  return { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]), ks: ks.map(r) };
+  const out = { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]), ks: ks.map(r) };
+  // 背離：最後一根收盤創近 20 根新高（新低），但 K 比前一次高點（低點）那根的 K 低（高）→ dv = [1 頂背離／-1 底背離, 前一次的收盤, 前一次的 K]
+  if (bars.length >= 20) {
+    const cl = bars.slice(-20).map(b => b[2]), c = cl[19], old = cl.slice(0, 15);
+    const hi = Math.max(...old), lo = Math.min(...old), ih = old.indexOf(hi), il = old.indexOf(lo);
+    if (c >= Math.max(...cl) && c > hi && k < all[ih] - 2) out.dv = [1, hi, r(all[ih])];
+    else if (c <= Math.min(...cl) && c < lo && k > all[il] + 2) out.dv = [-1, lo, r(all[il])];
+  }
+  return out;
 }
 // 短線過濾用：收盤在 20 日均線上／下、MACD 柱（正＝趨勢偏多）、最後一天量 ÷ 前 5 天平均量
 function dayExtras(cl, vol) {
@@ -718,6 +777,13 @@ export default {
         const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
         if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 3600, () => detail(c, false));
         if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 3600, () => detail(u, true));
+        return new Response("{}", { status: 400 });
+      }
+      case "/api/val": {
+        // ?c=2330 或 ?us=NVDA → 今年預估 EPS 和近 5 年本益比區間，6 小時內共用
+        const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 21600, () => valuation(c, false));
+        if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 21600, () => valuation(u, true));
         return new Response("{}", { status: 400 });
       }
       case "/api/ixk": {

@@ -1335,6 +1335,19 @@ async function watchLoad(){
   watchRender();
 }
 // 開著自選股時每 60 秒自動抓一次最新價（Cloudflare 那邊也是 60 秒更新一次）；切回畫面時馬上補抓
+// 大盤頁和大盤 K 線頁也每分鐘更新
+function ixLivePatch(){
+  if(curPage()!=="wdetail"||!wdK.ix||!wdK.daily.length)return;const it=(IDX.items||[]).find(x=>x.key===wdK.ix);if(!it||!it.pts||!it.pts.length)return;
+  const ps=it.pts.map(p=>p[1]),k=wdK.daily=wdK.daily.slice(),lb=k[k.length-1],c=ps[ps.length-1];
+  if(it.date===lb[0])k[k.length-1]=[lb[0],lb[1],Math.max(lb[2],...ps),Math.min(lb[3],...ps),c,lb[5]];
+  else if(it.date>lb[0])k.push([it.date,ps[0],Math.max(...ps),Math.min(...ps),c,0]);
+  const hd=document.querySelector("#wd-body .wd-head");
+  if(hd&&it.prev){const f2=v=>v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),d=c-it.prev,cls=d>0?"up":d<0?"down":"flat";
+    const bg=hd.querySelector(".big"),ch=hd.querySelector(".chg");
+    if(bg){bg.className="big "+cls;bg.textContent=f2(c)}
+    if(ch){ch.className="chg "+cls;ch.textContent=`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}}
+  if($("wd-k"))wdKDraw()}
+setInterval(()=>{if(ON_CF&&!document.hidden&&(curPage()==="idx"||curPage()==="wdetail"&&wdK.ix))liveIdx().then(ixLivePatch)},60000);
 // 詳細頁也一樣每分鐘更新（今天的 K 棒和價格）
 const watchOn=()=>ON_CF&&!document.hidden&&STOCK&&(curPage()==="watch"||curPage()==="wdetail"&&!wdK.ix);
 setInterval(()=>{if(watchOn())watchLoad()},60000);

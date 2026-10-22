@@ -36,6 +36,19 @@ async function yahooTw(sym, name) {
   return { name, date: ymd(ts[ts.length - 1], "Asia/Taipei"), prev, pts };
 }
 
+// 台指期：先用奇摩股市「台指期近一」的 1 分鐘走勢（期交所的網站常擋 Cloudflare），只取今天日盤（08:45 起）
+async function txfYahoo() {
+  const a = await (await get("https://tw.stock.yahoo.com/_td-stock/api/resource/FinanceChartService.ApacLibraCharts;symbols=%5B%22WTX%26%22%5D;type=tick?lang=zh-Hant-TW&region=TW")).json();
+  const c = a[0].chart, ts = c.timestamp || [], cl = c.indicators.quote[0].close || [];
+  // 只留日盤；半夜到早上開盤前，最新的日盤是前一天那段
+  const ds = ts.map((t, k) => [ymd(t, "Asia/Taipei"), hm(t, "Asia/Taipei"), cl[k]]).filter(p => p[2] != null && p[1] >= "08:45" && p[1] <= "13:45");
+  const day = ds.length ? ds[ds.length - 1][0] : "";
+  const pts = ds.filter(p => p[0] === day).map(p => [p[1], r2(p[2])]);
+  if (!pts.length) throw new Error("no txf");
+  return { name: "台指期（近月）", date: day, prev: c.meta.chartPreviousClose ?? c.meta.previousClose, pts };
+}
+const txfAny = () => txfYahoo().catch(() => txf());
+
 async function taifex(path, body) {
   const r = await get("https://mis.taifex.com.tw/futures/api/" + path, {
     method: "POST", body: JSON.stringify(body), headers: { "Content-Type": "application/json" },
@@ -70,7 +83,7 @@ async function spark(list) {
 
 async function build() {
   const jobs = {
-    twii: yahooTw("^TWII", "加權指數"), txf: txf(), otc: yahooTw("^TWOII", "櫃買指數"),
+    twii: yahooTw("^TWII", "加權指數"), txf: txfAny(), otc: yahooTw("^TWOII", "櫃買指數"),
     us: spark([...US, ...PICKS]), tw2330: yahooTw("2330.TW", "台積電"), fx: spark([["TWD=X", "美元兌台幣"]]),
   };
   const got = Object.fromEntries(await Promise.all(Object.entries(jobs).map(([k, p]) => p.then(v => [k, v], () => [k, null]))));
@@ -595,7 +608,7 @@ async function indexKd(keys) {
         k = (r.timestamp || []).map((t, i) => [ymd(t, tz), q.high[i], q.low[i], q.close[i]]).filter(b => b.every(v => v != null));
       }
       if (key === "otc" || key === "txf") { // 這兩個的日 K 只到昨天，接上今天盤中
-        const live = await (key === "txf" ? txf() : yahooTw("^TWOII", "")).catch(() => null);
+        const live = await (key === "txf" ? txfAny() : yahooTw("^TWOII", "")).catch(() => null);
         if (live && live.pts.length && k.length && live.date > k[k.length - 1][0]) {
           const v = live.pts.map(p => p[1]);
           k.push([live.date, Math.max(...v), Math.min(...v), v[v.length - 1]]);

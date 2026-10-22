@@ -374,7 +374,15 @@ async function twEstimates(code) {
     return out.y0 || out.y1 ? out : null;
   } catch (_) { return undefined; } // 抓失敗（不是沒資料）回 undefined，讓 valuation 不要快取
 }
+// 法人預估 EPS 抓到一次就保留一季（Luna 2026-10-23）：有新資料才換；這次沒抓到就用保留的
 async function estimates(sym) {
+  const key = new Request(`https://est.cache/${encodeURIComponent(sym.replace(/\.TWO$/, ".TW"))}`), cache = caches.default;
+  const now = await estimatesLive(sym);
+  if (now && (now.y0 || now.y1)) { await cache.put(key, new Response(JSON.stringify(now), { headers: { "Cache-Control": "public, max-age=7776000" } })).catch(() => {}); return now; }
+  const kept = await cache.match(key).then(r => r && r.json()).catch(() => null);
+  return kept || now;
+}
+async function estimatesLive(sym) {
   const tw = sym.match(/^(\w+)\.TWO?$/);
   let failed = false;
   if (tw) { const c = await twEstimates(tw[1]); if (c) return c; failed = c === undefined; }
@@ -468,8 +476,27 @@ async function valuation(code, us) {
   if (!ttm.length || (!us && !pb) || est === undefined) out.__partial = 1;
   if (b5 && e && e.avg > 0) Object.assign(out, { eps: e.avg, ...b5 });
   if (b5 && est && est.y1 && est.y1.avg > 0) Object.assign(out, { eps1: est.y1.avg, ...b5 }); // 明年本益比（Luna：分今年、明年）
+  // 獲利不穩定（景氣循環股）：近 5 年近四季 EPS 曾經 ≤0，或從高點掉超過 4 成 → 網頁改看股淨比（Luna 2026-10-23）
+  const t5 = ttm.slice(-20).map(x => x[1]);
+  if (t5.length >= 8) { let pk = -Infinity, dd = 0; for (const v of t5) { pk = Math.max(pk, v); if (pk > 0) dd = Math.max(dd, 1 - v / pk); } if (Math.min(...t5) <= 0 || dd > 0.4) out.cyc = 1; }
   if (pb && pb.bps && pb.avg) out.pb = { bps: Math.round(pb.bps * 1000) / 1000, avg: pb.avg, lo: pb.lo, hi: pb.hi };
-  return out;
+  return keepVal(code, us, out);
+}
+// 本益比／股淨比區間（便宜價、合理價）和預估 EPS 抓到就保留一季（Luna 2026-10-23）：新的有就換、缺的用保留的補
+const valKey = (code, us) => new Request(`https://val.cache/${us ? "us" : "tw"}/${encodeURIComponent(code)}`);
+async function keptVal(code, us) { return caches.default.match(valKey(code, us)).then(r => r && r.json()).catch(() => null); }
+async function keepVal(code, us, out) {
+  const kept = await keptVal(code, us) || {}, m = { ...out };
+  if (!(m.avg > 0) && kept.avg > 0) Object.assign(m, { avg: kept.avg, lo: kept.lo, hi: kept.hi, months: kept.months });
+  for (const k of ["eps", "eps1"]) if (!(m[k] > 0) && kept[k] > 0) m[k] = kept[k];
+  if (!m.pb && kept.pb) m.pb = kept.pb;
+  if (m.cyc == null && kept.cyc) m.cyc = kept.cyc;
+  delete m.__partial;
+  const full = (m.eps > 0 || m.eps1 > 0) && m.avg > 0 && (us || m.pb);
+  if (!full && out.__partial) m.__partial = 1;
+  const save = { ...m }; delete save.__partial;
+  if (save.avg > 0 || save.pb) await caches.default.put(valKey(code, us), new Response(JSON.stringify(save), { headers: { "Cache-Control": "public, max-age=7776000" } })).catch(() => {});
+  return m;
 }
 async function detail(code, us) {
   let sym = us ? code : code + ".TW", d = await chart(sym);
@@ -557,6 +584,7 @@ async function detail(code, us) {
     // 河流圖（近 3 年）：每個月用當時最新的近四季 EPS，倍數取這段期間本益比的 10%～90%
     // 近 5 年本益比平均：每個月收盤 ÷ 當時近四季 EPS；平均 ±1 個標準差當「便宜／昂貴」的分界
     const b5 = pe5Band(monthly, ttmSeries); if (b5) out.pe5 = b5;
+    else { const k = await keptVal(code, us); if (k && k.avg > 0) out.pe5 = { avg: k.avg, lo: k.lo, hi: k.hi, months: k.months }; } // 這次沒算出來就用保留一季的
     const pts = monthly.slice(-37).map(([dt, c]) => { const e = [...ttmSeries].reverse().find(x => x[0] <= dt); return e ? [dt.slice(0, 7), c, e[1]] : null; }).filter(Boolean);
     const pes = pts.filter(p => p[2] > 0).map(p => p[1] / p[2]).sort((a, b) => a - b);
     if (pes.length >= 6 && out.ttm > 0) {

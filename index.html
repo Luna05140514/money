@@ -1370,21 +1370,24 @@ async function watchKdLoad(){
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
 const watchVal={},watchValAt={};
 // 本益比區間、預估 EPS、每股淨值變化很慢（Luna 2026-10-23：不用常抓）：存在手機裡，一天才重抓一次；股價還是即時的
-const VAL_TTL=864e5;
-try{const o=JSON.parse(localStorage.getItem("facai-val")||"{}");for(const c in o)if(o[c].t>Date.now()-VAL_TTL){watchValAt[c]=o[c].t;delete o[c].t;watchVal[c]=o[c]}}catch(_){}
+// 法人預估 EPS 抓到就保留一季（Luna 2026-10-23）：手機裡存 90 天，每天還是問一次有沒有新的，沒抓到就用保留的；本益比＝即時股價 ÷ 這個 EPS，自己算
+const VAL_TTL=864e5,VAL_KEEP=7776e6;
+try{const o=JSON.parse(localStorage.getItem("facai-val")||"{}");for(const c in o)if(o[c].t>Date.now()-VAL_KEEP){const t=o[c].t;delete o[c].t;watchVal[c]=o[c];if(o[c].eps||o[c].eps1||/^(28|58)\d\d$/.test(c))watchValAt[c]=t}}catch(_){}
 function watchValSave(){try{const o={};for(const c in watchVal)if(watchValAt[c])o[c]={...watchVal[c],t:watchValAt[c]};localStorage.setItem("facai-val",JSON.stringify(o))}catch(_){}}
 // 名字上方一整行：本益比、股淨比各自的便宜／合理／昂貴（股淨比＝即時股價 ÷ 每股淨值，和近 5 年平均比）
 function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
   const lv=(x,b)=>x<=b.lo?["lo","便宜"]:x>=b.hi?["hi","昂貴"]:["mid","合理"],out=[];
   const f=x=>x>=100?Math.round(x).toLocaleString():x.toFixed(1);
-  // 自動選一個（Luna 2026-10-23）：金融股（28xx、58xx）或沒有法人預估 EPS、EPS 不是正數的看股淨比，其他看本益比；詳細頁兩個都有
+  // 價格顯示成「便宜 x－合理 y－昂貴 z」（Luna 2026-10-23）：區間下緣、平均、上緣 × EPS（或每股淨值）
+  const band=(b,m)=>`<span>便宜 ${f(b.lo*m)}－合理 ${f(b.avg*m)}－昂貴 ${f(b.hi*m)}</span>`;
+  // 自動選一個（Luna 2026-10-23）：金融股（28xx、58xx）、景氣循環／獲利不穩（worker 給 cyc：近 5 年 EPS 曾 ≤0 或掉超過 4 成）、沒有法人預估 EPS 的看股淨比，其他看本益比；詳細頁兩個都有
   const pe=[["今年",v.eps],["明年",v.eps1]].filter(x=>x[1]>0),hasPb=v.pb&&v.pb.bps&&v.pb.lo>0;
-  const usePb=hasPb&&(/^(28|58)\d\d$/.test(c)||!pe.length);
-  if(usePb){const pb=last/v.pb.bps,[k,t]=lv(pb,v.pb);out.push(`<span>股淨比 ${pb.toFixed(2)}<i class="val ${k}">${t}</i></span>`,`<span>合理價 ${f(v.pb.lo*v.pb.bps)}～${f(v.pb.hi*v.pb.bps)}</span>`)}
+  const usePb=hasPb&&(/^(28|58)\d\d$/.test(c)||v.cyc||!pe.length);
+  if(usePb){const pb=last/v.pb.bps,[k,t]=lv(pb,v.pb);out.push(`<span>股淨比 ${pb.toFixed(2)}<i class="val ${k}">${t}</i></span>`,band(v.pb,v.pb.bps))}
   else if(pe.length){
     out.push(`<span>本益比 ${pe.map(([n,e])=>{const x=last/e,[k,t]=lv(x,v);return `${n} ${x.toFixed(1)}<i class="val ${k}">${t}</i>`}).join("")}</span>`);
     // 合理價：近 5 年本益比區間（平均 ±1 個標準差）× 今年預估 EPS
-    const fe=pe[0][1];if(v.lo>0&&v.hi>0)out.push(`<span>合理價 ${f(v.lo*fe)}～${f(v.hi*fe)}</span>`)}
+    const fe=pe[0][1];if(v.lo>0&&v.hi>0&&v.avg>0)out.push(band(v,fe))}
   return out.length?`<span class="vals">${out.join("")}</span>`:""}
 // 詳細頁抓到的本益比、股淨比也拿來補清單（清單那邊一時沒抓到時，點進去看過就會出現）
 function watchValFromDetail(c,x){if(!x||!x.pe5)return;const k=x.kline||[],price=x.est&&x.est.price||(k.length?k[k.length-1][4]:null),v={...x.pe5};
@@ -1395,10 +1398,11 @@ async function watchValLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
   const need=g.list.filter(c=>idxOf[c]&&!(idxOf[c][4]?false:/^00/.test(c))&&!(watchValAt[c]>Date.now()-VAL_TTL));if(!need.length)return;
   need.forEach(c=>watchValAt[c]=Date.now());
-  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=6`).then(d=>[c,d])));
+  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=8`).then(d=>[c,d])));
   // 合併而不是整個換掉：資料來源一時抓不到時，不會把原本有的本益比洗掉（Luna：一下有一下沒有）；缺東西的 5 分鐘後再抓
-  let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){const o=watchVal[c]||{};watchVal[c]=d.eps||d.eps1?{...o,...d,pb:d.pb||o.pb}:{...o,pb:d.pb};ch=1}
-    if(!d)watchValAt[c]=Date.now()-VAL_TTL+3e5});watchValSave();
+  let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){const o=watchVal[c]||{};watchVal[c]=d.eps||d.eps1?{...o,...d,pb:d.pb||o.pb}:{...o,pb:d.pb,cyc:d.cyc};ch=1}
+    // 沒抓到，或非金融股卻缺預估 EPS（台積電曾因此改顯示股淨比）：不要存一整天，5 分鐘後再抓（伺服器那邊有快取，很快）
+    const v=watchVal[c];if(!d||!v||!(v.eps||v.eps1)&&!/^(28|58)\d\d$/.test(c))watchValAt[c]=Date.now()-VAL_TTL+3e5});watchValSave();
   if(ch&&curPage()==="watch")watchRender()}
 function watchRender(){
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1497,7 +1501,7 @@ async function wdRender(c){
   let x=wdCache[c];
   for(let t=0;!x&&t<3;t++){
     if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
-    x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=7`);if(x&&x.error)x=null;
+    x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=8`);if(x&&x.error)x=null;
   }
   if(x){wdCache[c]=x;watchValFromDetail(c,x)}
   if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}

@@ -1329,13 +1329,16 @@ async function watchLoad(){
   const d=await api(`/api/quote?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}`);
   if(!d)return;
   Object.assign(watchLive,d);
+  if(curPage()==="wdetail"&&!wdK.ix&&d[wdK.code]){wdLivePatch();if($("wd-k"))wdKDraw()}
   const now=new Date(Date.now()+8*3600e3).toISOString();
   $("watch-time").textContent=`資料更新於 ${now.slice(0,10)} ${now.slice(11,19)}${LIVE}，每分鐘自動更新`;
   watchRender();
 }
 // 開著自選股時每 60 秒自動抓一次最新價（Cloudflare 那邊也是 60 秒更新一次）；切回畫面時馬上補抓
-setInterval(()=>{if(ON_CF&&!document.hidden&&curPage()==="watch"&&STOCK)watchLoad()},60000);
-document.addEventListener("visibilitychange",()=>{if(ON_CF&&!document.hidden&&curPage()==="watch"&&STOCK)watchLoad()});
+// 詳細頁也一樣每分鐘更新（今天的 K 棒和價格）
+const watchOn=()=>ON_CF&&!document.hidden&&STOCK&&(curPage()==="watch"||curPage()==="wdetail"&&!wdK.ix);
+setInterval(()=>{if(watchOn())watchLoad()},60000);
+document.addEventListener("visibilitychange",()=>{if(watchOn())watchLoad()});
 function watchInit(){
   watchLoadSaved();
   try{watchTab=Math.min(+localStorage.getItem("facai-watch-tab")||0,watchGroups.length-1)}catch(_){}
@@ -1464,7 +1467,18 @@ async function wdRender(c){
     if(y0||y1)wdK.peY={y0,y1,band:b5?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${b5.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${b5.avg} 倍</span><small>5 年平均</small></div><div class="hi"><b>昂貴</b><span>${b5.hi} 倍</span><small>以上</small></div></div><p class="muted">近 5 年平均本益比 ${b5.avg} 倍（每月收盤 ÷ 當時近四季 EPS）。比平均低一段算便宜，高一段算昂貴。</p>`:""};
   }
   body.innerHTML=html;
-  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdKDraw();
+  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdLivePatch();wdKDraw();
+}
+// 自選股詳細頁：用即時報價更新今天那根 K 棒和上面的價格（台股有開高低量，美股只更新價格）
+function wdLivePatch(){
+  if(wdK.ix||!wdK.code||!wdK.daily||!wdK.daily.length)return;const lv=watchLive[wdK.code];if(!lv||lv.last==null)return;
+  if(lv.o!=null&&lv.date){const k=wdK.daily=wdK.daily.slice(),lb=k[k.length-1],bar=[lv.date,lv.o,lv.h??lv.last,lv.l??lv.last,lv.last,lv.v||0];
+    if(lb[0]===lv.date)k[k.length-1]=bar;else if(lv.date>lb[0])k.push(bar)}
+  const hd=document.querySelector("#wd-body .wd-head");if(!hd||!lv.prev)return;
+  const f2=v=>v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),d=lv.last-lv.prev,cls=d>0?"up":d<0?"down":"flat";
+  const bg=hd.querySelector(".big"),ch=hd.querySelector(".chg");
+  if(bg){bg.className="big "+cls;bg.textContent=f2(lv.last)}
+  if(ch){ch.className="chg "+cls;ch.textContent=`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/lv.prev*100).toFixed(2)}%）`}
 }
 // 大盤的 K 線頁：和自選股同一套 K 線（日週月、均線、成交量、KDJ、MACD、布林%b），沒有配息、EPS、本益比
 async function wdRenderIx(c){

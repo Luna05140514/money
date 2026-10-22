@@ -263,6 +263,30 @@ async function sparkMap(syms) {
   }
   return out;
 }
+// 台股即時報價：Yahoo 奇摩股市（沒有延遲；Yahoo Finance 的台股會晚 20 分鐘）
+// 回傳 { 代號: { prev, last, o, h, l, v, date } }，上市找不到再用上櫃
+async function twLive(codes) {
+  const out = {};
+  const ask = async suf => {
+    const need = codes.filter(c => !out[c]); if (!need.length) return;
+    for (let i = 0; i < need.length; i += 30) {
+      const syms = need.slice(i, i + 30).map(c => c + suf).join(",");
+      try {
+        const a = await (await get(`https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;fields=avgPrice;symbols=${encodeURIComponent(syms)}?lang=zh-Hant-TW&region=TW`)).json();
+        for (const x of a || []) {
+          const c = String(x.symbol || "").replace(/\.TWO?$/, ""), n = v => v && v.raw != null && v.raw !== "" ? +v.raw : null;
+          const last = n(x.price), prev = n(x.regularMarketPreviousClose);
+          if (last == null || !prev || !x.regularMarketTime) continue;
+          out[c] = { prev, last, o: n(x.regularMarketOpen), h: n(x.regularMarketDayHigh), l: n(x.regularMarketDayLow), v: +x.volume || 0,
+            date: ymd(Date.parse(x.regularMarketTime) / 1000, "Asia/Taipei") };
+        }
+      } catch (_) {}
+    }
+  };
+  await ask(".TW"); await ask(".TWO");
+  return out;
+}
+
 async function quotes(tw, us) {
   const one = (v, tz) => {
     const ts = v.timestamp || [], cl = v.close || [];
@@ -272,14 +296,18 @@ async function quotes(tw, us) {
       pts: pts.map(([t, c]) => [hm(t, tz), rp(c)]) };
   };
   const out = {};
+  const liveP = twLive(tw);
   let r = await sparkMap([...tw.map(c => c + ".TW"), ...us]);
   tw.forEach(c => { const x = r[c + ".TW"] && one(r[c + ".TW"], "Asia/Taipei"); if (x) out[c] = x; });
   us.forEach(c => { const x = r[c] && one(r[c], "America/New_York"); if (x) out[c] = { ...x, us: 1 }; });
-  const miss = tw.filter(c => !out[c]);
+  const live = await liveP;
+  const miss = tw.filter(c => !out[c] && !live[c]);
   if (miss.length) {
-    r = await sparkMap(miss.map(c => c + ".TWO"));
+    r = await sparkMap(miss.map(c => c + ".TWO")).catch(() => ({})); // 開盤前 20 分鐘 Yahoo 還沒有今天的走勢，不能讓整份報價失敗
     miss.forEach(c => { const x = r[c + ".TWO"] && one(r[c + ".TWO"], "Asia/Taipei"); if (x) out[c] = x; });
   }
+  // 台股價格用即時的那一份蓋過去（附上開高低量，詳細頁的今天 K 棒用得到）
+  for (const [c, x] of Object.entries(live)) out[c] = { pts: [], ...(out[c] || {}), ...x };
   return out;
 }
 
@@ -379,6 +407,22 @@ async function detail(code, us) {
     if (fixed.length && day > fixed[fixed.length - 1][0] && o != null && m.regularMarketPrice)
       fixed.push([day, rp(o), rp(m.regularMarketDayHigh), rp(m.regularMarketDayLow), rp(m.regularMarketPrice), m.regularMarketVolume || 0]);
   } catch (_) {}
+  // 台股：Yahoo 日線偶爾缺最近幾天（整天都是空的），用 FinMind 日資料補，今天再用即時報價補
+  if (!us && fixed.length) {
+    try {
+      const from = fixed[fixed.length - 1][0];
+      const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${code}&start_date=${from}`)).json();
+      for (const x of (j.data || []).sort((a, b) => a.date < b.date ? -1 : 1))
+        if (x.date > fixed[fixed.length - 1][0] && x.close > 0) fixed.push([x.date, x.open, x.max, x.min, x.close, x.Trading_Volume || 0]);
+    } catch (_) {}
+    try {
+      const lv = (await twLive([code]))[code];
+      if (lv && lv.o != null && lv.date >= fixed[fixed.length - 1][0]) {
+        const bar = [lv.date, lv.o, lv.h ?? lv.last, lv.l ?? lv.last, lv.last, lv.v];
+        if (lv.date === fixed[fixed.length - 1][0]) fixed[fixed.length - 1] = bar; else fixed.push(bar);
+      }
+    } catch (_) {}
+  }
   const out = { sym, cur: d.meta.currency, kline: fixed, divs, eps: null, epsKind: null, ttm: null };
   // 月收盤（河流圖用）
   const month = {};

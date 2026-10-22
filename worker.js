@@ -476,9 +476,9 @@ async function valuation(code, us) {
   if (!ttm.length || (!us && !pb) || est === undefined) out.__partial = 1;
   if (b5 && e && e.avg > 0) Object.assign(out, { eps: e.avg, ...b5 });
   if (b5 && est && est.y1 && est.y1.avg > 0) Object.assign(out, { eps1: est.y1.avg, ...b5 }); // 明年本益比（Luna：分今年、明年）
-  // 獲利不穩定（景氣循環股）：近 5 年近四季 EPS 曾經 ≤0，或從高點掉超過 4 成 → 網頁改看股淨比（Luna 2026-10-23）
+  // 獲利不穩定（景氣循環股）：近 5 年近四季 EPS 曾經 ≤0，或從高點打對折（Luna：一下賺一下賠、或獲利打對折才算；聯發科掉 46% 算穩定成長，看本益比） → 網頁改看股淨比（Luna 2026-10-23）
   const t5 = ttm.slice(-20).map(x => x[1]);
-  if (t5.length >= 8) { let pk = -Infinity, dd = 0; for (const v of t5) { pk = Math.max(pk, v); if (pk > 0) dd = Math.max(dd, 1 - v / pk); } if (Math.min(...t5) <= 0 || dd > 0.4) out.cyc = 1; }
+  if (t5.length >= 8) { let pk = -Infinity, dd = 0; for (const v of t5) { pk = Math.max(pk, v); if (pk > 0) dd = Math.max(dd, 1 - v / pk); } out.cyc = Math.min(...t5) <= 0 || dd >= 0.5 ? 1 : 0; }
   if (pb && pb.bps && pb.avg) out.pb = { bps: Math.round(pb.bps * 1000) / 1000, avg: pb.avg, lo: pb.lo, hi: pb.hi };
   return keepVal(code, us, out);
 }

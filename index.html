@@ -1380,7 +1380,7 @@ function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
   const f=x=>x>=100?Math.round(x).toLocaleString():x.toFixed(1);
   // 價格顯示成「便宜 x－合理 y－昂貴 z」（Luna 2026-10-23）：區間下緣、平均、上緣 × EPS（或每股淨值）
   const band=(b,m)=>`<span>便宜 ${f(b.lo*m)}－合理 ${f(b.avg*m)}－昂貴 ${f(b.hi*m)}</span>`;
-  // 自動選一個（Luna 2026-10-23）：金融股（28xx、58xx）、景氣循環／獲利不穩（worker 給 cyc：近 5 年 EPS 曾 ≤0 或掉超過 4 成）、沒有法人預估 EPS 的看股淨比，其他看本益比；詳細頁兩個都有
+  // 自動選一個（Luna 2026-10-23）：金融股（28xx、58xx）、景氣循環／獲利不穩（worker 給 cyc：近 5 年 EPS 曾 ≤0 或打對折）、沒有法人預估 EPS 的看股淨比，其他看本益比；詳細頁兩個都有
   const pe=[["今年",v.eps],["明年",v.eps1]].filter(x=>x[1]>0),hasPb=v.pb&&v.pb.bps&&v.pb.lo>0;
   const usePb=hasPb&&(/^(28|58)\d\d$/.test(c)||v.cyc||!pe.length);
   if(usePb){const pb=last/v.pb.bps,[k,t]=lv(pb,v.pb);out.push(`<span>股淨比 ${pb.toFixed(2)}<i class="val ${k}">${t}</i></span>`,band(v.pb,v.pb.bps))}
@@ -1398,9 +1398,9 @@ async function watchValLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
   const need=g.list.filter(c=>idxOf[c]&&!(idxOf[c][4]?false:/^00/.test(c))&&!(watchValAt[c]>Date.now()-VAL_TTL));if(!need.length)return;
   need.forEach(c=>watchValAt[c]=Date.now());
-  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=8`).then(d=>[c,d])));
+  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=9`).then(d=>[c,d])));
   // 合併而不是整個換掉：資料來源一時抓不到時，不會把原本有的本益比洗掉（Luna：一下有一下沒有）；缺東西的 5 分鐘後再抓
-  let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){const o=watchVal[c]||{};watchVal[c]=d.eps||d.eps1?{...o,...d,pb:d.pb||o.pb}:{...o,pb:d.pb,cyc:d.cyc};ch=1}
+  let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){const o=watchVal[c]||{};const cyc=d.cyc!=null?d.cyc:o.cyc;watchVal[c]=d.eps||d.eps1?{...o,...d,pb:d.pb||o.pb,cyc}:{...o,pb:d.pb,cyc};ch=1}
     // 沒抓到，或非金融股卻缺預估 EPS（台積電曾因此改顯示股淨比）：不要存一整天，5 分鐘後再抓（伺服器那邊有快取，很快）
     const v=watchVal[c];if(!d||!v||!(v.eps||v.eps1)&&!/^(28|58)\d\d$/.test(c))watchValAt[c]=Date.now()-VAL_TTL+3e5});watchValSave();
   if(ch&&curPage()==="watch")watchRender()}

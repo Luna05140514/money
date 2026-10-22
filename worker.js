@@ -566,25 +566,40 @@ async function detail(code, us) {
 function kdLast2(bars, n = 9) {
   if (bars.length < n + 1) return null;
   let k = 50, dv = 50, prev = null;
-  const ks = [], all = [];
+  const ks = [], all = [], kd4 = [];
   bars.forEach((b, i) => {
     const win = bars.slice(Math.max(0, i - n + 1), i + 1), H = Math.max(...win.map(x => x[0])), L = Math.min(...win.map(x => x[1]));
     const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100;
     if (i === bars.length - 1) prev = [k, dv];
     k = k * 2 / 3 + rsv / 3; dv = dv * 2 / 3 + k / 3;
     if (i >= bars.length - 3) ks.push(k);
-    if (i >= bars.length - 20) all.push(k);
+    if (i >= bars.length - 25) all.push(k);
+    if (i >= bars.length - 4) kd4.push([k, dv]);
   });
   const r = v => Math.round(v * 10) / 10;
   // ks：最近 3 根的 K（判斷鈍化：連 3 根 K≥80 或 ≤20）
   const out = { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]), ks: ks.map(r) };
-  // 背離：最後一根收盤創近 20 根新高（新低），但 K 比前一次高點（低點）那根的 K 低（高）→ dv = [1 頂背離／-1 底背離, 前一次的收盤, 前一次的 K]
-  if (bars.length >= 20) {
-    const cl = bars.slice(-20).map(b => b[2]), c = cl[19], old = cl.slice(0, 15);
-    const hi = Math.max(...old), lo = Math.min(...old), ih = old.indexOf(hi), il = old.indexOf(lo);
-    if (c >= Math.max(...cl) && c > hi && k < all[ih] - 2) out.dv = [1, hi, r(all[ih])];
-    else if (c <= Math.min(...cl) && c < lo && k > all[il] + 2) out.dv = [-1, lo, r(all[il])];
+  // 最近 3 根內的交叉（之後 K 一直在 D 同一邊）：xc = [1 金叉／-1 死叉, 幾根前, 交叉時 K 的低點／高點]，讓訊號連續顯示 3 天（週）
+  for (let a = 0; a < 3 && kd4.length >= a + 2; a++) {
+    const [k1, d1] = kd4[kd4.length - 1 - a], [k0, d0] = kd4[kd4.length - 2 - a];
+    const side = Math.sign(k1 - d1); if (!side) break;
+    if (kd4.slice(kd4.length - a).some(([x, y]) => Math.sign(x - y) !== side)) break;
+    if (Math.sign(k0 - d0) !== side) { out.xc = [side, a, r(side > 0 ? Math.min(k0, k1) : Math.max(k0, k1))]; break; }
   }
+  // 背離：最近 5 根內最後一次「收盤創近 20 根新高（新低）」那根，K 比前一次高點（低點）那根的 K 低（高）→ dv = [1 頂背離／-1 底背離, 前一次的收盤, 前一次的 K]
+  // 往回看 5 根：背離後股價通常先回落才出現死叉，只看最後一根的話「背離＋交叉」幾乎不會成立
+  const cl = bars.map(b => b[2]), N = cl.length;
+  const div = sgn => {
+    for (let j = N - 1; j >= Math.max(24, N - 5); j--) {
+      const w = cl.slice(j - 19, j + 1), c = cl[j], old = w.slice(0, 15), ex = sgn > 0 ? Math.max(...old) : Math.min(...old);
+      if (!(sgn > 0 ? c >= Math.max(...w) && c > ex : c <= Math.min(...w) && c < ex)) continue;
+      const ip = j - 19 + old.indexOf(ex), kj = all[all.length - (N - j)], kp = all[all.length - (N - ip)];
+      if (kj == null || kp == null) return null;
+      return sgn > 0 ? (kj < kp - 2 ? [1, ex, r(kp)] : null) : (kj > kp + 2 ? [-1, ex, r(kp)] : null); // 最近一次新高（低）沒背離就不算
+    }
+    return null;
+  };
+  const dvx = div(1) || div(-1); if (dvx) out.dv = dvx;
   return out;
 }
 // 短線過濾用：收盤在 20 日均線上／下、MACD 柱（正＝趨勢偏多）、最後一天量 ÷ 前 5 天平均量
@@ -598,18 +613,29 @@ function dayExtras(cl, vol) {
   return out;
 }
 async function kdList(list) {
+  // 台股：Yahoo 日線慢 20 分鐘、偶爾缺最近幾天，用奇摩即時報價補今天那根（和畫面上的股價一致）
+  const live = await twLive(list.filter(x => !x[1]).map(x => x[0])).catch(() => ({}));
   const one = async ([code, us]) => {
     for (const sym of us ? [code] : [code + ".TW", code + ".TWO"]) {
       try {
         const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
         const q = r.indicators.quote[0], ts = r.timestamp || []; if (!ts.length) continue;
-        const day = [], vol = [], weeks = new Map();
+        const rows = [], weeks = new Map();
         ts.forEach((t, i) => {
           const b = [q.high[i], q.low[i], q.close[i]]; if (b.some(v => v == null)) return;
-          day.push(b); vol.push(q.volume[i] || 0);
-          const d = new Date((t + 8 * 3600) * 1000), wd = (d.getUTCDay() + 6) % 7;
-          const mon = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - wd)).toISOString().slice(0, 10);
-          const w = weeks.get(mon); if (!w) weeks.set(mon, [...b]); else { w[0] = Math.max(w[0], b[0]); w[1] = Math.min(w[1], b[1]); w[2] = b[2]; }
+          rows.push([ymdOff(t, 8), ...b, q.volume[i] || 0]);
+        });
+        const lv = !us && live[code];
+        if (lv && lv.h != null && lv.l != null && rows.length) {
+          const lb = rows[rows.length - 1];
+          if (lv.date === lb[0]) rows[rows.length - 1] = [lb[0], lv.h, lv.l, lv.last, lb[4]];
+          else if (lv.date > lb[0]) rows.push([lv.date, lv.h, lv.l, lv.last, 0]);
+        }
+        const day = rows.map(x => x.slice(1, 4)), vol = rows.map(x => x[4]);
+        rows.forEach(([dt, ...b]) => {
+          const d = new Date(dt + "T00:00:00Z"), wd = (d.getUTCDay() + 6) % 7;
+          const mon = new Date(d.getTime() - wd * 864e5).toISOString().slice(0, 10);
+          const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(0, 3)); else { w[0] = Math.max(w[0], b[0]); w[1] = Math.min(w[1], b[1]); w[2] = b[2]; }
         });
         const wk = [...weeks.keys()].sort().map(k => weeks.get(k));
         // 盤中今天的量還沒算完，不拿來比

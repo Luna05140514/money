@@ -1197,7 +1197,7 @@ async function idxKdLoad(){
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
   // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
   // 夜指期和台指期是同一個合約，KD 沿用台指期的日 K
-  const got=await Promise.all(idxItems.filter(it=>it.key!=="txfn").map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=5`)));idxKdBusy=0;
+  const got=await Promise.all(idxItems.filter(it=>it.key!=="txfn").map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=7`)));idxKdBusy=0;
   const d=Object.assign({},...got.filter(Boolean));if(d.txf)d.txfn=d.txf;
   if(!Object.keys(d).length)return;Object.assign(idxKd,d);idxInit()}
 function idxInit(){
@@ -1321,18 +1321,22 @@ const kdDiv=o=>o&&o.dv?(o.dv[0]>0?"頂背離，小心回檔":"底背離，留意
 // 大字結論的判斷順序（由上往下，先符合的就是結論）；點開格子時列出來，符合的那列標出來
 const SG_LOGIC={
   // 背離也要等交叉（Luna 2026-10-22）：背離＋交叉才買賣，還沒交叉就等
-  短線:[["頂背離＋死叉","sell","頂背離＋死叉，分批賣出"],["底背離＋金叉","buy","底背離＋金叉，分批買進"],["金叉＋長線偏多＋站上月線","buy","買點出現，分批買進"],["死叉＋長線偏空＋跌破月線","sell","賣點出現，分批賣出"],
+  短線:[["頂背離＋死叉","sell","頂背離＋死叉，分批賣出"],["底背離＋金叉","buy","底背離＋金叉，分批買進"],["3 天內金叉＋長線偏多＋站上月線","buy","買點出現，分批買進"],["3 天內死叉＋長線偏空＋跌破月線","sell","賣點出現，分批賣出"],
     ["K 連 3 天 ≥80（高檔鈍化）","low","強勢，先別賣"],["K 連 3 天 ≤20（低檔鈍化）","high","弱勢，先別買"],["頂背離，還沒死叉","high","頂背離，等死叉再賣"],["底背離，還沒金叉","low","底背離，等金叉再買"],
     ["K ≤20，還沒金叉","low","接近低點，等金叉再買"],["K ≥80，還沒死叉","high","接近高點，等死叉再賣"],["以上都沒有","wait","沒有訊號，觀望"]],
   // 長線也等交叉才喊買賣（Luna 2026-10-22：只看週 K 到 80 就賣太早）
-  長線:[["頂背離＋死叉","sell","頂背離＋死叉，分批賣出"],["底背離＋金叉","buy","底背離＋金叉，分批買進"],["週 K 在 70 以上死叉","sell","死叉出現，分批賣出"],["週 K 在 30 以下金叉","buy","金叉出現，分批買進"],
+  長線:[["頂背離＋死叉","sell","頂背離＋死叉，分批賣出"],["底背離＋金叉","buy","底背離＋金叉，分批買進"],["3 週內，週 K 在 70 以上死叉","sell","死叉出現，分批賣出"],["3 週內，週 K 在 30 以下金叉","buy","金叉出現，分批買進"],
     ["週 K 連 3 週 ≥80（高檔鈍化）","low","強勢，續抱"],["週 K 連 3 週 ≤20（低檔鈍化）","high","弱勢，先別買"],["頂背離，還沒死叉","high","頂背離，等死叉再賣"],["底背離，還沒金叉","low","底背離，等金叉再買"],
     ["週 K ≥80，還沒死叉","high","相對高點，等死叉再賣"],["週 K ≤20，還沒金叉","low","相對低點，等金叉再買"],["週 K 在 D 上面（金叉後，偏多）","low","偏多，續抱"],["週 K 在 D 下面（死叉後，偏空）","high","偏空，觀望"]]};
+// 交叉：worker 給 xc＝最近 3 根內的交叉（之後 K 一直在 D 同一邊），訊號連續顯示 3 天（週）；舊資料沒有 xc 就只看今天
+function kdX(o){if(o.xc)return{xu:o.xc[0]>0,xd:o.xc[0]<0,up:o.xc[0]>0&&o.xc[2]<30,dn:o.xc[0]<0&&o.xc[2]>70,age:o.xc[1]};
+  const xu=o.pk!=null&&o.pk<=o.pd&&o.k>o.d,xd=o.pk!=null&&o.pk>=o.pd&&o.k<o.d;
+  return{xu,xd,up:xu&&Math.min(o.pk,o.k)<30,dn:xd&&Math.max(o.pk,o.k)>70,age:0}}
 function kdSig(o){if(!o||o.k==null)return null;
   // 鈍化：最近 3 根 K 都在 80 以上（高檔鈍化，強勢先別急著賣）或都在 20 以下（低檔鈍化，弱勢先別急著買），取代相對高點／低點
   const ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
   const zone=dl?"低檔鈍化":dh?"高檔鈍化":o.k<=20?"相對低點":o.k>=80?"相對高點":"";
-  const up=o.pk!=null&&o.pk<=o.pd&&o.k>o.d&&Math.min(o.pk,o.k)<30,dn=o.pk!=null&&o.pk>=o.pd&&o.k<o.d&&Math.max(o.pk,o.k)>70;
+  const {up,dn}=kdX(o);
   const act=up?"分批買入":dn?"分批賣出":"";
   if(act)return[up?"buy":"sell",zone?`${zone}<br>${act}`:act];
   return zone?[o.k<=20?"low":"high",zone]:["wait","觀望"]}
@@ -1348,8 +1352,8 @@ const SGINFO=new Map();
 function kdRows(o,isDay,tr){
   const r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),rows=[];
   rows.push([isDay?"日 KD":"週 KD",`K ${r1(o.k)}、D ${r1(o.d)}`,"","",isDay?"日 KD 決定買賣時機":"週 KD 決定大方向"]);
-  const gc=o.pk!=null&&o.pk<=o.pd&&o.k>o.d,dc=o.pk!=null&&o.pk>=o.pd&&o.k<o.d;
-  rows.push(["KD 交叉",gc?"K 往上穿過 D（金叉）":dc?"K 往下穿過 D（死叉）":"沒有交叉",gc&&Math.min(o.pk,o.k)<30?"買進訊號":dc&&Math.max(o.pk,o.k)>70?"賣出訊號":gc||dc?"位置不夠低／高，不算":"",gc?"up":dc?"down":"","金叉且 K 小於 30 → 買進<br>死叉且 K 大於 70 → 賣出"]);
+  const X=kdX(o),gc=X.xu,dc=X.xd,ago=X.age?`（${X.age} ${isDay?"天":"週"}前）`:"（今天）";
+  rows.push(["KD 交叉",gc?`K 往上穿過 D（金叉）${ago}`:dc?`K 往下穿過 D（死叉）${ago}`:"最近 3 根沒有交叉",X.up?"買進訊號":X.dn?"賣出訊號":gc||dc?"位置不夠低／高，不算":"",gc?"up":dc?"down":"","金叉且 K 小於 30 → 買進<br>死叉且 K 大於 70 → 賣出<br>交叉後 3 根內都算"]);
   const ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
   rows.push(["K 的位置",ks?`最近 3 根 ${ks.map(r1).join("、")}`:`K ${r1(o.k)}`,dl?"低檔鈍化（很弱，先別急著買）":dh?"高檔鈍化（很強，先別急著賣）":o.k<=20?"相對低點":o.k>=80?"相對高點":"中間",dl||o.k<=20?"down":dh||o.k>=80?"up":"","連續 3 天 ≥80 → 高檔鈍化<br>連續 3 天 ≤20 → 低檔鈍化<br>≥80 相對高點、≤20 相對低點"]);
   const dv=o.dv;
@@ -1367,7 +1371,7 @@ function sgShow(key){const x=SGINFO.get(key);if(!x)return;let box=$("sg-pop");
   box.innerHTML=`<div class="sg-card" role="dialog" aria-label="${esc(x.title)}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(x.title)}</h2><p class="sg-res">結果：<b>${x.main}</b>${x.sub?`<span>${x.sub}</span>`:""}</p>
     ${x.hit!=null&&SG_LOGIC[x.t]?`<h3 class="sg-h">結論怎麼判斷（由上往下，先符合的就是）</h3><table class="sg-tbl sg-ltbl"><thead><tr><th>條件</th><th>結論</th></tr></thead><tbody>${SG_LOGIC[x.t].map((r,i)=>`<tr${i===x.hit?' class="on"':""}><td>${i===x.hit?"<b>▶ 現在：</b>":""}${r[0]}</td><td><b>${r[2]}</b></td></tr>`).join("")}</tbody></table><h3 class="sg-h">各指標</h3>`:""}
     <table class="sg-tbl sg-ptbl"><thead><tr><th>指標</th><th>目前數字</th><th>判斷規則</th><th>結果</th></tr></thead><tbody>${x.rows.map(r=>`<tr class="${r[3]}"><th>${r[0]}</th><td>${r[1]}</td><td class="rule">${r[4]||""}</td><td><b>${r[2]||"—"}</b></td></tr>`).join("")}</tbody></table>
-    <p class="muted">只是參考，不是保證。</p></div>`;box.hidden=false}
+    <p class="muted">盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
 document.addEventListener("click",e=>{const g=e.target.closest(".sg[data-sg]");if(!g)return;e.preventDefault();e.stopPropagation();sgShow(g.dataset.sg)},true);
 function kdBoxes(dy,wk,name){
   const one=(t,cls,main,sub,rows,hit)=>{let a="";if(rows&&name){const key=name+"｜"+t;SGINFO.set(key,{title:`${name}・${t}（${t==="短線"?"日 KD":"週 KD"}）`,main,sub,rows,t,hit});a=` data-sg="${esc(key)}" role="button" tabindex="0"`}
@@ -1378,7 +1382,7 @@ function kdBoxes(dy,wk,name){
   else{
     const ks=dy.ks&&dy.ks.length>=3?dy.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
     const zone=dl?"低檔鈍化":dh?"高檔鈍化":dy.k<=20?"相對低點":dy.k>=80?"相對高點":"";
-    const up=dy.pk!=null&&dy.pk<=dy.pd&&dy.k>dy.d&&Math.min(dy.pk,dy.k)<30,dn=dy.pk!=null&&dy.pk>=dy.pd&&dy.k<dy.d&&Math.max(dy.pk,dy.k)>70;
+    const DX=kdX(dy),up=DX.up,dn=DX.dn,ago=DX.age?`${DX.age} 天前${DX.xu?"金叉":"死叉"}`:"";
     const macd=dy.osc==null?"":dy.osc>0?"趨勢偏多":"趨勢偏空";
     const vol=dy.vr==null?"":dy.vr>=1.5?"量能確認":dy.vr<0.8?"量縮，小心假訊號":"";
     let why="";
@@ -1386,29 +1390,28 @@ function kdBoxes(dy,wk,name){
     else if(dn&&tr===1)why="長線偏多";else if(dn&&dy.above20===1)why="站上月線";
     const ok=(up||dn)&&!why,act=ok?(up?"分批買入":"分批賣出"):"";
     const dvt=kdDiv(dy);
-    const sub=why?[why,dvt].filter(Boolean).join("・"):[zone&&ok?zone:"",dvt,macd,ok?vol:""].filter(Boolean).join("・");
+    const sub=why?[why,dvt].filter(Boolean).join("・"):[ok?ago:"",zone&&ok?zone:"",dvt,macd,ok?vol:""].filter(Boolean).join("・");
     const rows=kdRows(dy,true,tr);
     // 大字直接給結論（Luna 2026-10-22 同意的寫法），小字照舊放原因
     const dv=dy.dv?dy.dv[0]:0;
-    const xu=dy.pk!=null&&dy.pk<=dy.pd&&dy.k>dy.d,xd=dy.pk!=null&&dy.pk>=dy.pd&&dy.k<dy.d;
+    const xu=DX.xu,xd=DX.xd;
     const hit=dv>0&&xd?0:dv<0&&xu?1:ok?(up?2:3):dh?4:dl?5:dv>0?6:dv<0?7:dy.k<=20?8:dy.k>=80?9:10,m=SG_LOGIC.短線[hit];
     sh=one("短線",m[1],m[2],ok?sub:[why,zone,dvt,macd].filter(Boolean).join("・"),rows,hit);
   }
   // 長線：大字偏多／偏空，小字放原本的相對高低點、鈍化或交叉
   const lgSub=[lg&&lg[1]!=="觀望"?lg[1].replace("<br>","・"):"",kdDiv(wk)].filter(Boolean).join("・");
   // 長線大字直接給結論（Luna：要明確，像「相對低點，買進」）；小字保留技術用語
-  let lgMain=null;
+  let lgMain=null,lgAgo="";
   if(tr!=null){const ks=wk.ks&&wk.ks.length>=3?wk.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20),dv=wk.dv?wk.dv[0]:0;
-    const gc=wk.pk!=null&&wk.pk<=wk.pd&&wk.k>wk.d&&Math.min(wk.pk,wk.k)<30,dc=wk.pk!=null&&wk.pk>=wk.pd&&wk.k<wk.d&&Math.max(wk.pk,wk.k)>70;
-    const xu=wk.pk!=null&&wk.pk<=wk.pd&&wk.k>wk.d,xd=wk.pk!=null&&wk.pk>=wk.pd&&wk.k<wk.d;
+    const WX=kdX(wk),gc=WX.up,dc=WX.dn,xu=WX.xu,xd=WX.xd;if(WX.age&&(xu||xd))lgAgo=`${WX.age} 週前${xu?"金叉":"死叉"}`;
     lgMain=dv>0&&xd?0:dv<0&&xu?1:dc?2:gc?3:dh?4:dl?5:dv>0?6:dv<0?7:wk.k>=80?8:wk.k<=20?9:tr>0?10:11}
   const lm=SG_LOGIC.長線[lgMain];
-  const lgBox=tr==null?one("長線","na","—",""):one("長線",lm[1],lm[2],[tr>0?"偏多":"偏空",lgSub].filter(Boolean).join("・"),kdRows(wk,false,tr),lgMain);
+  const lgBox=tr==null?one("長線","na","—",""):one("長線",lm[1],lm[2],[tr>0?"偏多":"偏空",lgAgo,lgSub].filter(Boolean).join("・"),kdRows(wk,false,tr),lgMain);
   return `<span class="sigs">${sh}${lgBox}</span>`}
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
-  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=5`);
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=7`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
 const watchVal={},watchValAt={};

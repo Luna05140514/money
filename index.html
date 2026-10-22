@@ -459,7 +459,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <h1>自選股</h1>
     <div class="watch">
       <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit" id="watch-edit" aria-pressed="false">編輯</button></div>
-      <details class="watch-signote"><summary>短線／長線訊號怎麼看（點開）</summary><p><b>點一下短線或長線格子，可以看每個指標的數字和判斷。</b></p><table class="sg-tbl"><thead><tr><th>訊號</th><th>條件</th><th>意思</th></tr></thead><tbody><tr class="h"><th colspan="3">短線：看日 KD，決定買賣時機</th></tr><tr><th>分批買入</th><td>K 在 30 以下往上穿過 D，而且長線偏多、收盤在月線上面</td><td>可以分批買</td></tr><tr><th>分批賣出</th><td>K 在 70 以上往下穿過 D，而且長線偏空、收盤在月線下面</td><td>可以分批賣</td></tr><tr><th>觀望</th><td>沒有交叉，或交叉但被長線、月線擋下（小字寫原因）</td><td>先等等</td></tr><tr><th>相對低點</th><td>K 在 20 以下</td><td>價格偏低</td></tr><tr><th>相對高點</th><td>K 在 80 以上</td><td>價格偏高</td></tr><tr><th>低檔鈍化</th><td>K 連續 3 根都在 20 以下</td><td>很弱勢，先別急著買</td></tr><tr><th>高檔鈍化</th><td>K 連續 3 根都在 80 以上</td><td>很強勢，先別急著賣</td></tr><tr class="h"><th colspan="3">長線：看週 KD，決定方向</th></tr><tr><th>偏多</th><td>週 K 在 50 以上，或剛往上交叉</td><td>只看短線的買進訊號</td></tr><tr><th>偏空</th><td>週 K 在 50 以下，或剛往下交叉</td><td>只看短線的賣出訊號</td></tr><tr class="h"><th colspan="3">小字：白話意思</th></tr><tr><th>例如</th><td colspan="2">可以分批買、先等等、很弱勢先別急著買、大方向往上。MACD、成交量、月線這些細節，點格子就看得到。</td></tr></tbody></table><p>只是參考，不是保證。</p></details>
+      <details class="watch-signote"><summary>短線／長線訊號怎麼看（點開）</summary><p><b>點一下短線或長線格子，可以看每個指標的數字和判斷。</b></p><table class="sg-tbl"><thead><tr><th>訊號</th><th>條件</th><th>意思</th></tr></thead><tbody><tr class="h"><th colspan="3">短線：看日 KD，決定買賣時機</th></tr><tr><th>分批買入</th><td>K 在 30 以下往上穿過 D，而且長線偏多、收盤在月線上面</td><td>可以分批買</td></tr><tr><th>分批賣出</th><td>K 在 70 以上往下穿過 D，而且長線偏空、收盤在月線下面</td><td>可以分批賣</td></tr><tr><th>觀望</th><td>沒有交叉，或交叉但被長線、月線擋下（小字寫原因）</td><td>先等等</td></tr><tr><th>相對低點</th><td>K 在 20 以下</td><td>價格偏低</td></tr><tr><th>相對高點</th><td>K 在 80 以上</td><td>價格偏高</td></tr><tr><th>低檔鈍化</th><td>K 連續 3 根都在 20 以下</td><td>很弱勢，先別急著買</td></tr><tr><th>高檔鈍化</th><td>K 連續 3 根都在 80 以上</td><td>很強勢，先別急著賣</td></tr><tr class="h"><th colspan="3">長線：看週 KD，決定方向</th></tr><tr><th>偏多</th><td>週 K 在 50 以上，或剛往上交叉</td><td>只看短線的買進訊號</td></tr><tr><th>偏空</th><td>週 K 在 50 以下，或剛往下交叉</td><td>只看短線的賣出訊號</td></tr><tr class="h"><th colspan="3">小字</th></tr><tr><th>趨勢偏多／偏空</th><td>MACD 柱子是正／負</td><td>大方向往上／往下</td></tr><tr><th>量能確認</th><td>成交量是前 5 天平均的 1.5 倍以上</td><td>訊號比較可信</td></tr><tr><th>量縮，小心假訊號</th><td>成交量不到前 5 天平均的 0.8 倍</td><td>訊號可能不準</td></tr></tbody></table><p style="margin-top:12px"><b>實戰交叉檢查表</b></p><table class="sg-tbl"><thead><tr><th>搭配指標</th><th>扮演角色</th><th>實戰應用方式</th></tr></thead><tbody><tr><th>均線（MA）</th><td>趨勢濾網</td><td>股價在均線上，只做 KD 金叉；股價在均線下，只做 KD 死叉。</td></tr><tr><th>MACD</th><td>波段護航</td><td>MACD 確定多頭趨勢後，用 KD 尋找短線最佳上車點。</td></tr><tr><th>成交量</th><td>動能實證</td><td>KD 出現買賣訊號時，必須有成交量放大來確認突破的有效性。</td></tr></tbody></table><p>只是參考，不是保證。</p></details>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
@@ -1365,19 +1365,14 @@ function kdBoxes(dy,wk,name){
     if(up&&tr===-1)why="長線偏空";else if(up&&dy.above20===0)why="跌破月線";
     else if(dn&&tr===1)why="長線偏多";else if(dn&&dy.above20===1)why="站上月線";
     const ok=(up||dn)&&!why,act=ok?(up?"分批買入":"分批賣出"):"";
-    // 小字用白話意思（Luna 2026-10-22），細節點格子看
-    const ZM={"低檔鈍化":"很弱勢，先別急著買","高檔鈍化":"很強勢，先別急著賣","相對低點":"價格偏低","相對高點":"價格偏高"};
-    const WM={"長線偏空":"大方向往下，先別買","跌破月線":"還在月線下，先別買","長線偏多":"大方向往上，先別賣","站上月線":"還在月線上，先別賣"};
-    const caution=ok&&dy.vr!=null&&dy.vr<0.8?"・量太少要小心":"";
-    const sub=why?WM[why]:ok?(up?"可以分批買":"可以分批賣")+caution:"先等等";
+    const sub=why?why:[zone&&ok?zone:"",macd,ok?vol:""].filter(Boolean).join("・");
     const rows=kdRows(dy,true,tr);
     if(ok)sh=one("短線",up?"buy":"sell",act,sub,rows);
-    else if(zone&&!why)sh=one("短線",dy.k<=20?"low":"high",zone,ZM[zone],rows);
+    else if(zone&&!why)sh=one("短線",dy.k<=20?"low":"high",zone,macd,rows);
     else sh=one("短線","wait","觀望",sub,rows);
   }
   // 長線：大字偏多／偏空，小字放原本的相對高低點、鈍化或交叉
-  const wks=wk&&wk.ks&&wk.ks.length>=3?wk.ks:null;
-  const lgSub=(tr>0?"大方向往上":"大方向往下")+(wks&&wks.every(v=>v>=80)?"・很強勢":wks&&wks.every(v=>v<=20)?"・很弱勢":"");
+  const lgSub=lg&&lg[1]!=="觀望"?lg[1].replace("<br>","・"):"";
   const lgBox=tr==null?one("長線","na","—",""):one("長線",tr>0?"low":"high",tr>0?"偏多":"偏空",lgSub,kdRows(wk,false,tr));
   return `<span class="sigs">${sh}${lgBox}</span>`}
 async function watchKdLoad(){

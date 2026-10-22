@@ -1423,11 +1423,16 @@ function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
   if(pe.length)out.push(`<span>本益比 ${pe.join("")}</span>`);
   if(v.pb&&v.pb.bps){const pb=last/v.pb.bps,[k,t]=lv(pb,v.pb);out.push(`<span>股淨比<i class="val ${k}">${t}</i></span>`)}
   return out.length?`<span class="vals">${out.join("")}</span>`:""}
+// 詳細頁抓到的本益比、股淨比也拿來補清單（清單那邊一時沒抓到時，點進去看過就會出現）
+function watchValFromDetail(c,x){if(!x||!x.pe5)return;const k=x.kline||[],price=x.est&&x.est.price||(k.length?k[k.length-1][4]:null),v={...x.pe5};
+  if(x.est&&x.est.y0&&x.est.y0.avg>0)v.eps=x.est.y0.avg;if(x.est&&x.est.y1&&x.est.y1.avg>0)v.eps1=x.est.y1.avg;
+  if(x.pb&&x.pb.avg&&x.pb.cur&&price)v.pb={bps:price/x.pb.cur,avg:x.pb.avg,lo:x.pb.lo,hi:x.pb.hi};
+  if(v.eps||v.eps1||v.pb){watchVal[c]=v;watchValAt[c]=Date.now()}}
 async function watchValLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
   const need=g.list.filter(c=>idxOf[c]&&!(idxOf[c][4]?false:/^00/.test(c))&&!(watchValAt[c]>Date.now()-216e5));if(!need.length)return;
   need.forEach(c=>watchValAt[c]=Date.now());
-  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=3`).then(d=>[c,d])));
+  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=4`).then(d=>[c,d])));
   let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){watchVal[c]=d;ch=1}else if(!d)delete watchValAt[c]});
   if(ch&&curPage()==="watch")watchRender()}
 function watchRender(){
@@ -1529,7 +1534,7 @@ async function wdRender(c){
     if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
     x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=6`);if(x&&x.error)x=null;
   }
-  if(x)wdCache[c]=x;
+  if(x){wdCache[c]=x;watchValFromDetail(c,x)}
   if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}
   if(curPage()!=="wdetail"||wdCode!==c)return;
   const last=it.last!=null?it.last:(x.kline.length?x.kline[x.kline.length-1][4]:null);

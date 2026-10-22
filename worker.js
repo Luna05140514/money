@@ -457,6 +457,8 @@ async function valuation(code, us) {
     const r = ([dt, v]) => [dt, Math.round(v * 100) / 100], ann = (y.annualDilutedEPS || []).map(r), last = ann.length ? ann[ann.length - 1][0] : "";
     return [...ann, ...(y.trailingDilutedEPS || []).filter(x => x[0] > last).map(r)];
   })()]);
+  // EPS 或股淨比的資料來源一時抓不到（FinMind 偶爾限流）：丟錯，不要把缺資料的結果快取 6 小時；cached() 會先給上次成功的備份
+  if (!ttm.length || (!us && !pb)) throw new Error("source busy");
   const b5 = pe5Band(monthly, ttm), e = est && est.y0, out = {};
   if (b5 && e && e.avg > 0) Object.assign(out, { eps: e.avg, ...b5 });
   if (b5 && est && est.y1 && est.y1.avg > 0) Object.assign(out, { eps1: est.y1.avg, ...b5 }); // 明年本益比（Luna：分今年、明年）

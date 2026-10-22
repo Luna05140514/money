@@ -459,6 +459,7 @@ async function valuation(code, us) {
   })()]);
   const b5 = pe5Band(monthly, ttm), e = est && est.y0, out = {};
   if (b5 && e && e.avg > 0) Object.assign(out, { eps: e.avg, ...b5 });
+  if (b5 && est && est.y1 && est.y1.avg > 0) Object.assign(out, { eps1: est.y1.avg, ...b5 }); // 明年本益比（Luna：分今年、明年）
   if (pb && pb.bps && pb.avg) out.pb = { bps: Math.round(pb.bps * 1000) / 1000, avg: pb.avg, lo: pb.lo, hi: pb.hi };
   return out;
 }

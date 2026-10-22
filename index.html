@@ -266,7 +266,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .sg-rows div{display:grid;grid-template-columns:7.5em 1fr;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:17px}
 .sg-rows span{color:var(--muted);grid-row:span 2}.sg-rows b{font-weight:700}.sg-rows em{font-style:normal;font-weight:700}
 .sg-rows .up em{color:var(--up)}.sg-rows .down em{color:var(--down)}
-.sg-ptbl{font-size:17px}.sg-ptbl tr.up td b{color:var(--up)}.sg-ptbl tr.down td b{color:var(--down)}
+.sg-ptbl{font-size:16px}.sg-ptbl td.rule{font-size:15px;color:var(--muted)}.sg-ptbl thead th:nth-child(1){width:19%}.sg-ptbl thead th:nth-child(2){width:23%}.sg-ptbl thead th:nth-child(3){width:36%}.sg-ptbl thead th:nth-child(4){width:22%}.sg-ptbl tbody th{width:auto}.sg-ptbl th,.sg-ptbl td{padding:7px 5px}.sg-ptbl tr.up td b{color:var(--up)}.sg-ptbl tr.down td b{color:var(--down)}
 .wrow .sg[data-sg]{cursor:pointer;text-decoration:underline dotted;text-underline-offset:4px}
 .wrow .sg em{display:block;font-style:normal;font-size:14px;font-weight:600;margin-top:2px;opacity:.9}
 .wrow .sg.low{background:#fdf0f1;color:#a10d26;font-weight:600}
@@ -1330,23 +1330,23 @@ function kdTrend(wk){if(!wk||wk.k==null)return null;const gc=wk.pk!=null&&wk.pk<
 const SGINFO=new Map();
 function kdRows(o,isDay,tr){
   const r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),rows=[];
-  rows.push([isDay?"日 KD":"週 KD",`K ${r1(o.k)}、D ${r1(o.d)}`,"",""]);
+  rows.push([isDay?"日 KD":"週 KD",`K ${r1(o.k)}、D ${r1(o.d)}`,"","",isDay?"日 KD 決定買賣時機":"週 KD 決定大方向"]);
   const gc=o.pk!=null&&o.pk<=o.pd&&o.k>o.d,dc=o.pk!=null&&o.pk>=o.pd&&o.k<o.d;
-  rows.push(["KD 交叉",gc?"K 往上穿過 D（金叉）":dc?"K 往下穿過 D（死叉）":"沒有交叉",gc&&Math.min(o.pk,o.k)<30?"買進訊號":dc&&Math.max(o.pk,o.k)>70?"賣出訊號":gc||dc?"位置不夠低／高，不算":"",gc?"up":dc?"down":""]);
+  rows.push(["KD 交叉",gc?"K 往上穿過 D（金叉）":dc?"K 往下穿過 D（死叉）":"沒有交叉",gc&&Math.min(o.pk,o.k)<30?"買進訊號":dc&&Math.max(o.pk,o.k)>70?"賣出訊號":gc||dc?"位置不夠低／高，不算":"",gc?"up":dc?"down":"","金叉且 K 小於 30 → 買進<br>死叉且 K 大於 70 → 賣出"]);
   const ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
-  rows.push(["K 的位置",ks?`最近 3 根 ${ks.map(r1).join("、")}`:`K ${r1(o.k)}`,dl?"低檔鈍化（很弱，先別急著買）":dh?"高檔鈍化（很強，先別急著賣）":o.k<=20?"相對低點":o.k>=80?"相對高點":"中間",dl||o.k<=20?"down":dh||o.k>=80?"up":""]);
+  rows.push(["K 的位置",ks?`最近 3 根 ${ks.map(r1).join("、")}`:`K ${r1(o.k)}`,dl?"低檔鈍化（很弱，先別急著買）":dh?"高檔鈍化（很強，先別急著賣）":o.k<=20?"相對低點":o.k>=80?"相對高點":"中間",dl||o.k<=20?"down":dh||o.k>=80?"up":"","連續 3 天 ≥80 → 高檔鈍化<br>連續 3 天 ≤20 → 低檔鈍化<br>≥80 相對高點、≤20 相對低點"]);
   if(isDay){
-    rows.push(["長線方向",tr==null?"—":tr>0?"偏多":"偏空",tr==null?"":tr>0?"只看買進訊號":"只看賣出訊號",tr>0?"up":tr<0?"down":""]);
-    if(o.above20!=null)rows.push(["月線（20 日均線）",o.above20?"收盤在月線上面":"收盤在月線下面",o.above20?"站上月線":"跌破月線",o.above20?"up":"down"]);
-    if(o.osc!=null)rows.push(["MACD",`柱子 ${o.osc>0?"正":"負"}`,o.osc>0?"趨勢偏多":"趨勢偏空",o.osc>0?"up":"down"]);
-    rows.push(["成交量",o.vr==null?"盤中還沒算完（收盤後才比）":`前 5 天平均的 ${o.vr} 倍`,o.vr==null?"":o.vr>=1.5?"量能確認":o.vr<0.8?"量縮，小心假訊號":"普通",o.vr>=1.5?"up":o.vr!=null&&o.vr<0.8?"down":""]);
-  }else rows.push(["方向判斷",tr==null?"—":tr>0?"偏多":"偏空",gc?"剛金叉":dc?"剛死叉":o.k>=50?"K 在 50 以上":"K 在 50 以下",tr>0?"up":tr<0?"down":""]);
+    rows.push(["長線方向",tr==null?"—":tr>0?"偏多":"偏空",tr==null?"":tr>0?"只看買進訊號":"只看賣出訊號",tr>0?"up":tr<0?"down":"","長線偏多才買、偏空才賣<br>方向相反 → 觀望"]);
+    if(o.above20!=null)rows.push(["月線<br><small>20 日均線</small>",o.above20?"收盤在月線上面":"收盤在月線下面",o.above20?"站上月線":"跌破月線",o.above20?"up":"down","在月線上才買<br>跌破月線才賣"]);
+    if(o.osc!=null)rows.push(["MACD",`柱子 ${o.osc>0?"正":"負"}`,o.osc>0?"趨勢偏多":"趨勢偏空",o.osc>0?"up":"down","柱子正 → 趨勢偏多<br>柱子負 → 趨勢偏空"]);
+    rows.push(["成交量",o.vr==null?"盤中還沒算完（收盤後才比）":`前 5 天平均的 ${o.vr} 倍`,o.vr==null?"":o.vr>=1.5?"量能確認":o.vr<0.8?"量縮，小心假訊號":"普通",o.vr>=1.5?"up":o.vr!=null&&o.vr<0.8?"down":"","1.5 倍以上 → 量能確認<br>不到 0.8 倍 → 量縮，小心假訊號"]);
+  }else rows.push(["方向判斷",tr==null?"—":tr>0?"偏多":"偏空",gc?"剛金叉":dc?"剛死叉":o.k>=50?"K 在 50 以上":"K 在 50 以下",tr>0?"up":tr<0?"down":"","週 K 在 50 以上或剛金叉 → 偏多<br>其他 → 偏空"]);
   return rows}
 function sgShow(key){const x=SGINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
   box.innerHTML=`<div class="sg-card" role="dialog" aria-label="${esc(x.title)}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(x.title)}</h2><p class="sg-res">結果：<b>${x.main}</b>${x.sub?`<span>${x.sub}</span>`:""}</p>
-    <table class="sg-tbl sg-ptbl"><thead><tr><th>指標</th><th>數字</th><th>判斷</th></tr></thead><tbody>${x.rows.map(r=>`<tr class="${r[3]}"><th>${r[0]}</th><td>${r[1]}</td><td><b>${r[2]||"—"}</b></td></tr>`).join("")}</tbody></table>
+    <table class="sg-tbl sg-ptbl"><thead><tr><th>指標</th><th>目前數字</th><th>判斷規則</th><th>結果</th></tr></thead><tbody>${x.rows.map(r=>`<tr class="${r[3]}"><th>${r[0]}</th><td>${r[1]}</td><td class="rule">${r[4]||""}</td><td><b>${r[2]||"—"}</b></td></tr>`).join("")}</tbody></table>
     <p class="muted">只是參考，不是保證。</p></div>`;box.hidden=false}
 document.addEventListener("click",e=>{const g=e.target.closest(".sg[data-sg]");if(!g)return;e.preventDefault();e.stopPropagation();sgShow(g.dataset.sg)},true);
 function kdBoxes(dy,wk,name){

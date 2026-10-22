@@ -1316,9 +1316,9 @@ function watchItem(c){
 let watchKd={},watchKdAt={};
 // 大字的判斷順序（由上往下，先符合的就是）；點開格子時列出來，符合的那列標出來
 // 只顯示 KD 狀態，不給買賣建議（Luna 2026-10-23）
-const sgLogic=(u,p)=>[[`3 ${u}內金叉，${p}K 小於 30`,"buy","低檔金叉"],[`3 ${u}內死叉，${p}K 大於 70`,"sell","高檔死叉"],[`3 ${u}內金叉（K 在 30 以上）`,"low","金叉"],[`3 ${u}內死叉（K 在 70 以下）`,"high","死叉"],
-  [`${p}K 連 3 ${u} ≥80`,"high","高檔鈍化"],[`${p}K 連 3 ${u} ≤20`,"low","低檔鈍化"],[`${p}K ≥80`,"high","相對高點"],[`${p}K ≤20`,"low","相對低點"],[`${p}K 在 D 上面`,"wait","K 在 D 上方"],[`${p}K 在 D 下面`,"wait","K 在 D 下方"]];
-const SG_LOGIC={短線:sgLogic("天",""),長線:sgLogic("週","週 ")};
+const sgLogic=(u,p,t)=>[[`3 ${u}內金叉，${p}K 小於 30`,"buy","低檔金叉"],[`3 ${u}內死叉，${p}K 大於 70`,"sell","高檔死叉"],[`3 ${u}內金叉（K 在 30 以上）`,"low","金叉"],[`3 ${u}內死叉（K 在 70 以下）`,"high","死叉"],
+  [`${p}K 連 3 ${u} ≥80`,"high","高檔鈍化"],[`${p}K 連 3 ${u} ≤20`,"low","低檔鈍化"],[`${p}K ≥80`,"high","相對高點"],[`${p}K ≤20`,"low","相對低點"],[`${p}K 在 D 上面`,"low",t+"多"],[`${p}K 在 D 下面`,"high",t+"空"]];
+const SG_LOGIC={短線:sgLogic("天","","短"),長線:sgLogic("週","週 ","長")};
 // 判斷順序同上表，先符合的就是
 function sgHit(o){const X=kdX(o),ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
   return X.up?0:X.dn?1:X.xu?2:X.xd?3:dh?4:dl?5:o.k>=80?6:o.k<=20?7:o.k>=o.d?8:9}
@@ -1337,7 +1337,7 @@ function kdRows(o,isDay,tr){
   rows.push(["KD 交叉",gc?`K 往上穿過 D（金叉）${ago}`:dc?`K 往下穿過 D（死叉）${ago}`:"最近 3 根沒有交叉",X.up?"低檔金叉":X.dn?"高檔死叉":gc?"金叉":dc?"死叉":"",gc?"up":dc?"down":"","K 往上穿過 D → 金叉（K 小於 30 是低檔金叉）<br>K 往下穿過 D → 死叉（K 大於 70 是高檔死叉）<br>交叉後 3 根內都算"]);
   const ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
   rows.push(["K 的位置",ks?`最近 3 根 ${ks.map(r1).join("、")}`:`K ${r1(o.k)}`,dl?"低檔鈍化":dh?"高檔鈍化":o.k<=20?"相對低點":o.k>=80?"相對高點":"中間",dl||o.k<=20?"down":dh||o.k>=80?"up":"","連續 3 天 ≥80 → 高檔鈍化<br>連續 3 天 ≤20 → 低檔鈍化<br>≥80 相對高點、≤20 相對低點"]);
-  rows.push(["K 和 D",o.k>o.d?"K 在 D 上面":o.k<o.d?"K 在 D 下面":"K 等於 D",o.k>=o.d?"K 在 D 上方":"K 在 D 下方","","K 大於 D → K 在 D 上方<br>K 小於 D → K 在 D 下方"]);
+  rows.push(["K 和 D",o.k>o.d?"K 在 D 上面":o.k<o.d?"K 在 D 下面":"K 等於 D",(isDay?"短":"長")+(o.k>=o.d?"多":"空"),o.k>=o.d?"up":"down",`K 大於 D → ${isDay?"短":"長"}多<br>K 小於 D → ${isDay?"短":"長"}空`]);
   return rows}
 function sgShow(key){const x=SGINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
@@ -1354,14 +1354,14 @@ function kdBoxes(dy,wk,name){
   if(!dy||dy.k==null)sh=one("短線","na","—","");
   else{
     const DX=kdX(dy),ago=DX.age?`${DX.age} 天前${DX.xu?"金叉":"死叉"}`:"";
-    const hit=sgHit(dy),m=SG_LOGIC.短線[hit],sub=[DX.xu||DX.xd?ago:"",`K ${Math.round(dy.k)}`].filter(Boolean).join("・");
+    const hit=sgHit(dy),m=SG_LOGIC.短線[hit],sub=DX.xu||DX.xd?ago:"";
     const rows=kdRows(dy,true);
     sh=one("短線",m[1],m[2],sub,rows,hit);
   }
   // 長線：同一套，看週 KD
   let lgBox=one("長線","na","—","");
   if(wk&&wk.k!=null){const WX=kdX(wk),hit=sgHit(wk),lm=SG_LOGIC.長線[hit],ago=WX.age&&(WX.xu||WX.xd)?`${WX.age} 週前${WX.xu?"金叉":"死叉"}`:"";
-    lgBox=one("長線",lm[1],lm[2],[ago,`K ${Math.round(wk.k)}`].filter(Boolean).join("・"),kdRows(wk,false),hit)}
+    lgBox=one("長線",lm[1],lm[2],ago,kdRows(wk,false),hit)}
   return `<span class="sigs">${sh}${lgBox}</span>`}
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;

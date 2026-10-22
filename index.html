@@ -1369,6 +1369,10 @@ async function watchKdLoad(){
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
 const watchVal={},watchValAt={};
+// 本益比區間、預估 EPS、每股淨值變化很慢（Luna 2026-10-23：不用常抓）：存在手機裡，一天才重抓一次；股價還是即時的
+const VAL_TTL=864e5;
+try{const o=JSON.parse(localStorage.getItem("facai-val")||"{}");for(const c in o)if(o[c].t>Date.now()-VAL_TTL){watchValAt[c]=o[c].t;delete o[c].t;watchVal[c]=o[c]}}catch(_){}
+function watchValSave(){try{const o={};for(const c in watchVal)if(watchValAt[c])o[c]={...watchVal[c],t:watchValAt[c]};localStorage.setItem("facai-val",JSON.stringify(o))}catch(_){}}
 // 名字上方一整行：本益比、股淨比各自的便宜／合理／昂貴（股淨比＝即時股價 ÷ 每股淨值，和近 5 年平均比）
 function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
   const lv=(x,b)=>x<=b.lo?["lo","便宜"]:x>=b.hi?["hi","昂貴"]:["mid","合理"],out=[];
@@ -1386,13 +1390,15 @@ function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
 function watchValFromDetail(c,x){if(!x||!x.pe5)return;const k=x.kline||[],price=x.est&&x.est.price||(k.length?k[k.length-1][4]:null),v={...x.pe5};
   if(x.est&&x.est.y0&&x.est.y0.avg>0)v.eps=x.est.y0.avg;if(x.est&&x.est.y1&&x.est.y1.avg>0)v.eps1=x.est.y1.avg;
   if(x.pb&&x.pb.avg&&x.pb.cur&&price)v.pb={bps:price/x.pb.cur,avg:x.pb.avg,lo:x.pb.lo,hi:x.pb.hi};
-  if(v.eps||v.eps1||v.pb){watchVal[c]=v;watchValAt[c]=Date.now()}}
+  if(v.eps||v.eps1||v.pb){watchVal[c]=v;watchValAt[c]=Date.now();watchValSave()}}
 async function watchValLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
-  const need=g.list.filter(c=>idxOf[c]&&!(idxOf[c][4]?false:/^00/.test(c))&&!(watchValAt[c]>Date.now()-216e5));if(!need.length)return;
+  const need=g.list.filter(c=>idxOf[c]&&!(idxOf[c][4]?false:/^00/.test(c))&&!(watchValAt[c]>Date.now()-VAL_TTL));if(!need.length)return;
   need.forEach(c=>watchValAt[c]=Date.now());
-  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=5`).then(d=>[c,d])));
-  let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){watchVal[c]=d;ch=1}else if(!d)delete watchValAt[c]});
+  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=6`).then(d=>[c,d])));
+  // 合併而不是整個換掉：資料來源一時抓不到時，不會把原本有的本益比洗掉（Luna：一下有一下沒有）；缺東西的 5 分鐘後再抓
+  let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){const o=watchVal[c]||{};watchVal[c]=d.eps||d.eps1?{...o,...d,pb:d.pb||o.pb}:{...o,pb:d.pb};ch=1}
+    if(!d)watchValAt[c]=Date.now()-VAL_TTL+3e5});watchValSave();
   if(ch&&curPage()==="watch")watchRender()}
 function watchRender(){
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});

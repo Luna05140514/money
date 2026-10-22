@@ -463,8 +463,9 @@ async function valuation(code, us) {
     return [...ann, ...(y.trailingDilutedEPS || []).filter(x => x[0] > last).map(r)];
   })()]);
   // EPS 或股淨比的資料來源一時抓不到（FinMind 偶爾限流）：丟錯，不要把缺資料的結果快取 6 小時；cached() 會先給上次成功的備份
-  if (!ttm.length || (!us && !pb) || est === undefined) throw new Error("source busy"); // 法人預估 EPS 一時抓不到也一樣（2454 曾因此 6 小時沒有本益比）
   const b5 = pe5Band(monthly, ttm), e = est && est.y0, out = {};
+  // 資料來源一時抓不到（法人預估、EPS、股淨比）：標記 __partial，cached() 先給上次完整的備份，沒有才給現有的、只存 5 分鐘
+  if (!ttm.length || (!us && !pb) || est === undefined) out.__partial = 1;
   if (b5 && e && e.avg > 0) Object.assign(out, { eps: e.avg, ...b5 });
   if (b5 && est && est.y1 && est.y1.avg > 0) Object.assign(out, { eps1: est.y1.avg, ...b5 }); // 明年本益比（Luna：分今年、明年）
   if (pb && pb.bps && pb.avg) out.pb = { bps: Math.round(pb.bps * 1000) / 1000, avg: pb.avg, lo: pb.lo, hi: pb.hi };
@@ -743,8 +744,11 @@ async function indexKd(keys) {
 // 另外留一份 3 天的備份：資料來源一時抓不到時，先給上一次成功的結果，不讓畫面空白
 async function cached(request, ctx, sec, make) {
   const cache = caches.default, key = new Request(request.url);
-  const u = new URL(request.url); u.searchParams.set("__backup", "1");
+  // 備份不分 v 版本：換新版時也能先用舊版的完整資料
+  const u = new URL(request.url); u.searchParams.delete("v"); u.searchParams.set("__backup", "1");
   const backupKey = new Request(u.toString());
+  const u0 = new URL(request.url); u0.searchParams.set("__backup", "1");
+  const backup = async () => (await cache.match(backupKey)) || (await cache.match(new Request(u0.toString()))); // 舊版的備份網址帶著 v
   const hit = await cache.match(key);
   if (hit) return hit;
   try {
@@ -752,7 +756,7 @@ async function cached(request, ctx, sec, make) {
     // 有資料來源一時沒抓到（__partial）：有完整的備份就先給備份，沒有就只快取 5 分鐘，也不蓋掉備份
     if (partial) {
       delete data.__partial;
-      const old = await cache.match(backupKey);
+      const old = await backup();
       if (old) return new Response(old.body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
       const res = new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300" } });
       ctx.waitUntil(cache.put(key, res.clone()));
@@ -764,7 +768,7 @@ async function cached(request, ctx, sec, make) {
     ctx.waitUntil(cache.put(backupKey, new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=259200" } })));
     return res;
   } catch (e) {
-    const old = await cache.match(backupKey);
+    const old = await backup();
     if (old) return new Response(old.body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
     return new Response(JSON.stringify({ error: String(e) }), { status: 502, headers: { "Content-Type": "application/json" } });
   }
@@ -826,10 +830,10 @@ export default {
         return new Response("{}", { status: 400 });
       }
       case "/api/val": {
-        // ?c=2330 或 ?us=NVDA → 今年預估 EPS 和近 5 年本益比區間，6 小時內共用
+        // ?c=2330 或 ?us=NVDA → 今年預估 EPS 和近 5 年本益比區間，變化很慢，1 天內共用（Luna 2026-10-23）
         const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
-        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 21600, () => valuation(c, false));
-        if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 21600, () => valuation(u, true));
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 86400, () => valuation(c, false));
+        if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 86400, () => valuation(u, true));
         return new Response("{}", { status: 400 });
       }
       case "/api/ixk": {

@@ -2080,7 +2080,7 @@ function holdRender(){
     return `<button class="hrow" data-h="${i}" aria-label="修改 ${esc(r[1])}"><span class="nm"><b>${esc(r[1])}</b><small>${esc(h.c)}</small></span><span class="pl ${cls(dp)}">${sg(dp)}${us?" 美元":" 元"}<small>${pc(pct)}</small></span>
       <span class="dt">現價 <b>${f2(last)}</b>　漲跌 <b class="${cls(dp)}">${last>prev?"▲":last<prev?"▼":"－"}${f2(Math.abs(last-prev))}</b>　${h.n%1000===0?`<b>${h.n/1000}</b> 張`:`<b>${f0(h.n)}</b> 股`}</span></button>`}).join("");
   $("hold-list").innerHTML=rows||'<p class="wempty">還沒有持股，在下面輸入第一檔。</p>';
-  $("hold-sum").hidden=!holds.length;holdPie(fx);holdDiv(fx);
+  $("hold-sum").hidden=!holds.length||holdAll;$("hold-list").hidden=holdAll;holdPie(fx);holdDiv(fx);/* 總覽只放圓餅圖和股利收入（Luna 2026-10-23） */
   $("hold-sum").innerHTML=`<div><b class="${cls(day)}">${sg(day)}</b><span>當日損益合計（元）</span></div><div><b class="${cls(day)}">${base?pc(day/base*100):"—"}</b><span>當日漲跌幅</span></div>`;
   const t=new Date(Date.now()+8*3600e3).toISOString();
   $("hold-lead").textContent=holds.length?(ON_CF?`現價更新於 ${t.slice(11,16)}${LIVE}，每分鐘自動更新。`:`現價資料 ${STOCK.updated}。`)+(miss?"有幾檔還在抓價格。":""):holdAll?"點上面的分頁（例如台股、美股）輸入持股，這裡會全部合計。":"輸入股數，看今天漲跌多少、賺賠多少錢。";

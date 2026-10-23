@@ -109,8 +109,18 @@ button,input,select{font:inherit;color:inherit}
 .hform .auto{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:17px;background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:12px}
 .hform .auto b{font-family:var(--num);font-size:20px}
 .hform .auto small{display:block;font-size:14px;color:var(--muted)}
+.dbpick{font:inherit;font-size:16px;font-weight:700;margin-top:6px;padding:6px 14px;border-radius:999px;border:2px solid var(--red);background:var(--surface);color:var(--red);cursor:pointer}
 .local{text-align:center;font-size:17px;font-weight:700;color:var(--ink);background:var(--gold-soft);border-radius:999px;padding:6px 14px;margin:-6px auto 16px;width:fit-content}
 .pl-note{font-size:18px;line-height:1.55;margin:10px 2px 0}
+#hold-tabs{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));border-radius:16px;margin-bottom:8px}
+#hold-tabs button{padding:10px 4px;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hold-tabs button[data-hp="new"]{color:var(--red)}
+.hpg{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.hpg b{flex:1;font-size:21px}
+.hpg button{all:unset;cursor:pointer;font-size:16px;font-weight:700;color:var(--muted);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px}
+.hpick label{display:flex;align-items:center;gap:12px;cursor:pointer;border-top:1px solid var(--line);padding:14px 4px;font-size:21px;font-weight:800}
+.hpick label span{flex:1}.hpick label small{font-size:16px;color:var(--muted);font-weight:600}
+.hpick input[type=checkbox]{width:28px;height:28px;flex:none;accent-color:var(--red)}
 .hclr{display:flex;justify-content:center;margin-top:16px}
 .hclr button{font:inherit;font-size:18px;font-weight:700;min-height:50px;padding:0 26px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
 .p2m{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
@@ -532,6 +542,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <h1>我的持股損益</h1>
     <p class="lead" id="hold-lead">輸入股數，看今天漲跌多少、賺賠多少錢。</p>
     <p class="local">📱 資料只存在這支手機，不會上傳</p>
+    <div class="watch-tabs htabs" id="hold-tabs" role="tablist"></div>
+    <div class="hpg"><b id="hold-title"></b><button id="hold-ren">改名</button><button id="hold-del-page">刪除這頁</button></div>
     <div class="panel hsum" id="hold-sum"></div>
     <div class="wlist" id="hold-list" style="margin-top:12px"></div>
     <div class="panel hform" id="hold-form" style="margin-top:12px">
@@ -542,7 +554,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="hbtns"><button id="hold-save">加入</button><button class="sec" id="hold-cancel" hidden>取消</button><button class="del" id="hold-del" hidden>刪除這檔</button></div>
     </div>
     <div class="hclr"><button id="hold-clr">清除全部</button></div>
-    <p class="note">當日損益 = 股數 × 今天漲跌（還沒開盤時是上一個交易日）。點任一檔可以修改股數或刪除。美股用美元計算，合計時用即時美元匯率換成台幣。</p>
+    <p class="note">當日損益 = 股數 × 今天漲跌（還沒開盤時是上一個交易日）。點任一檔可以修改股數或刪除。按「＋ 新增」可以多開一頁獨立的持股（例如家人各一頁），每頁分開計算；質押和負債比可以按「帶入我的持股」勾選要帶入哪幾頁。美股用美元計算，合計時用即時美元匯率換成台幣。</p>
   </section>
 
   <!-- 除權息行事曆 -->
@@ -670,7 +682,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="field"><label for="db-mort">房貸（還沒還的本金）</label><div class="unit"><input id="db-mort" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-loan">信貸、車貸</label><div class="unit"><input id="db-loan" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-card">其他負債（卡債、借款）</label><div class="unit"><input id="db-card" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div>
     </div>
     <div class="hclr"><button id="db-clr">清除全部</button></div>
-    <p class="note">一般參考：負債比 30% 以下算健康，30%～50% 要注意，超過 50% 偏高。股票市值來自「我的持股損益」（美股用即時匯率換成台幣），質押借款來自「質押維持率」。</p>
+    <p class="note">一般參考：負債比 30% 以下算健康，30%～50% 要注意，超過 50% 偏高。股票市值來自「我的持股損益」裡你勾選的頁（按「選擇要帶入的持股」可以改，美股用即時匯率換成台幣），質押借款來自「質押維持率」。</p>
   </section>
 
   <!-- 複利 -->
@@ -1921,8 +1933,35 @@ try{localStorage.removeItem("facai-fs")}catch(_){}
 /* 我的持股損益（Luna 2026-10-23）：只存股數（不要成本、總損益），算當日漲跌幅和當日損益；現價和自選股同一個來源（Cloudflare 上每分鐘更新） */
 const HOLD_KEY="facai-hold";
 let holds=[],holdEditAt=-1,holdPick="";
-function holdLoad(){try{const v=JSON.parse(localStorage.getItem(HOLD_KEY));if(Array.isArray(v))holds=v.filter(h=>h&&idxOf[h.c]&&h.n>0).map(h=>({c:h.c,n:h.n}))}catch(_){}}
-function holdSave(){try{localStorage.setItem(HOLD_KEY,JSON.stringify(holds))}catch(_){}}
+// 好幾頁獨立的持股（Luna 2026-10-23，例如家人各一頁）：第一頁沿用 facai-hold，其他頁存在 facai-hold-<id>；頁名清單存在 facai-hold-pages
+// 預設兩頁「台股」「美股」（Luna 2026-10-23），每頁都可以改名、刪除；質押、負債比按「帶入我的持股」選要帶入哪幾頁；除權息的「約領」用全部頁
+const HOLD_DEF=()=>[{id:"",name:"台股"},{id:"us",name:"美股"}];
+let holdPages=HOLD_DEF(),holdCur=0;
+const holdKeyOf=pg=>pg.id?HOLD_KEY+"-"+pg.id:HOLD_KEY;
+const holdRead=key=>{try{const v=JSON.parse(localStorage.getItem(key));if(Array.isArray(v))return v.filter(h=>h&&idxOf[h.c]&&h.n>0).map(h=>({c:h.c,n:h.n}))}catch(_){}return[]};
+function holdPagesLoad(){holdPages=HOLD_DEF();try{const v=JSON.parse(localStorage.getItem(HOLD_KEY+"-pages"));if(Array.isArray(v)&&v.length)holdPages=v}catch(_){}
+  try{holdCur=Math.min(+localStorage.getItem(HOLD_KEY+"-cur")||0,holdPages.length-1)}catch(_){}}
+function holdPagesSave(){try{localStorage.setItem(HOLD_KEY+"-pages",JSON.stringify(holdPages));localStorage.setItem(HOLD_KEY+"-cur",holdCur)}catch(_){}}
+const holdMain=()=>{holdPagesLoad();return holdPages.flatMap(pg=>holdRead(holdKeyOf(pg)))},holdAllCodes=()=>{holdPagesLoad();return holdPages.flatMap(pg=>holdRead(holdKeyOf(pg)).map(h=>h.c))};
+function holdLoad(){holdPagesLoad();holds=holdRead(holdKeyOf(holdPages[holdCur]))}
+function holdSave(){try{localStorage.setItem(holdKeyOf(holdPages[holdCur]),JSON.stringify(holds))}catch(_){}}
+// 帶入我的持股：跳出清單勾選要帶入哪幾頁（Luna 2026-10-23：選到頁就好，不用一檔一檔），回傳選到的頁裡全部持股 [{pg,c,n}]
+function holdAllItems(){holdPagesLoad();return holdPages.map(pg=>({pg,list:holdRead(holdKeyOf(pg))}))}
+function holdChoose(title,sel,ok,filter){
+  const all=holdAllItems().map(g=>({...g,list:g.list.filter(x=>!filter||filter(x.c))}));
+  if(!all.some(g=>g.list.length)){toast("「我的持股損益」還沒有可以帶入的股票");return}
+  let box=$("hp-pop");if(!box){box=document.createElement("div");box.id="hp-pop";box.className="sg-pop";document.body.appendChild(box)}
+  box.innerHTML=`<div class="sg-card hpick" role="dialog" aria-label="${esc(title)}"><button class="sg-x" data-x>關閉</button><h2>${esc(title)}</h2><p class="muted">勾選要帶入哪幾頁，再按「確定帶入」。</p>`
+    +all.map((g,gi)=>`<label class="hpg-h"><input type="checkbox" data-g="${gi}"${sel.has(g.pg.id)?" checked":""}${g.list.length?"":" disabled"}><span>${esc(g.pg.name)}</span><small>${g.list.length?g.list.length+" 檔":"沒有股票"}</small></label>`).join("")
+    +`<div class="hbtns" style="margin-top:14px"><button data-ok>確定帶入</button><button class="sec" data-x>取消</button></div></div>`;
+  box.hidden=false;
+  box.onclick=e=>{if(e.target===box||e.target.closest("[data-x]")){box.hidden=true;return}
+    if(e.target.closest("[data-ok]")){const gs=all.filter((g,gi)=>box.querySelector(`[data-g="${gi}"]`).checked);box.hidden=true;ok(gs.map(g=>g.pg.id),gs.flatMap(g=>g.list.map(x=>({pg:g.pg.id,c:x.c,n:x.n}))))}};
+}
+function holdTabs(){
+  $("hold-tabs").innerHTML=holdPages.map((pg,i)=>`<button role="tab" data-hp="${i}" aria-selected="${i===holdCur}">${esc(pg.name)}</button>`).join("")+'<button data-hp="new" aria-label="新增一頁">＋ 新增</button>';
+  $("hold-title").textContent=holdPages[holdCur].name;
+}
 const usdTwd=()=>{const it=IDX&&(IDX.items||[]).find(x=>x.key==="TWD=X");return it&&it.pts&&it.pts.length?it.pts[it.pts.length-1][1]:IDX&&IDX.adr&&IDX.adr.fx||null};
 function holdRender(){
   const f0=v=>Math.round(v).toLocaleString("zh-TW"),f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1956,7 +1995,17 @@ function holdForm(i){
 function holdPickShow(){const r=idxOf[holdPick];$("hold-pick").textContent=r?`${r[1]}（${r[0]}）`:""}
 function holdInit(){
   if(holdInit.done){holdQuote();return}holdInit.done=1;
-  holdLoad();holdForm(-1);holdQuote();
+  holdLoad();holdTabs();holdForm(-1);holdQuote();
+  $("hold-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-hp]");if(!b)return;
+    if(b.dataset.hp==="new"){const n=(prompt("新的一頁要叫什麼名字？（例如：媽媽、哥哥）","")||"").trim();if(!n)return;
+      holdPages.push({id:Date.now().toString(36),name:n.slice(0,10)});holdCur=holdPages.length-1}
+    else holdCur=+b.dataset.hp;
+    holdPagesSave();holds=holdRead(holdKeyOf(holdPages[holdCur]));holdTabs();holdForm(-1);holdQuote()});
+  $("hold-ren").addEventListener("click",()=>{const pg=holdPages[holdCur],n=(prompt("這一頁要改成什麼名字？",pg.name)||"").trim();if(!n)return;pg.name=n.slice(0,10);holdPagesSave();holdTabs()});
+  $("hold-del-page").addEventListener("click",()=>{const pg=holdPages[holdCur];
+    if(!confirm(`確定要刪除「${pg.name}」這一頁和裡面的持股嗎？\n（按「取消」就不會刪除）`))return;
+    try{localStorage.removeItem(holdKeyOf(pg))}catch(_){}holdPages.splice(holdCur,1);holdCur=0;
+    if(!holdPages.length)holdPages=[{id:Date.now().toString(36),name:"我的持股"}];/* 全部刪光時留一頁空的 */holdPagesSave();holdLoad();holdTabs();holdForm(-1);holdQuote();toast("已刪除")});
   $("hold-list").addEventListener("click",e=>{const b=e.target.closest("[data-h]");if(!b)return;holdForm(+b.dataset.h);$("hold-form").scrollIntoView({behavior:"smooth",block:"start"})});
   const q=$("hold-q"),sug=$("hold-sug");
   q.addEventListener("input",()=>{const t=q.value.trim().toLowerCase();if(!t){sug.hidden=true;return}
@@ -1973,7 +2022,7 @@ function holdInit(){
     if(holdEditAt>=0)holds[holdEditAt]=h;else{const j=holds.findIndex(x=>x.c===holdPick);if(j>=0)holds[j]=h;else holds.push(h)}
     holdSave();holdForm(-1);toast("已儲存");holdQuote()});
   $("hold-cancel").addEventListener("click",()=>holdForm(-1));
-  clrBtn("hold-clr",()=>holds.length&&confirm("確定要清除全部持股嗎？\n（按「取消」就不會清除）"),()=>{holds=[];holdSave();holdForm(-1);holdRender()});
+  clrBtn("hold-clr",()=>holds.length&&confirm(`確定要清除「${holdPages[holdCur].name}」這一頁的全部持股嗎？\n（按「取消」就不會清除）`),()=>{holds=[];holdSave();holdForm(-1);holdRender()});
   $("hold-del").addEventListener("click",()=>{const h=holds[holdEditAt];if(!h)return;if(!confirm(`確定刪除 ${idxOf[h.c][1]}？`))return;holds.splice(holdEditAt,1);holdSave();holdForm(-1);holdRender()});
 }
 calc.hold=holdInit;
@@ -1989,9 +2038,9 @@ async function divcInit(){
 function divcRender(){
   const body=$("divc-body");
   if(!divData){body.innerHTML='<p class="wempty">除權息資料還沒載入。</p>';return}
-  holdLoad();
-  const mine=new Set([...watchAll(),...holds.map(h=>h.c)].filter(c=>idxOf[c]&&!idxOf[c][4]));
-  const sh={};holds.forEach(h=>sh[h.c]=(sh[h.c]||0)+h.n);
+  const hm=holdMain();
+  const mine=new Set([...watchAll(),...holdAllCodes()].filter(c=>idxOf[c]&&!idxOf[c][4]));
+  const sh={};hm.forEach(h=>sh[h.c]=(sh[h.c]||0)+h.n);
   const now=new Date(Date.now()+8*3600e3).toISOString().slice(0,10),ym=now.slice(0,7);
   const wk="日一二三四五六",rows=divData.items.filter(r=>mine.has(r[0])&&r[2]>=ym+"-01");
   const row=r=>{const dd=new Date(r[2]+"T00:00:00Z"),past=r[2]<now,word=r[3]==="息"?"除息":r[3]==="權"?"除權":"除權息",n=sh[r[0]];
@@ -2049,8 +2098,8 @@ function plInit(){
     if(!(n>0)){toast("請輸入股數");$("pl-sh").focus();return}
     const j=pl.items.findIndex(x=>x.c===plPick);if(j>=0)pl.items[j].n=n;else pl.items.push({c:plPick,n});
     plPick="";$("pl-pick").textContent="";$("pl-sh").value="";plSave();plQuote()});
-  $("pl-hold").addEventListener("click",()=>{holdLoad();const tw=holds.filter(h=>!idxOf[h.c][4]);if(!tw.length){toast("「我的持股」還沒有台股");return}
-    pl.items=tw.map(h=>({c:h.c,n:h.n}));plSave();plQuote();toast("已帶入我的持股")});
+  $("pl-hold").addEventListener("click",()=>holdChoose("帶入我的持股（質押）",(holdPagesLoad(),new Set([holdPages[0].id])),(ids,pick)=>{if(!pick.length)return;const by={};pick.forEach(x=>by[x.c]=(by[x.c]||0)+x.n);
+    pl.items=Object.entries(by).map(([c,n])=>({c,n}));plSave();plQuote();toast("已帶入 "+pl.items.length+" 檔")},c=>!idxOf[c][4]));
 }
 calc.pledge=()=>{plInit();let t=0;try{t=+localStorage.getItem("facai-pl-tab")||0}catch(_){}plTab(t);if(t===1&&p2Init.load)p2Init.load()};
 /* 質押維持率「多人合併試算」（Luna 2026-10-23，照她平常問 AI 的算法）：同一檔股票，每人質押張數＋借款（萬），
@@ -2106,12 +2155,15 @@ $("pl-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-pt]");
 
 /* 總資產負債比（Luna 2026-10-23）：股票市值（我的持股）、質押借款（質押維持率）自動帶入，其他自己填，存在這支手機 */
 const DB_KEY="facai-debt",DB_IN=["db-cash","db-inv","db-home","db-oth","db-mort","db-loan","db-card"];
-function dbStock(){holdLoad();const fx=usdTwd();let v=0,miss=0;
-  holds.forEach(h=>{const it=watchItem(h.c),us=!!idxOf[h.c][4];if(!it||it.loading||it.last==null||(us&&!fx)){miss++;return}v+=it.last*h.n*(us?fx:1)});return{v,miss,n:holds.length}}
+// 股票市值用哪幾頁持股：facai-debt-sel 存勾選的頁 id；沒選過就用全部頁
+function dbSel(){try{const v=JSON.parse(localStorage.getItem("facai-debt-sel"));if(Array.isArray(v))return new Set(v)}catch(_){}holdPagesLoad();return new Set(holdPages.map(pg=>pg.id))}
+function dbItems(){const sel=dbSel();return holdAllItems().filter(g=>sel.has(g.pg.id)).flatMap(g=>g.list)}
+function dbStock(){const hm=dbItems(),fx=usdTwd();let v=0,miss=0;
+  hm.forEach(h=>{const it=watchItem(h.c),us=!!idxOf[h.c][4];if(!it||it.loading||it.last==null||(us&&!fx)){miss++;return}v+=it.last*h.n*(us?fx:1)});return{v,miss,n:hm.length}}
 function dbRender(){
   const f0=v=>Math.round(v).toLocaleString("zh-TW"),g=id=>parseFloat($(id).value)||0;
   const st=dbStock();plLoad();const pll=pl.loan||0;
-  $("db-stk").innerHTML=`<span>股票市值<small>${st.n?"來自「我的持股損益」"+(st.miss?"，有幾檔還在抓價格":""):"「我的持股損益」還沒有股票"}</small></span><b>${f0(st.v)}</b>`;
+  $("db-stk").innerHTML=`<span>股票市值<small>${st.n?`來自「我的持股損益」${[...dbSel()].map(id=>(holdPages.find(pg=>pg.id===id)||{}).name).filter(Boolean).join("、")}`+(st.miss?"，有幾檔還在抓價格":""):"還沒有帶入持股"}</small><button class="dbpick" id="db-pick">選擇要帶入的持股</button></span><b>${f0(st.v)}</b>`;
   $("db-pl").innerHTML=`<span>質押借款<small>${pll?"來自「質押維持率」":"「質押維持率」沒有填借款"}</small></span><b>${f0(pll)}</b>`;
   const A=st.v+g("db-cash")+g("db-inv")+g("db-home")+g("db-oth"),D=pll+g("db-mort")+g("db-loan")+g("db-card");
   const box=$("db-res");
@@ -2126,9 +2178,10 @@ async function dbInit(){
     try{const v=JSON.parse(localStorage.getItem(DB_KEY))||{};DB_IN.forEach(id=>{if(v[id])$(id).value=v[id]})}catch(_){}
     const dbSave=()=>{try{const o={};DB_IN.forEach(k=>{if($(k).value)o[k]=$(k).value});localStorage.setItem(DB_KEY,JSON.stringify(o))}catch(_){}};
     clrBtn("db-clr",()=>DB_IN.some(id=>$(id).value)&&confirm("確定要清除這頁自己填的資產和負債嗎？\n（股票市值和質押借款是從別頁帶入的，不會清掉；按「取消」就不會清除）"),()=>{DB_IN.forEach(id=>$(id).value="");dbSave();dbRender()});
+    $("db-stk").addEventListener("click",e=>{if(!e.target.closest("#db-pick"))return;holdChoose("帶入我的持股（股票市值）",dbSel(),ids=>{try{localStorage.setItem("facai-debt-sel",JSON.stringify(ids))}catch(_){}dbInit()})});
     DB_IN.forEach(id=>$(id).addEventListener("input",()=>{try{const o={};DB_IN.forEach(k=>{if($(k).value)o[k]=$(k).value});localStorage.setItem(DB_KEY,JSON.stringify(o))}catch(_){}dbRender()}))}
-  dbRender();holdLoad();
-  const codes=[...new Set(holds.map(h=>h.c))];if(!codes.length)return;
+  dbRender();
+  const codes=[...new Set(dbItems().map(h=>h.c))];if(!codes.length)return;
   await Promise.all(codes.map(c=>stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null)));dbRender();
   if(!ON_CF)return;const d=await api(`/api/quote?c=${codes.filter(c=>!idxOf[c][4]).join(",")}&us=${codes.filter(c=>idxOf[c][4]).join(",")}`);if(d){Object.assign(watchLive,d);dbRender()}
 }

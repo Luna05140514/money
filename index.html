@@ -364,6 +364,13 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .hdiv .mon .got{background:var(--gold-soft);border-color:var(--gold)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hdiv .mon .got{background:transparent}}
 .hdiv .mon .zero b{color:var(--muted);font-weight:400}
+.hdiv .mon [data-dm]{cursor:pointer}
+.dm-tot{font-size:20px;margin:4px 0 8px}.dm-tot b{font-family:var(--num);font-size:24px}
+.dm-row{padding:10px 0;border-bottom:1px solid var(--line)}
+.dm-row .t{display:flex;align-items:center;gap:8px;font-size:20px}.dm-row .t .v{margin-left:auto;font-family:var(--num)}
+.dm-row .tag{font-size:14px;border:1.5px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted)}
+.dm-row .tag.g{background:var(--gold-soft);border-color:var(--gold);color:var(--ink)}
+.dm-row .s{font-size:16px;color:var(--muted);margin-top:4px;font-family:var(--num)}
 .hdiv .per div{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:18px}
 .hdiv .per b{font-family:var(--num);white-space:nowrap}
 .etfh .er{display:grid;grid-template-columns:26px minmax(0,1fr) 110px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
@@ -1468,7 +1475,7 @@ function glShow(k){const g=GLOSS[k];if(!g)return;let box=$("gl-pop");
   if(!box){box=document.createElement("div");box.id="gl-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
   box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${g[0]}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${g[0]} 是什麼？</h2><p>${g[1]}</p>${g[2]?`<p>${g[2]}</p>`:""}${g[3]?`<p class="ex">${g[3]}</p>`:""}</div>`;box.hidden=false}
-window.addEventListener("hashchange",()=>{const b=$("gl-pop");if(b)b.hidden=true});
+window.addEventListener("hashchange",()=>{["gl-pop","dm-pop"].forEach(id=>{const b=$(id);if(b)b.hidden=true})});
 window.addEventListener("click",e=>{const b=e.target.closest("[data-term]");if(!b)return;e.preventDefault();e.stopPropagation();glShow(b.dataset.term)},true);
 const LIVE="（即時）";
 // 使用人數：這台手機／電腦一個隨機編號，同一天只算 1 位
@@ -2097,18 +2104,29 @@ async function divyGet(codes){
 function holdDivCalc(fx){
   const today=twDay(),Y=+today.slice(0,4),lg=holdLogRead(holdPages[holdCur]),cur={};holds.forEach(h=>cur[h.c]=h.n);
   const codes=[...new Set([...holds.map(h=>h.c),...Object.keys(lg).filter(c=>idxOf[c])])];
-  const mon=Array.from({length:12},()=>({got:0,est:0})),per=[];let miss=0;
+  const mon=Array.from({length:12},()=>({got:0,est:0,items:[]})),per=[];let miss=0;
   const nextY=d=>(+d.slice(0,4)+1)+d.slice(4),plus=(d,n)=>new Date(Date.parse(d)+n*864e5).toISOString().slice(0,10);
   codes.forEach(c=>{const m=divyMem&&divyMem[c],us=!!idxOf[c][4];if(!m||(us&&!fx)){if(cur[c])miss++;return}
     const k=us?fx:1,n0=cur[c]||0,a=lg[c],at=ex=>{if(!a)return n0;let v=0;a.forEach(e=>{if(e[0]<ex)v=e[1]});return v};
     const D=m.d,L=D.length?D[D.length-1][0]:"";let got=0,est=0;
-    const add=(dt,v,g)=>{const i=+dt.slice(5,7)-1;if(g){mon[i].got+=v;got+=v}else{mon[i].est+=v;est+=v}};
+    const add=(dt,v,g,amt,n,pj)=>{const i=+dt.slice(5,7)-1;mon[i].items.push({c,ex:dt,amt,n,v,g,pj});if(g){mon[i].got+=v;got+=v}else{mon[i].est+=v;est+=v}};
     // 以除息日為準（Luna 2026-10-23）：今年除息的才算今年，放在除息那個月
-    D.forEach(([ex,amt])=>{if(+ex.slice(0,4)!==Y)return;const n=at(ex);if(n>0)add(ex,amt*n*k,ex<=today)});
-    if(n0>0&&L)D.forEach(([ex,amt])=>{const e1=nextY(ex);if(e1<=plus(L,15)||e1<=today||+e1.slice(0,4)!==Y)return;add(e1,amt*n0*k,false)});
+    D.forEach(([ex,amt])=>{if(+ex.slice(0,4)!==Y)return;const n=at(ex);if(n>0)add(ex,amt*n*k,ex<=today,amt,n,0)});
+    if(n0>0&&L)D.forEach(([ex,amt])=>{const e1=nextY(ex);if(e1<=plus(L,15)||e1<=today||+e1.slice(0,4)!==Y)return;add(e1,amt*n0*k,false,amt,n0,1)});
     if(got+est>0)per.push({c,got,est})});
   return{Y,mon,per:per.sort((x,y)=>y.got+y.est-x.got-x.est),miss};
 }
+// 點月份：那個月哪幾檔除息、每股多少、幾股、合計（Luna 2026-10-23）
+function holdDivMonth(i){const x=holdDiv.last;if(!x)return;const m=x.mon[i];if(!m||!m.items.length)return;
+  const f0=v=>Math.round(v).toLocaleString("zh-TW"),f2=v=>(+v).toLocaleString("zh-TW",{maximumFractionDigits:4}),sh=n=>n%1000===0?`${n/1000} 張`:`${f0(n)} 股`;
+  const it=m.items.slice().sort((a,b)=>a.ex<b.ex?-1:a.ex>b.ex?1:b.v-a.v);
+  let box=$("dm-pop");if(!box){box=document.createElement("div");box.id="dm-pop";box.className="sg-pop";document.body.appendChild(box);
+    box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
+  box.innerHTML=`<div class="sg-card dm-card" role="dialog" aria-label="${i+1} 月股利"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${x.Y} 年 ${i+1} 月股利</h2>
+    <p class="dm-tot">合計 <b>${f0(m.got+m.est)}</b> 元</p>
+    ${it.map(d=>{const r=idxOf[d.c],us=!!r[4];return `<div class="dm-row"><div class="t"><b>${esc(r[1])}</b><span class="tag ${d.g?"g":""}">${d.g?"已除息":d.pj?"預估":"已公布"}</span><b class="v">${f0(d.v)} 元</b></div>
+      <div class="s">除息 ${d.ex.slice(5).replace("-","/")}${d.pj?"（照去年）":""}　每股 ${f2(d.amt)}${us?" 美元":" 元"} × ${sh(d.n)}</div></div>`}).join("")}
+    <p class="muted">${it.some(d=>!!idxOf[d.c][4])?"美股用現在匯率換成台幣。":""}實際入帳通常在除息後 3～5 週。</p></div>`;box.hidden=false}
 function holdDiv(fx){
   const box=$("hold-div");
   if(!holds.length&&!Object.keys(holdLogRead(holdPages[holdCur])).length){box.hidden=true;return}
@@ -2116,12 +2134,12 @@ function holdDiv(fx){
   const hd=`<h2>今年股利收入${qm("除權息")}</h2>`;
   if(!ON_CF){box.innerHTML=hd+'<p class="muted">股利收入要用 Cloudflare 的網址打開才看得到。</p>';return}
   if(!divyMem){box.innerHTML=hd+'<p class="wempty">讀取配息資料中…</p>';return}
-  const x=holdDivCalc(fx),f0=v=>Math.round(v).toLocaleString("zh-TW"),G=x.mon.reduce((s,m)=>s+m.got,0),E=x.mon.reduce((s,m)=>s+m.est,0);
+  const x=holdDiv.last=holdDivCalc(fx),f0=v=>Math.round(v).toLocaleString("zh-TW"),G=x.mon.reduce((s,m)=>s+m.got,0),E=x.mon.reduce((s,m)=>s+m.est,0);
   box.innerHTML=`<h2>${x.Y} 年股利收入${qm("除權息")}</h2>
     <div class="kv3"><div><b>${f0(G+E)}</b><span>全年預估（元）</span></div><div><b>${f0(G)}</b><span>已經除息</span></div><div><b>${f0(E)}</b><span>還沒除息</span></div></div>
-    <div class="mon">${x.mon.map((m,i)=>{const v=m.got+m.est;return `<div class="${m.got>0?"got":v>0?"":"zero"}"><span>${i+1} 月</span><b>${v>0?f0(v):"—"}</b>${v>0?`<small>${m.est>0?(m.got>0?"部分已除息":"預估"):"已除息"}</small>`:""}</div>`}).join("")}</div>
+    <div class="mon">${x.mon.map((m,i)=>{const v=m.got+m.est;return `<div class="${m.got>0?"got":v>0?"":"zero"}"${v>0?` data-dm="${i}" role="button" tabindex="0" aria-label="${i+1} 月明細"`:""}><span>${i+1} 月</span><b>${v>0?f0(v):"—"}</b>${v>0?`<small>${m.est>0?(m.got>0?"部分已除息":"預估"):"已除息"}</small>`:""}</div>`}).join("")}</div>
     ${x.per.length?`<div class="per" style="margin-top:12px">${x.per.map(p=>`<div><span>${esc(idxOf[p.c][1])}${holds.some(h=>h.c===p.c)?"":"（已賣出）"}</span><b>${f0(p.got+p.est)} 元</b></div>`).join("")}</div>`:'<p class="muted">今年這一頁的股票沒有現金股利。</p>'}
-    <p class="muted">金額照除息日放在每個月（台幣，美股用現在匯率換算），實際入帳通常晚 3～5 週。已經除息的照當時的股數算，之後再買進或賣出都不會改到；還沒除息的用現在的股數，還沒公布的照去年同一次的配息估。${x.miss?"有幾檔的配息資料還在抓。":""}</p>`;
+    <p class="muted">金額照除息日放在每個月（台幣，美股用現在匯率換算），實際入帳通常晚 3～5 週。已經除息的照當時的股數算，之後再買進或賣出都不會改到；還沒除息的用現在的股數，還沒公布的照去年同一次的配息估。點月份可以看那個月是哪幾檔。${x.miss?"有幾檔的配息資料還在抓。":""}</p>`;
 }
 function holdForm(i){
   holdEditAt=i;const h=holds[i];holdPick=h?h.c:"";
@@ -2143,6 +2161,8 @@ function holdInit(){
     if(!confirm(`確定要刪除「${pg.name}」這一頁和裡面的持股嗎？\n（按「取消」就不會刪除）`))return;
     try{localStorage.removeItem(holdKeyOf(pg));localStorage.removeItem(holdLogKey(pg))}catch(_){}holdPages.splice(holdCur,1);holdCur=0;
     if(!holdPages.length)holdPages=[{id:Date.now().toString(36),name:"我的持股"}];/* 全部刪光時留一頁空的 */holdPagesSave();holdLoad();holdTabs();holdForm(-1);holdQuote();toast("已刪除")});
+  $("hold-div").addEventListener("click",e=>{const d=e.target.closest("[data-dm]");if(d)holdDivMonth(+d.dataset.dm)});
+  $("hold-div").addEventListener("keydown",e=>{const d=e.target.closest("[data-dm]");if(d&&(e.key==="Enter"||e.key===" ")){e.preventDefault();holdDivMonth(+d.dataset.dm)}});
   $("hold-list").addEventListener("click",e=>{const b=e.target.closest("[data-h]");if(!b)return;holdForm(+b.dataset.h);$("hold-form").scrollIntoView({behavior:"smooth",block:"start"})});
   const q=$("hold-q"),sug=$("hold-sug");
   q.addEventListener("input",()=>{const t=q.value.trim().toLowerCase();if(!t){sug.hidden=true;return}

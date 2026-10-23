@@ -4,6 +4,9 @@ import { DurableObject } from "cloudflare:workers";
 // 報價類每 60 秒最多真的去抓一次（大盤高低指標 30 分鐘），期間大家共用同一份結果。
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
 const US = [["^GSPC", "標普500"], ["^SOX", "費城半導體"], ["^DJI", "道瓊工業指數"], ["^IXIC", "那斯達克"]];
+// 日韓（Luna 2026-10-23）：時間用台灣時間；as: 1 讓網頁放在「日韓」分頁
+const ASIA = [["^N225", "日經指數"], ["^KS11", "韓國指數"]];
+const ixTz = s => s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
 const PICKS = [["TSM", "台積電ADR"], ["TSMX", "台積電ADR 2倍"]];
 const CACHE_SEC = 60;
 
@@ -16,7 +19,7 @@ const ymdI = (t, tz) => fmt("ymd", tz, { year: "numeric", month: "2-digit", day:
 const dayStr = {};
 const ymdOff = (t, h) => { const n = Math.floor((t + h * 3600) / 86400); return dayStr[n] || (dayStr[n] = new Date(n * 864e5).toISOString().slice(0, 10)); };
 // 台灣固定 +8；紐約夏令／冬令兩種時差算出同一天就直接用（日線都在白天），不同才用 Intl
-const ymd = (t, tz) => tz === "Asia/Taipei" ? ymdOff(t, 8) : tz === "America/New_York" && ymdOff(t, -4) === ymdOff(t, -5) ? ymdOff(t, -4) : ymdI(t, tz);
+const ymd = (t, tz) => tz === "Asia/Taipei" ? ymdOff(t, 8) : tz === "Asia/Tokyo" || tz === "Asia/Seoul" ? ymdOff(t, 9) : tz === "America/New_York" && ymdOff(t, -4) === ymdOff(t, -5) ? ymdOff(t, -4) : ymdI(t, tz);
 
 async function get(url, init = {}) {
   const r = await fetch(url, { ...init, headers: { "User-Agent": UA, ...(init.headers || {}) } });
@@ -83,14 +86,15 @@ async function txf() {
 }
 
 // 美股指數、TSM、TSMX、匯率：Yahoo spark 5 分鐘走勢（美東時間）
-async function spark(list) {
+async function spark(list, asia) {
   const url = "https://query1.finance.yahoo.com/v8/finance/spark?range=1d&interval=5m&symbols=" +
     list.map(([s]) => encodeURIComponent(s)).join(",");
   const r = await (await get(url)).json();
   return list.map(([s, name]) => {
     const v = r[s], ts = v.timestamp || [], cl = v.close || [];
-    const pts = ts.map((t, k) => [t, cl[k]]).filter(p => p[1] != null).map(([t, c]) => [hm(t, "America/New_York"), r2(c)]);
-    return { key: s, name, us: 1, date: ts.length ? ymd(ts[ts.length - 1], "America/New_York") : "",
+    const tz = asia ? "Asia/Taipei" : "America/New_York";
+    const pts = ts.map((t, k) => [t, cl[k]]).filter(p => p[1] != null).map(([t, c]) => [hm(t, tz), r2(c)]);
+    return { key: s, name, ...(asia ? { as: 1 } : { us: 1 }), date: ts.length ? ymd(ts[ts.length - 1], ixTz(s)) : "",
       prev: v.chartPreviousClose ?? v.previousClose, pts };
   });
 }
@@ -98,7 +102,7 @@ async function spark(list) {
 async function build() {
   const jobs = {
     twii: yahooTw("^TWII", "加權指數"), otc: yahooTw("^TWOII", "櫃買指數"),
-    us: spark([...US, ...PICKS]), tw2330: yahooTw("2330.TW", "台積電"), fx: spark([["TWD=X", "美元兌台幣"]]),
+    us: spark([...US, ...PICKS]), asia: spark(ASIA, true), tw2330: yahooTw("2330.TW", "台積電"), fx: spark([["TWD=X", "美元兌台幣"]]),
   };
   const w = wtx();
   jobs.txf = w.then(txfDay).catch(() => txf());
@@ -108,6 +112,7 @@ async function build() {
   for (const k of ["twii", "txf", "txfn", "otc"]) if (got[k]) items.push({ key: k, ...got[k] });
   if (got.tw2330) items.push({ key: "2330", pick: 1, ...got.tw2330 }); // Luna：大盤台股最下面放台積電
   if (got.us) items.push(...got.us.map(x => PICKS.some(p => p[0] === x.key) ? { ...x, pick: 1 } : x));
+  if (got.asia) items.push(...got.asia);
   const now = new Date(Date.now() + 8 * 3600e3).toISOString();
   const data = { updated: `${now.slice(0, 10)} ${now.slice(11, 16)}`, live: 1, items: items.filter(x => x.pts.length) };
   const tsm = got.us && got.us.find(x => x.key === "TSM"), tw = got.tw2330, fx = got.fx && got.fx[0];
@@ -716,10 +721,10 @@ async function indexKline(key, part = 0) {
     const k = d.timestamp.map((t, i) => [ymd(t, "Asia/Taipei"), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
     return { kline: k, volUnit: "twshares" };
   }
-  if (/^\^?[A-Z]{2,6}$/.test(key)) {
+  if (/^\^?[A-Z0-9]{2,6}$/.test(key)) {
     const d = await chart(key); if (!d || !(d.timestamp || []).length) throw new Error("no data");
     const q = d.indicators.quote[0];
-    const k = d.timestamp.map((t, i) => [ymd(t, "America/New_York"), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
+    const k = d.timestamp.map((t, i) => [ymd(t, ixTz(key)), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
     return { kline: k, volUnit: "shares" };
   }
   throw new Error("bad key");
@@ -743,7 +748,7 @@ async function indexKd(keys) {
         }
         k = Object.keys(best).sort().map(d => [d, best[d].max, best[d].min, best[d].close, best[d].volume || 0]);
       } else {
-        const sym = key === "twii" ? "^TWII" : key === "2330" ? "2330.TW" : key, tz = /^\^TWII$|\.TW$/.test(sym) ? "Asia/Taipei" : "America/New_York";
+        const sym = key === "twii" ? "^TWII" : key === "2330" ? "2330.TW" : key, tz = ixTz(sym);
         const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
         const q = r.indicators.quote[0];
         k = (r.timestamp || []).map((t, i) => [ymd(t, tz), q.high[i], q.low[i], q.close[i], q.volume[i] || 0]).filter(b => b.slice(0, 4).every(v => v != null));
@@ -867,12 +872,12 @@ export default {
       case "/api/ixk": {
         // ?k=twii | otc | txf | ^GSPC … → 大盤的日 K（1 小時內共用）
         const k = url.searchParams.get("k") || "";
-        if (!/^(twii|otc|txf|2330|\^?[A-Z]{2,6})$/.test(k)) return new Response("{}", { status: 400 });
+        if (!/^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6})$/.test(k)) return new Response("{}", { status: 400 });
         return cached(request, ctx, 3600, () => indexKline(k, +(url.searchParams.get("p") || 0)));
       }
       case "/api/ixkd": {
         // ?k=twii,txf,otc,2330 → 大盤每一列的日 KD、週 KD，10 分鐘更新一次
-        const ks = (url.searchParams.get("k") || "").split(",").filter(k => /^(twii|otc|txf|2330|\^?[A-Z]{2,6})$/.test(k)).slice(0, 12);
+        const ks = (url.searchParams.get("k") || "").split(",").filter(k => /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6})$/.test(k)).slice(0, 12);
         return cached(request, ctx, 600, () => indexKd(ks));
       }
       case "/api/kd": {

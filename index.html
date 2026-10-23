@@ -365,6 +365,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hdiv .mon .got{background:transparent}}
 .hdiv .mon .zero b{color:var(--muted);font-weight:400}
 .hdiv .mon [data-dm]{cursor:pointer}
+.dtin{width:100%;font:inherit;font-size:20px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .dm-tot{font-size:20px;margin:4px 0 8px}.dm-tot b{font-family:var(--num);font-size:24px}
 .dm-row{padding:10px 0;border-bottom:1px solid var(--line)}
 .dm-row .t{display:flex;align-items:center;gap:8px;font-size:20px}.dm-row .t .v{margin-left:auto;font-family:var(--num)}
@@ -593,6 +594,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="field"><label for="hold-q">股票</label><div class="search"><input id="hold-q" type="search" placeholder="輸入代號或名字，例如 0050、台積電" autocomplete="off" aria-label="輸入股票代號或名字"><ul id="hold-sug" role="listbox" hidden></ul></div></div>
       <div class="pick" id="hold-pick"></div>
       <div class="field"><label for="hold-sh">股數（1 張 = 1000 股）</label><div class="unit"><input id="hold-sh" type="number" inputmode="numeric" min="0" step="1"><span>股</span></div></div>
+      <div class="field"><label for="hold-dt">買進日期（第一次買的那天；之前就有的股票請填，那天之後除息的配息才會算進股利收入）</label><input id="hold-dt" type="date" class="dtin"></div>
       <div class="hbtns"><button id="hold-save">加入</button><button class="sec" id="hold-cancel" hidden>取消</button><button class="del" id="hold-del" hidden>刪除這檔</button></div>
     </div>
     <div class="hclr"><button id="hold-clr">清除全部</button></div>
@@ -2034,6 +2036,9 @@ function holdLogSet(c,n,old){const pg=holdPages[holdCur],lg=holdLogRead(pg),d=tw
   if(!a)a=lg[c]=old>0?[["0000-00-00",old]]:[];
   if(a.length&&a[a.length-1][0]===d)a[a.length-1][1]=n;else a.push([d,n]);
   try{localStorage.setItem(holdLogKey(pg),JSON.stringify(lg))}catch(_){}}
+// 買進日期：改第一筆紀錄的日期（Luna 2026-10-23：00878 一月就有，今天才輸入）
+function holdLogStart(c,dt){if(!/^\d{4}-\d{2}-\d{2}$/.test(dt))return;const pg=holdPages[holdCur],lg=holdLogRead(pg),a=lg[c];if(!a||!a.length)return;
+  a[0][0]=dt>twDay()?twDay():dt;a.sort((x,y)=>x[0]<y[0]?-1:x[0]>y[0]?1:0);try{localStorage.setItem(holdLogKey(pg),JSON.stringify(lg))}catch(_){}}
 function holdAllItems(){holdPagesLoad();return holdPages.map(pg=>({pg,list:holdRead(holdKeyOf(pg))}))}
 function holdChoose(title,sel,ok,filter){
   const all=holdAllItems().map(g=>({...g,list:g.list.filter(x=>!filter||filter(x.c))}));
@@ -2145,7 +2150,7 @@ function holdForm(i){
   holdEditAt=i;const h=holds[i];holdPick=h?h.c:"";
   $("hold-ft").textContent=h?"修改持股":"新增持股";$("hold-save").textContent=h?"儲存":"加入";
   $("hold-cancel").hidden=$("hold-del").hidden=!h;$("hold-q").value="";
-  $("hold-sh").value=h?h.n:"";holdPickShow();
+  $("hold-sh").value=h?h.n:"";const a=h&&holdLogRead(holdPages[holdCur])[h.c];$("hold-dt").value=a&&a.length&&a[0][0]!=="0000-00-00"?a[0][0]:"";$("hold-dt").max=twDay();holdPickShow();
 }
 function holdPickShow(){const r=idxOf[holdPick];$("hold-pick").textContent=r?`${r[1]}（${r[0]}）`:""}
 function holdInit(){
@@ -2177,6 +2182,7 @@ function holdInit(){
     if(!(n>0)){toast("請輸入股數");$("hold-sh").focus();return}
     const h={c:holdPick,n},o=holdEditAt>=0?holds[holdEditAt]:holds.find(x=>x.c===holdPick);
     if(o&&o.c!==holdPick)holdLogSet(o.c,0,o.n);holdLogSet(holdPick,n,o&&o.c===holdPick?o.n:(holds.find(x=>x.c===holdPick)||{}).n||0);
+    holdLogStart(holdPick,$("hold-dt").value);
     if(holdEditAt>=0)holds[holdEditAt]=h;else{const j=holds.findIndex(x=>x.c===holdPick);if(j>=0)holds[j]=h;else holds.push(h)}
     holdSave();holdForm(-1);toast("已儲存");holdQuote()});
   $("hold-cancel").addEventListener("click",()=>holdForm(-1));

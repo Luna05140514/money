@@ -109,6 +109,9 @@ button,input,select{font:inherit;color:inherit}
 .hform .auto{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:17px;background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:12px}
 .hform .auto b{font-family:var(--num);font-size:20px}
 .hform .auto small{display:block;font-size:14px;color:var(--muted)}
+.local{text-align:center;font-size:17px;font-weight:700;color:var(--ink);background:var(--gold-soft);border-radius:999px;padding:6px 14px;margin:-6px auto 16px;width:fit-content}
+.hclr{display:flex;justify-content:center;margin-top:16px}
+.hclr button{font:inherit;font-size:18px;font-weight:700;min-height:50px;padding:0 26px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
 /* 我的持股、除權息行事曆 */
 .hsum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:center}
 .hsum b{display:block;font-family:var(--num);font-size:24px;line-height:1.25}
@@ -512,7 +515,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
   <section id="hold" class="page" hidden>
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>我的持股損益</h1>
-    <p class="lead" id="hold-lead">輸入股數，看今天漲跌多少、賺賠多少錢。資料只存在這支手機。</p>
+    <p class="lead" id="hold-lead">輸入股數，看今天漲跌多少、賺賠多少錢。</p>
+    <p class="local">📱 資料只存在這支手機，不會上傳</p>
     <div class="panel hsum" id="hold-sum"></div>
     <div class="wlist" id="hold-list" style="margin-top:12px"></div>
     <div class="panel hform" id="hold-form" style="margin-top:12px">
@@ -522,6 +526,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="field"><label for="hold-sh">股數（1 張 = 1000 股）</label><div class="unit"><input id="hold-sh" type="number" inputmode="numeric" min="0" step="1"><span>股</span></div></div>
       <div class="hbtns"><button id="hold-save">加入</button><button class="sec" id="hold-cancel" hidden>取消</button><button class="del" id="hold-del" hidden>刪除這檔</button></div>
     </div>
+    <div class="hclr"><button id="hold-clr">清除全部</button></div>
     <p class="note">當日損益 = 股數 × 今天漲跌（還沒開盤時是上一個交易日）。點任一檔可以修改股數或刪除。美股用美元計算，合計時用即時美元匯率換成台幣。</p>
   </section>
 
@@ -595,7 +600,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
   <section id="pledge" class="page" hidden>
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>質押維持率</h1>
-    <p class="lead" id="pl-lead">輸入質押的股票、股數和借款金額，用現價算出維持率。資料只存在這支手機。</p>
+    <p class="lead" id="pl-lead">輸入質押的股票、股數和借款金額，用現價算出維持率。</p>
+    <p class="local">📱 資料只存在這支手機，不會上傳</p>
     <div class="panel pl-res" id="pl-res"></div>
     <div class="wlist" id="pl-list" style="margin-top:12px"></div>
     <div class="panel hform" style="margin-top:12px">
@@ -606,6 +612,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="hbtns"><button id="pl-add">加入</button><button class="sec" id="pl-hold">帶入我的持股</button></div>
       <div class="field" style="margin-top:18px"><label for="pl-loan">借款金額</label><div class="unit"><input id="pl-loan" type="number" inputmode="numeric" min="0" step="10000"><span>元</span></div></div>
     </div>
+    <div class="hclr"><button id="pl-clr">清除全部</button></div>
     <p class="note">維持率 = 質押股票現在的市值 ÷ 借款金額。一般券商低於 130% 會通知追繳，要在期限內補錢或補股票，多數要補回 166% 以上（各家券商規定可能不同，以你的券商為準）。美股不能質押，所以只能選台股。</p>
   </section>
 
@@ -613,7 +620,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
   <section id="debt" class="page" hidden>
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>總資產負債比</h1>
-    <p class="lead">負債比 = 總負債 ÷ 總資產。股票市值和質押借款會自動帶入，其他自己填，沒有的留空。資料只存在這支手機。</p>
+    <p class="lead">負債比 = 總負債 ÷ 總資產。股票市值和質押借款會自動帶入，其他自己填，沒有的留空。</p>
+    <p class="local">📱 資料只存在這支手機，不會上傳</p>
     <div class="panel pl-res" id="db-res"></div>
     <div class="panel hform" style="margin-top:12px">
       <h2>資產</h2>
@@ -623,6 +631,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="auto" id="db-pl"></div>
       <div class="field"><label for="db-mort">房貸（還沒還的本金）</label><div class="unit"><input id="db-mort" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-loan">信貸、車貸</label><div class="unit"><input id="db-loan" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-card">其他負債（卡債、借款）</label><div class="unit"><input id="db-card" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div>
     </div>
+    <div class="hclr"><button id="db-clr">清除全部</button></div>
     <p class="note">一般參考：負債比 30% 以下算健康，30%～50% 要注意，超過 50% 偏高。股票市值來自「我的持股損益」（美股用即時匯率換成台幣），質押借款來自「質押維持率」。</p>
   </section>
 
@@ -1891,7 +1900,7 @@ function holdRender(){
   $("hold-sum").hidden=!holds.length;
   $("hold-sum").innerHTML=`<div><b class="${cls(day)}">${sg(day)}</b><span>當日損益合計（元）</span></div><div><b class="${cls(day)}">${base?pc(day/base*100):"—"}</b><span>當日漲跌幅</span></div>`;
   const t=new Date(Date.now()+8*3600e3).toISOString();
-  $("hold-lead").textContent=holds.length?(ON_CF?`現價更新於 ${t.slice(11,16)}${LIVE}，每分鐘自動更新。`:`現價資料 ${STOCK.updated}。`)+(miss?"有幾檔還在抓價格。":""):"輸入股數，看今天漲跌多少、賺賠多少錢。資料只存在這支手機。";
+  $("hold-lead").textContent=holds.length?(ON_CF?`現價更新於 ${t.slice(11,16)}${LIVE}，每分鐘自動更新。`:`現價資料 ${STOCK.updated}。`)+(miss?"有幾檔還在抓價格。":""):"輸入股數，看今天漲跌多少、賺賠多少錢。";
 }
 async function holdQuote(){
   const codes=[...new Set(holds.map(h=>h.c))];if(!codes.length){holdRender();return}
@@ -1926,6 +1935,7 @@ function holdInit(){
     if(holdEditAt>=0)holds[holdEditAt]=h;else{const j=holds.findIndex(x=>x.c===holdPick);if(j>=0)holds[j]=h;else holds.push(h)}
     holdSave();holdForm(-1);toast("已儲存");holdQuote()});
   $("hold-cancel").addEventListener("click",()=>holdForm(-1));
+  clrBtn("hold-clr",()=>holds.length&&confirm("確定要清除全部持股嗎？\n（按「取消」就不會清除）"),()=>{holds=[];holdSave();holdForm(-1);holdRender()});
   $("hold-del").addEventListener("click",()=>{const h=holds[holdEditAt];if(!h)return;if(!confirm(`確定刪除 ${idxOf[h.c][1]}？`))return;holds.splice(holdEditAt,1);holdSave();holdForm(-1);holdRender()});
 }
 calc.hold=holdInit;
@@ -1955,6 +1965,8 @@ function divcRender(){
   $("divc-lead").textContent=`自選股和我的持股（台股），這個月哪天除權息、每股配多少。資料更新於 ${divData.updated}。`;
 }
 calc.divc=divcInit;
+/* 清除全部：先跳確認視窗，按「取消」就不會清除（Luna 2026-10-23：不用復原） */
+function clrBtn(id,ask,clear){$(id).addEventListener("click",()=>{if(ask()){clear();toast("已清除")}})}
 /* 質押維持率（Luna 2026-10-23）：質押股票（台股）＋借款金額存在這支手機；市值用現價（和自選股同一個來源） */
 const PL_KEY="facai-pledge";
 let pl={items:[],loan:0},plPick="";
@@ -1984,6 +1996,7 @@ async function plQuote(){
 function plInit(){
   if(plInit.done){plQuote();return}plInit.done=1;
   plLoad();$("pl-loan").value=pl.loan||"";plQuote();
+  clrBtn("pl-clr",()=>(pl.items.length||pl.loan)&&confirm("確定要清除全部質押股票和借款金額嗎？\n（按「取消」就不會清除）"),()=>{pl={items:[],loan:0};plSave();$("pl-loan").value="";plRender()});
   $("pl-loan").addEventListener("input",()=>{pl.loan=parseFloat($("pl-loan").value)||0;plSave();plRender()});
   $("pl-list").addEventListener("click",e=>{const b=e.target.closest("[data-pl]");if(!b)return;pl.items.splice(+b.dataset.pl,1);plSave();plRender()});
   const q=$("pl-q"),sug=$("pl-sug");
@@ -2022,6 +2035,8 @@ function dbRender(){
 async function dbInit(){
   if(!dbInit.done){dbInit.done=1;
     try{const v=JSON.parse(localStorage.getItem(DB_KEY))||{};DB_IN.forEach(id=>{if(v[id])$(id).value=v[id]})}catch(_){}
+    const dbSave=()=>{try{const o={};DB_IN.forEach(k=>{if($(k).value)o[k]=$(k).value});localStorage.setItem(DB_KEY,JSON.stringify(o))}catch(_){}};
+    clrBtn("db-clr",()=>DB_IN.some(id=>$(id).value)&&confirm("確定要清除這頁自己填的資產和負債嗎？\n（股票市值和質押借款是從別頁帶入的，不會清掉；按「取消」就不會清除）"),()=>{DB_IN.forEach(id=>$(id).value="");dbSave();dbRender()});
     DB_IN.forEach(id=>$(id).addEventListener("input",()=>{try{const o={};DB_IN.forEach(k=>{if($(k).value)o[k]=$(k).value});localStorage.setItem(DB_KEY,JSON.stringify(o))}catch(_){}dbRender()}))}
   dbRender();holdLoad();
   const codes=[...new Set(holds.map(h=>h.c))];if(!codes.length)return;

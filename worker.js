@@ -6,7 +6,11 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const US = [["^GSPC", "標普500"], ["^SOX", "費城半導體"], ["^DJI", "道瓊工業指數"], ["^IXIC", "那斯達克"]];
 // 日韓（Luna 2026-10-23）：時間用台灣時間；as: 1 讓網頁放在「日韓」分頁
 const ASIA = [["^N225", "日經指數"], ["^KS11", "韓國指數"]];
-const ixTz = s => s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
+// 匯率（Luna 2026-10-23）：1 美元、100 日圓、1000 韓元換多少台幣，放在全球大盤「匯率」分頁
+// Yahoo 的日圓、韓元兌台幣報價只到小數 4 位（韓元 0.0246 太粗），改用美元兌台幣 ÷ 美元兌日圓／韓元算
+const FX = [["TWD=X", "美元", 1, null], ["JPYTWD=X", "日圓", 100, "JPY=X"], ["KRWTWD=X", "韓元", 1000, "KRW=X"]];
+const fxScale = s => (FX.find(f => f[0] === s) || [0, 0, 1])[2];
+const ixTz = s => /=X$/.test(s) ? "Asia/Taipei" : s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
 const PICKS = [["TSM", "台積電ADR"], ["TSMX", "台積電ADR 2倍"]];
 const CACHE_SEC = 60;
 
@@ -86,6 +90,23 @@ async function txf() {
 }
 
 // 美股指數、TSM、TSMX、匯率：Yahoo spark 5 分鐘走勢（美東時間）
+async function fxSpark() {
+  const u = "https://query1.finance.yahoo.com/v8/finance/spark?symbols=TWD%3DX,JPY%3DX,KRW%3DX&range=";
+  const [r, dd] = await Promise.all([get(u + "1d&interval=5m").then(x => x.json()), get(u + "5d&interval=1d").then(x => x.json()).catch(() => ({}))]);
+  // 昨收用日線前一天的收盤（1 天走勢的 chartPreviousClose 只是今天早上 7 點的價格），和 K 線一致
+  const today = ymd(Date.now() / 1000, "Asia/Taipei");
+  const pc = s => { const v = dd[s]; if (!v) return null; let p = null; (v.timestamp || []).forEach((t, i) => { if (v.close[i] != null && ymd(t, "Asia/Taipei") < today) p = v.close[i]; }); return p; };
+  const usd = r["TWD=X"], at = new Map((usd.timestamp || []).map((t, i) => [t, usd.close[i]]));
+  return FX.map(([s, name, n, via]) => {
+    const v = via ? r[via] : usd, ts = v.timestamp || [];
+    const rate = (a, b) => a != null && b ? (via ? a / b : a) * n : null;
+    let lastU = null;
+    const pts = ts.map((t, k) => { const u = at.get(t); if (u != null) lastU = u; return [t, rate(u ?? lastU, v.close[k])]; })
+      .filter(p => p[1] != null).map(([t, c]) => [hm(t, "Asia/Taipei"), Math.round(c * 1000) / 1000]);
+    const prev = rate(pc("TWD=X") ?? usd.chartPreviousClose ?? usd.previousClose, via ? pc(via) ?? v.chartPreviousClose ?? v.previousClose : 1);
+    return { key: s, name, fx: 1, date: ts.length ? ymd(ts[ts.length - 1], "Asia/Taipei") : "", prev: Math.round(prev * 1000) / 1000, pts };
+  });
+}
 async function spark(list, asia) {
   const url = "https://query1.finance.yahoo.com/v8/finance/spark?range=1d&interval=5m&symbols=" +
     list.map(([s]) => encodeURIComponent(s)).join(",");
@@ -102,7 +123,7 @@ async function spark(list, asia) {
 async function build() {
   const jobs = {
     twii: yahooTw("^TWII", "加權指數"), otc: yahooTw("^TWOII", "櫃買指數"),
-    us: spark([...US, ...PICKS]), asia: spark(ASIA, true), tw2330: yahooTw("2330.TW", "台積電"), fx: spark([["TWD=X", "美元兌台幣"]]),
+    us: spark([...US, ...PICKS]), asia: spark(ASIA, true), tw2330: yahooTw("2330.TW", "台積電"), fx: fxSpark(),
   };
   const w = wtx();
   jobs.txf = w.then(txfDay).catch(() => txf());
@@ -113,9 +134,10 @@ async function build() {
   if (got.tw2330) items.push({ key: "2330", pick: 1, ...got.tw2330 }); // Luna：大盤台股最下面放台積電
   if (got.us) items.push(...got.us.map(x => PICKS.some(p => p[0] === x.key) ? { ...x, pick: 1 } : x));
   if (got.asia) items.push(...got.asia);
+  if (got.fx) items.push(...got.fx);
   const now = new Date(Date.now() + 8 * 3600e3).toISOString();
   const data = { updated: `${now.slice(0, 10)} ${now.slice(11, 16)}`, live: 1, items: items.filter(x => x.pts.length) };
-  const tsm = got.us && got.us.find(x => x.key === "TSM"), tw = got.tw2330, fx = got.fx && got.fx[0];
+  const tsm = got.us && got.us.find(x => x.key === "TSM"), tw = got.tw2330, fx = got.fx && got.fx.find(x => x.key === "TWD=X");
   if (tsm && tsm.pts.length && tw && tw.pts.length && fx && fx.pts.length)
     data.adr = { adr: tsm.pts.at(-1)[1], adrDate: tsm.date, tw: tw.pts.at(-1)[1], twDate: tw.date, fx: Math.round(fx.pts.at(-1)[1] * 1000) / 1000 };
   return data;
@@ -196,6 +218,34 @@ async function stocks(list) { // list: [[code, us]]
     });
   } catch (_) {}
   return Object.fromEntries(ok);
+}
+
+// ───── 除權息行事曆（Luna 2026-10-23）：證交所、櫃買中心的除權息預告表＋這個月已除權息的結果，網頁再挑自選股 ─────
+// 回傳 items: [代號, 名稱, 日期, "息"/"權"/"權息", 每股現金股利（還沒公告是 null）]
+async function divCal() {
+  const now = new Date(Date.now() + 8 * 3600e3), y = now.getUTCFullYear(), m = now.getUTCMonth();
+  const d8 = dt => dt.toISOString().slice(0, 10).replace(/-/g, "");
+  const roc = t => { const a = String(t).match(/(\d{2,3})\D*(\d{2})\D*(\d{2})/); return a ? `${+a[1] + 1911}-${a[2]}-${a[3]}` : null; };
+  const num = v => { const x = parseFloat(String(v).replace(/,/g, "")); return isFinite(x) ? x : null; };
+  const kind = t => /權息/.test(t) ? "權息" : /權/.test(t) ? "權" : "息";
+  const tw = u => get(u).then(r => r.json()).then(j => j.data || []);
+  const tp = u => get(u, { headers: { Accept: "application/json" } }).then(r => r.json());
+  const from = d8(new Date(Date.UTC(y, m, 1))), to = d8(now);
+  const src = await Promise.all([
+    tw("https://www.twse.com.tw/rwd/zh/exRight/TWT48U?response=json").then(a => a.map(r => [r[1], r[2], roc(r[0]), kind(r[3]), /待公告/.test(r[7]) ? null : num(r[7])])),
+    tw(`https://www.twse.com.tw/rwd/zh/exRight/TWT49U?response=json&startDate=${from}&endDate=${to}`).then(a => a.map(r => [r[1], r[2], roc(r[0]), kind(r[6]), /息/.test(r[6]) && !/權/.test(r[6]) ? num(r[5]) : null])),
+    tp("https://www.tpex.org.tw/openapi/v1/tpex_exright_prepost").then(a => a.map(r => [r.SecuritiesCompanyCode, r.CompanyName, roc(r.ExRrightsExDividendDate), kind(r.ExRrightsExDividend), num(r.CashDividend) || null])),
+    tp("https://www.tpex.org.tw/openapi/v1/tpex_exright_daily").then(a => a.map(r => [r.SecuritiesCompanyCode, r.CompanyName, roc(r.Date), kind(r.ExRightsDiviend), num(r.CashDividend) || null])),
+  ].map(p => p.catch(() => null)));
+  if (!src[0] && !src[1]) throw new Error("twse failed");
+  const by = new Map();
+  for (const a of src) for (const r of a || []) {
+    if (!r[0] || !r[2]) continue;
+    const k = r[0] + r[2], o = by.get(k);
+    if (!o || (o[4] == null && r[4] != null)) by.set(k, [String(r[0]).trim(), String(r[1]).replace(/\*$/, "").trim(), r[2], r[3], r[4]]);
+  }
+  const t = now.toISOString();
+  return { updated: `${t.slice(0, 10)} ${t.slice(11, 16)}`, items: [...by.values()].sort((a, b) => a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0), ...(src.some(x => !x) ? { __partial: 1 } : {}) };
 }
 
 // ───── 淨值查詢：證交所 ETF 盤中預估淨值（格式同 nav_table）─────
@@ -733,10 +783,10 @@ async function indexKline(key, part = 0) {
     const k = d.timestamp.map((t, i) => [ymd(t, "Asia/Taipei"), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
     return { kline: k, volUnit: "twshares" };
   }
-  if (/^\^?[A-Z0-9]{2,6}$/.test(key)) {
+  if (/^\^?[A-Z0-9]{2,6}$|^[A-Z]{3,6}=X$/.test(key)) {
     const d = await chart(key); if (!d || !(d.timestamp || []).length) throw new Error("no data");
-    const q = d.indicators.quote[0];
-    const k = d.timestamp.map((t, i) => [ymd(t, ixTz(key)), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
+    const q = d.indicators.quote[0], n = fxScale(key), f = v => v == null ? null : rp(v * n);
+    const k = d.timestamp.map((t, i) => [ymd(t, ixTz(key)), f(q.open[i]), f(q.high[i]), f(q.low[i]), f(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
     return { kline: k, volUnit: "shares" };
   }
   throw new Error("bad key");
@@ -860,6 +910,7 @@ export default {
         return new Response(Uint8Array.from(atob(ICON_PNG), c => c.charCodeAt(0)), { headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" } });
       case "/api/idx": return cached(request, ctx, CACHE_SEC, build);
       case "/api/nav": return cached(request, ctx, CACHE_SEC, navTable);
+      case "/api/divcal": return cached(request, ctx, 6 * 3600, divCal);
       case "/api/mkt": return cached(request, ctx, 1800, market);
       case "/api/quote": {
         // ?c=2330,00981A&us=TSM → 最多 40 檔
@@ -884,12 +935,12 @@ export default {
       case "/api/ixk": {
         // ?k=twii | otc | txf | ^GSPC … → 大盤的日 K（1 小時內共用）
         const k = url.searchParams.get("k") || "";
-        if (!/^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6})$/.test(k)) return new Response("{}", { status: 400 });
+        if (!/^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X)$/.test(k)) return new Response("{}", { status: 400 });
         return cached(request, ctx, 3600, () => indexKline(k, +(url.searchParams.get("p") || 0)));
       }
       case "/api/ixkd": {
         // ?k=twii,txf,otc,2330 → 大盤每一列的日 KD、週 KD，10 分鐘更新一次
-        const ks = (url.searchParams.get("k") || "").split(",").filter(k => /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6})$/.test(k)).slice(0, 12);
+        const ks = (url.searchParams.get("k") || "").split(",").filter(k => /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X)$/.test(k)).slice(0, 12);
         return cached(request, ctx, 600, () => indexKd(ks));
       }
       case "/api/kd": {

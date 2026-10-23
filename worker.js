@@ -897,8 +897,10 @@ async function divYear(code, us) {
   const y0 = new Date().getUTCFullYear() - 2;
   try {
     if (!us) {
-      const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${code}&start_date=${y0}-01-01`)).json();
-      if (!Array.isArray(j.data)) return { divs: [], __partial: 1 };
+      let j = null;
+      try { j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${code}&start_date=${y0}-01-01`)).json(); } catch (_) {}
+      // FinMind 一次抓太多檔會被限流（Luna 的 00878 沒出現）：改用 Yahoo 月線的配息紀錄（只有已除息的，沒有預告）
+      if (!j || !Array.isArray(j.data) || !j.data.length) return await divYahoo(code, y0);
       const divs = j.data.filter(x => x.CashExDividendTradingDate && (x.CashEarningsDistribution + x.CashStatutorySurplus) > 0)
         .map(x => [x.CashExDividendTradingDate, rp(x.CashEarningsDistribution + x.CashStatutorySurplus), x.CashDividendPaymentDate || ""]).sort((a, b) => a[0] < b[0] ? -1 : 1);
       return { divs };
@@ -911,6 +913,20 @@ async function divYear(code, us) {
     }
     return { divs: [] };
   } catch (_) { return { divs: [], __partial: 1 }; }
+}
+
+async function divYahoo(code, y0) {
+  for (const sfx of [".TW", ".TWO"]) for (const host of ["query1", "query2"]) {
+    try {
+      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${code}${sfx}?range=3y&interval=1mo&events=div`, { headers: { "User-Agent": UA } });
+      if (!r.ok) continue;
+      const res = ((await r.json()).chart || {}).result;
+      if (!res || !res[0]) continue;
+      const divs = Object.values((res[0].events || {}).dividends || {}).map(v => [ymd(v.date, "Asia/Taipei"), rp(v.amount), ""]).filter(v => v[0] >= `${y0}-01-01` && v[1] > 0).sort((a, b) => a[0] < b[0] ? -1 : 1);
+      return { divs, src: "yahoo" };
+    } catch (_) {}
+  }
+  return { divs: [], __partial: 1 };
 }
 
 // ETF 成分股前十大（Luna 2026-10-23）：台股用 Yahoo 奇摩股市「持股」頁（每月更新），美股用 Yahoo Finance 的 holdings 頁

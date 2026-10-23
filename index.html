@@ -600,6 +600,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="pick" id="hold-pick"></div>
       <div class="field"><label for="hold-sh">股數（1 張 = 1000 股）</label><div class="unit"><input id="hold-sh" type="number" inputmode="numeric" min="0" step="1"><span>股</span></div></div>
       <div class="field"><label for="hold-dt">買進日期（第一次買的那天；之前就有的股票請填，那天之後除息的配息才會算進股利收入）</label><input id="hold-dt" type="date" class="dtin"></div>
+      <div class="field" id="hold-fxf" hidden><label for="hold-fx">買進匯率（買美股時 1 美元換多少台幣）</label><div class="unit"><input id="hold-fx" type="number" inputmode="decimal" min="0" step="0.01" placeholder="31"><span>元</span></div></div>
       <div class="hbtns"><button id="hold-save">加入</button><button class="sec" id="hold-cancel" hidden>取消</button><button class="del" id="hold-del" hidden>刪除這檔</button></div>
     </div>
     <div class="hclr"><button id="hold-clr">清除全部</button></div>
@@ -1625,8 +1626,8 @@ const watchVal={},watchValAt={};
 // 本益比區間、預估 EPS、每股淨值變化很慢（Luna 2026-10-23：不用常抓）：存在手機裡，一天才重抓一次；股價還是即時的
 // 法人預估 EPS 抓到就保留一季（Luna 2026-10-23）：手機裡存 90 天，每天還是問一次有沒有新的，沒抓到就用保留的；本益比＝即時股價 ÷ 這個 EPS，自己算
 const VAL_TTL=864e5,VAL_KEEP=7776e6;
-try{const o=JSON.parse(localStorage.getItem("facai-val")||"{}");for(const c in o)if(o[c].t>Date.now()-VAL_KEEP){const t=o[c].t;delete o[c].t;watchVal[c]=o[c];if(o[c].eps||o[c].eps1||/^(28|58)\d\d$/.test(c))watchValAt[c]=t}}catch(_){}
-function watchValSave(){try{const o={};for(const c in watchVal)if(watchValAt[c])o[c]={...watchVal[c],t:watchValAt[c]};localStorage.setItem("facai-val",JSON.stringify(o))}catch(_){}}
+try{const o=JSON.parse(localStorage.getItem("facai-val2")||"{}");for(const c in o)if(o[c].t>Date.now()-VAL_KEEP){const t=o[c].t;delete o[c].t;watchVal[c]=o[c];if(o[c].eps||o[c].eps1||/^(28|58)\d\d$/.test(c))watchValAt[c]=t}}catch(_){}
+function watchValSave(){try{const o={};for(const c in watchVal)if(watchValAt[c])o[c]={...watchVal[c],t:watchValAt[c]};localStorage.setItem("facai-val2",JSON.stringify(o))}catch(_){}}
 // 名字上方一整行：本益比、股淨比各自的便宜／合理／昂貴（股淨比＝即時股價 ÷ 每股淨值，和近 5 年平均比）
 function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
   const lv=(x,b)=>x<=b.lo?["lo","便宜"]:x>=b.hi?["hi","昂貴"]:["mid","合理"],out=[];
@@ -1651,7 +1652,7 @@ async function watchValLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
   const need=g.list.filter(c=>idxOf[c]&&!(idxOf[c][4]?false:/^00/.test(c))&&!(watchValAt[c]>Date.now()-VAL_TTL));if(!need.length)return;
   need.forEach(c=>watchValAt[c]=Date.now());
-  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=9`).then(d=>[c,d])));
+  const got=await Promise.all(need.map(c=>api(`/api/val?${idxOf[c][4]?"us":"c"}=${encodeURIComponent(c)}&v=10`).then(d=>[c,d])));
   // 合併而不是整個換掉：資料來源一時抓不到時，不會把原本有的本益比洗掉（Luna：一下有一下沒有）；缺東西的 5 分鐘後再抓
   let ch=0;got.forEach(([c,d])=>{if(d&&(d.eps||d.eps1||d.pb)){const o=watchVal[c]||{};const cyc=d.cyc!=null?d.cyc:o.cyc;watchVal[c]=d.eps||d.eps1?{...o,...d,pb:d.pb||o.pb,cyc}:{...o,pb:d.pb,cyc};ch=1}
     // 沒抓到，或非金融股卻缺預估 EPS（台積電曾因此改顯示股淨比）：不要存一整天，5 分鐘後再抓（伺服器那邊有快取，很快）
@@ -1754,7 +1755,7 @@ async function wdRender(c){
   let x=wdCache[c];
   for(let t=0;!x&&t<3;t++){
     if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
-    x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=8`);if(x&&x.error)x=null;
+    x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=10`);if(x&&x.error)x=null;
   }
   if(x){wdCache[c]=x;watchValFromDetail(c,x)}
   if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}
@@ -1821,7 +1822,7 @@ async function wdRender(c){
       const end=e.end?`${e.end.slice(0,4)}/${e.end.slice(5,7)}`:"";
       const gr=e.prev&&e.prev>0?Math.round((e.avg/e.prev-1)*100):null;
       return `<div class="wd-kpi"><div><b>${e.pe??"—"}</b><span>${nm}（倍）</span></div><div><b>${f2(e.avg)}</b><span>法人預估 EPS</span></div></div>
-      ${b5&&e.pe>0&&e.avg>0?`<div class="wd-verdict ${lvC(e.pe)}">${nm} ${e.pe} 倍：<b>${lvT(e.pe)}</b></div><p>用${k==="y0"?"今年":"明年"}預估 EPS 換算：合理價 <b>${f2(b5.avg*e.avg)}</b> 元，<b>${f2(b5.lo*e.avg)}</b> 元以下算便宜，<b>${f2(b5.hi*e.avg)}</b> 元以上算昂貴。</p>`:""}
+      ${b5&&e.pe>0&&e.avg>0?`<div class="wd-verdict ${lvC(e.pe)}">${nm} ${e.pe} 倍：<b>${lvT(e.pe)}</b></div><p>用${k==="y0"?"今年":"明年"}預估 EPS 換算：合理價 <b>${f2(b5.avg*e.avg)}</b> ${cur}，<b>${f2(b5.lo*e.avg)}</b> ${cur}以下算便宜，<b>${f2(b5.hi*e.avg)}</b> ${cur}以上算昂貴。</p>`:""}
       ${e.avg<=0?"<p>法人預估會虧損，所以沒有本益比。</p>":""}${gr!=null?`<p>${k==="y0"?"去年":"今年預估"} EPS ${f2(e.prev)} ${cur}，預估${gr>=0?"成長":"衰退"} <b>${Math.abs(gr)}%</b>。</p>`:""}
       <p class="muted">本益比 = 現在股價 ${f2(x.est.price)} ÷ 法人預估 EPS ${f2(e.avg)}，數字越低越便宜。預估的年度到 ${end} 為止，是${us?"Yahoo Finance":"鉅亨網（FactSet）"}整理的法人平均預估，會隨時調整。</p>`};
     const y0=pg("y0","今年本益比"),y1=pg("y1","明年本益比");
@@ -2024,7 +2025,7 @@ let holds=[],holdEditAt=-1,holdPick="";
 const HOLD_DEF=()=>[{id:"",name:"台股"},{id:"us",name:"美股"}];
 let holdPages=HOLD_DEF(),holdCur=0,holdAll=true;/* holdAll：第一個分頁「總覽」，全部頁合計＋圓餅圖＋股利收入（Luna 2026-10-23） */
 const holdKeyOf=pg=>pg.id?HOLD_KEY+"-"+pg.id:HOLD_KEY;
-const holdRead=key=>{try{const v=JSON.parse(localStorage.getItem(key));if(Array.isArray(v))return v.filter(h=>h&&idxOf[h.c]&&h.n>0).map(h=>({c:h.c,n:h.n}))}catch(_){}return[]};
+const holdRead=key=>{try{const v=JSON.parse(localStorage.getItem(key));if(Array.isArray(v))return v.filter(h=>h&&idxOf[h.c]&&h.n>0).map(h=>h.fx>0?{c:h.c,n:h.n,fx:h.fx}:{c:h.c,n:h.n})}catch(_){}return[]};
 function holdPagesLoad(){holdPages=HOLD_DEF();try{const v=JSON.parse(localStorage.getItem(HOLD_KEY+"-pages"));if(Array.isArray(v)&&v.length)holdPages=v}catch(_){}
   try{const s=localStorage.getItem(HOLD_KEY+"-cur");holdAll=s==null||s==="all";holdCur=Math.min(+s||0,holdPages.length-1)}catch(_){}}
 function holdPagesSave(){try{localStorage.setItem(HOLD_KEY+"-pages",JSON.stringify(holdPages));localStorage.setItem(HOLD_KEY+"-cur",holdAll?"all":holdCur)}catch(_){}}
@@ -2072,16 +2073,18 @@ const usdTwd=()=>{const it=IDX&&(IDX.items||[]).find(x=>x.key==="TWD=X");return 
 function holdRender(){
   const f0=v=>Math.round(v).toLocaleString("zh-TW"),f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   const sg=v=>(v>0?"+":v<0?"−":"")+f0(Math.abs(v)),cls=v=>v>0?"up":v<0?"down":"flat",pc=v=>(v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(2)+"%";
-  const fx=usdTwd();let base=0,day=0,miss=0;
+  const fx=usdTwd();let base=0,day=0,miss=0,fxpl=0,hasUs=false;
   const rows=holds.map((h,i)=>{const r=idxOf[h.c],us=!!r[4],it=watchItem(h.c),last=it&&!it.loading?it.last:null,prev=it&&it.prev;
     if(last==null||!prev){miss++;return `<button class="hrow" data-h="${i}"><span class="nm"><b>${esc(r[1])}</b><small>${esc(h.c)}</small></span><span class="pl">…</span></button>`}
     const dp=(last-prev)*h.n,pct=(last/prev-1)*100,m=us?(fx||0):1;
     if(us&&!fx)miss++;else{base+=prev*h.n*m;day+=dp*m}
+    // 匯兌損益（Luna 2026-10-23）：美股市值 ×（現在匯率 − 買進匯率，預設 31）
+    const bfx=h.fx>0?h.fx:31,xp=us&&fx?last*h.n*(fx-bfx):0;if(us&&fx){hasUs=true;fxpl+=xp}
     return `<button class="hrow" data-h="${i}" aria-label="修改 ${esc(r[1])}"><span class="nm"><b>${esc(r[1])}</b><small>${esc(h.c)}</small></span><span class="pl ${cls(dp)}">${sg(dp)}${us?" 美元":" 元"}<small>${pc(pct)}</small></span>
-      <span class="dt">現價 <b>${f2(last)}</b>　漲跌 <b class="${cls(dp)}">${last>prev?"▲":last<prev?"▼":"－"}${f2(Math.abs(last-prev))}</b>　${h.n%1000===0?`<b>${h.n/1000}</b> 張`:`<b>${f0(h.n)}</b> 股`}</span></button>`}).join("");
+      <span class="dt">現價 <b>${f2(last)}</b>　漲跌 <b class="${cls(dp)}">${last>prev?"▲":last<prev?"▼":"－"}${f2(Math.abs(last-prev))}</b>　${h.n%1000===0?`<b>${h.n/1000}</b> 張`:`<b>${f0(h.n)}</b> 股`}</span>${us&&fx?`<span class="dt">匯兌損益 <b class="${cls(xp)}">${sg(xp)} 元</b>　買進匯率 ${bfx} → 現在 ${fx.toFixed(2)}</span>`:""}</button>`}).join("");
   $("hold-list").innerHTML=rows||'<p class="wempty">還沒有持股，在下面輸入第一檔。</p>';
   $("hold-sum").hidden=!holds.length||holdAll;$("hold-list").hidden=holdAll;holdPie(fx);holdDiv(fx);/* 總覽只放圓餅圖和股利收入（Luna 2026-10-23） */
-  $("hold-sum").innerHTML=`<div><b class="${cls(day)}">${sg(day)}</b><span>當日損益合計（元）</span></div><div><b class="${cls(day)}">${base?pc(day/base*100):"—"}</b><span>當日漲跌幅</span></div>`;
+  $("hold-sum").innerHTML=`<div><b class="${cls(day)}">${sg(day)}</b><span>當日損益合計（元）</span></div><div><b class="${cls(day)}">${base?pc(day/base*100):"—"}</b><span>當日漲跌幅</span></div>`+(hasUs?`<div style="grid-column:1/-1"><b class="${cls(fxpl)}">${sg(fxpl)}</b><span>美股匯兌損益合計（元）</span></div>`:"");
   const t=new Date(Date.now()+8*3600e3).toISOString();
   $("hold-lead").textContent=holds.length?(ON_CF?`現價更新於 ${t.slice(11,16)}${LIVE}，每分鐘自動更新。`:`現價資料 ${STOCK.updated}。`)+(miss?"有幾檔還在抓價格。":""):holdAll?"點上面的分頁（例如台股、美股）輸入持股，這裡會全部合計。":"輸入股數，看今天漲跌多少、賺賠多少錢。";
 }
@@ -2167,9 +2170,9 @@ function holdForm(i){
   holdEditAt=i;const h=holds[i];holdPick=h?h.c:"";
   $("hold-ft").textContent=h?"修改持股":"新增持股";$("hold-save").textContent=h?"儲存":"加入";
   $("hold-cancel").hidden=$("hold-del").hidden=!h;$("hold-q").value="";
-  $("hold-sh").value=h?h.n:"";const a=h&&holdLogRead(holdPages[holdCur])[h.c];$("hold-dt").value=a&&a.length&&a[0][0]!=="0000-00-00"?a[0][0]:"";$("hold-dt").max=twDay();holdPickShow();
+  $("hold-sh").value=h?h.n:"";$("hold-fx").value=h&&h.fx>0?h.fx:"";const a=h&&holdLogRead(holdPages[holdCur])[h.c];$("hold-dt").value=a&&a.length&&a[0][0]!=="0000-00-00"?a[0][0]:"";$("hold-dt").max=twDay();holdPickShow();
 }
-function holdPickShow(){const r=idxOf[holdPick];$("hold-pick").textContent=r?`${r[1]}（${r[0]}）`:""}
+function holdPickShow(){const r=idxOf[holdPick];$("hold-pick").textContent=r?`${r[1]}（${r[0]}）`:"";$("hold-fxf").hidden=!(r&&r[4])}
 function holdInit(){
   if(holdInit.done){holdQuote();return}holdInit.done=1;
   holdLoad();holdTabs();holdForm(-1);holdQuote();
@@ -2201,7 +2204,7 @@ function holdInit(){
     const n=Math.round(parseFloat($("hold-sh").value));
     if(!idxOf[holdPick]){toast("請先輸入並選一檔股票");q.focus();return}
     if(!(n>0)){toast("請輸入股數");$("hold-sh").focus();return}
-    const h={c:holdPick,n},o=holdEditAt>=0?holds[holdEditAt]:holds.find(x=>x.c===holdPick);
+    const h={c:holdPick,n};if(idxOf[holdPick][4])h.fx=Math.round((parseFloat($("hold-fx").value)||31)*100)/100;const o=holdEditAt>=0?holds[holdEditAt]:holds.find(x=>x.c===holdPick);
     if(o&&o.c!==holdPick)holdLogSet(o.c,0,o.n);holdLogSet(holdPick,n,o&&o.c===holdPick?o.n:(holds.find(x=>x.c===holdPick)||{}).n||0);
     holdLogStart(holdPick,$("hold-dt").value);
     if(holdEditAt>=0)holds[holdEditAt]=h;else{const j=holds.findIndex(x=>x.c===holdPick);if(j>=0)holds[j]=h;else holds.push(h)}

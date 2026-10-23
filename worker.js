@@ -410,15 +410,25 @@ async function quotes(tw, us) {
 
 // ───── 自選股詳細頁：一檔的 K 線、配息、EPS、本益比、河流圖 ─────
 // 台股 EPS 用 FinMind 季報（抓不到改用 Yahoo 近幾季）；美股用 Yahoo 年報 EPS 加最近的近四季 EPS
-async function yahooSeries(sym, types) {
+// usd=true：美股 ADR（例如 TSM）的財報是台幣，換成美元，股價 ÷ EPS 才對得上（Luna 2026-10-23：TSM 本益比怪怪的）
+async function yahooSeries(sym, types, usd = false) {
   const j = await (await get(`https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(sym)}?type=${types}&period1=1400000000&period2=${Math.floor(Date.now() / 1000) + 86400}`)).json();
-  const out = {};
+  const out = {}, fx = {};
   for (const r of j.timeseries.result || []) {
-    const k = r.meta.type[0];
-    out[k] = (r[k] || []).filter(Boolean).map(v => [v.asOfDate, v.reportedValue.raw]);
+    const k = r.meta.type[0], pts = (r[k] || []).filter(Boolean);
+    if (usd) for (const c of new Set(pts.map(v => v.currencyCode).filter(c => c && c !== "USD"))) if (!fx[c]) fx[c] = await fxMonthly(c);
+    out[k] = pts.map(v => { const c = v.currencyCode, m = usd && c && c !== "USD" ? fx[c] : null;
+      return [v.asOfDate, m ? v.reportedValue.raw / fxAt(m, v.asOfDate) : v.reportedValue.raw]; }).filter(x => isFinite(x[1]));
   }
   return out;
 }
+// 每月匯率（1 美元換多少外幣），給財報換算用
+async function fxMonthly(cur) {
+  const d = await chart(`${cur}=X`).catch(() => null), m = {};
+  if (d) d.timestamp.forEach((t, i) => { const v = d.indicators.quote[0].close[i]; if (v) m[ymd(t, "Asia/Taipei").slice(0, 7)] = v; });
+  return m;
+}
+function fxAt(m, date) { const ks = Object.keys(m).sort(); let v = NaN; for (const k of ks) { if (k <= date.slice(0, 7)) v = m[k]; else break; } return isFinite(v) ? v : (ks.length ? m[ks[0]] : NaN); }
 async function twEps(code) {
   try {
     const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockFinancialStatements&data_id=${code}&start_date=${new Date().getUTCFullYear() - 7}-01-01`)).json();
@@ -533,7 +543,7 @@ async function valuation(code, us) {
       if (!qs) { const y = await yahooSeries(sym, "quarterlyDilutedEPS").catch(() => ({})); qs = y.quarterlyDilutedEPS || []; }
       return sumLast4(qs);
     }
-    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS").catch(() => ({}));
+    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS", true).catch(() => ({}));
     const r = ([dt, v]) => [dt, Math.round(v * 100) / 100], ann = (y.annualDilutedEPS || []).map(r), last = ann.length ? ann[ann.length - 1][0] : "";
     return [...ann, ...(y.trailingDilutedEPS || []).filter(x => x[0] > last).map(r)];
   })()]);
@@ -629,7 +639,7 @@ async function detail(code, us) {
     out.eps = qs.slice(-12); out.epsKind = "季"; out.epsQ = qs.slice(-20);
     ttmSeries = sumLast4(qs);
   } else {
-    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS,quarterlyDilutedEPS").catch(() => ({}));
+    const y = await yahooSeries(sym, "annualDilutedEPS,trailingDilutedEPS,quarterlyDilutedEPS", true).catch(() => ({}));
     const ann = (y.annualDilutedEPS || []).map(([dt, v]) => [dt, Math.round(v * 100) / 100]);
     const last = ann.length ? ann[ann.length - 1][0] : "";
     const tr = (y.trailingDilutedEPS || []).filter(x => x[0] > last).map(([dt, v]) => [dt, Math.round(v * 100) / 100]);

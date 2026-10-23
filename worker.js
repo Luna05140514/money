@@ -183,6 +183,18 @@ async function stocks(list) { // list: [[code, us]]
       v.dayPrev = rp(r.chartPreviousClose ?? r.previousClose ?? v.prevClose);
     });
   } catch (_) {}
+  // Yahoo Finance 台股日線偶爾缺最近一天（0050 曾停在前一天），用奇摩股市即時價補上（和自選股同一個來源）
+  const twc = ok.filter(([, v]) => /\.TWO?$/.test(v.sym)).map(([c]) => c);
+  if (twc.length) try {
+    const lv = await twLive(twc);
+    ok.forEach(([c, v]) => {
+      const x = lv[c], dl = v.daily, lb = dl.at(-1); if (!x || !lb || x.date < lb[0]) return;
+      const ratio = lb[1] / v.last; // 還原價 ÷ 收盤價
+      if (x.date > lb[0]) { dl.push([x.date, rp(x.last * ratio)]); v.prevClose = rp(x.prev); }
+      else dl[dl.length - 1] = [lb[0], rp(x.last * ratio)];
+      v.last = rp(x.last); v.dayPrev = rp(x.prev); v.tradeDate = x.date + " 13:30";
+    });
+  } catch (_) {}
   return Object.fromEntries(ok);
 }
 

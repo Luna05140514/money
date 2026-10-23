@@ -1264,7 +1264,7 @@ async function liveStk(codes){
   const need=codes.filter(c=>idxOf[c]&&stkData[c]&&!liveDone.has(c));if(!ON_CF||!need.length)return;
   need.forEach(c=>liveDone.add(c));
   const tw=need.filter(c=>!idxOf[c][4]),us=need.filter(c=>idxOf[c][4]);
-  const d=await api(`/api/stk?c=${tw.join(",")}&us=${us.join(",")}`);if(!d)return;
+  const d=await api(`/api/stk?c=${tw.join(",")}&us=${us.join(",")}&v=2`);if(!d)return;
   const D=STOCK.dates;let changed=false;
   for(const [c,v] of Object.entries(d)){
     const it=stkData[c];if(!it||!v.daily||!v.daily.length)continue;

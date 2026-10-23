@@ -505,7 +505,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="idx"><span class="glyph">盤</span><div><h2>全球大盤</h2><p>台股、美股、日韓指數和匯率，含 K 線和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="watch"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="hold"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="pledge"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、股數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="pledge"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、張數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
       <button class="entry" data-go="debt"><span class="glyph">債</span><div><h2>總資產負債比</h2><p>股票、存款、房子和各種借款加起來，看負債佔資產多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="divc"><span class="glyph">息</span><div><h2>除權息行事曆</h2><p>自選股和持股這個月哪天除息、每股配多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="mkt"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
@@ -663,7 +663,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
   <section id="pledge" class="page" hidden>
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>質押維持率</h1>
-    <p class="lead" id="pl-lead">輸入質押的股票、股數和借款金額，用現價算出維持率。</p>
+    <p class="lead" id="pl-lead">輸入質押的股票、張數和借款金額，用現價算出維持率。</p>
     <p class="local">📱 資料只存在這支手機，不會上傳</p>
     <div class="watch-tabs" id="pl-tabs" role="tablist" style="margin-bottom:12px"><button role="tab" data-pt="0" aria-selected="true">簡單計算</button><button role="tab" data-pt="1" aria-selected="false">多人合併試算</button></div>
     <div id="pl-t0">
@@ -673,7 +673,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <h2>加入質押的股票</h2>
       <div class="field"><label for="pl-q">股票</label><div class="search"><input id="pl-q" type="search" placeholder="輸入代號或名字，例如 0050、台積電" autocomplete="off" aria-label="輸入股票代號或名字"><ul id="pl-sug" role="listbox" hidden></ul></div></div>
       <div class="pick" id="pl-pick"></div>
-      <div class="field"><label for="pl-sh">股數（1 張 = 1000 股）</label><div class="unit"><input id="pl-sh" type="number" inputmode="numeric" min="0" step="1"><span>股</span></div></div>
+      <div class="field"><label for="pl-sh">張數（零股可填小數，例如 2.5 張）</label><div class="unit"><input id="pl-sh" type="number" inputmode="decimal" min="0" step="any"><span>張</span></div></div>
       <div class="hbtns"><button id="pl-add">加入</button><button class="sec" id="pl-hold">帶入我的持股</button></div>
       <div class="field" style="margin-top:18px"><label for="pl-loan">借款金額</label><div class="unit"><input id="pl-loan" type="number" inputmode="numeric" min="0" step="10000"><span>元</span></div></div>
     </div>
@@ -732,7 +732,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
         <div class="field"><label for="c-rate">年利率</label><div class="unit"><input id="c-rate" type="number" step="0.1" value="6"><span>%</span></div></div>
         <div class="field"><label for="c-years">年數</label><div class="unit"><input id="c-years" type="number" min="1" max="80" value="30"><span>年</span></div></div>
         <div class="field"><label for="c-freq">複利頻率</label><select id="c-freq"><option value="1">每年</option><option value="4">每季</option><option value="12" selected>每月</option><option value="365">每日</option></select></div>
-        <div class="field"><label for="c-add">每年額外存入</label><div class="unit"><input id="c-add" type="number" min="0" step="10000" value="0"><span>元</span></div></div>
+        <div class="field"><label for="c-add">每年年底額外存入</label><div class="unit"><input id="c-add" type="number" min="0" step="10000" value="0"><span>元</span></div></div>
       </div>
       <div>
         <div class="kpis">
@@ -786,7 +786,8 @@ const IDX=/*IDX-DATA*/{"updated":"2026-10-23 17:46","items":[{"key":"twii","name
 </script>
 <script>
 const $=id=>document.getElementById(id);
-const num=id=>{const v=parseFloat($(id).value);return isFinite(v)?v:0};
+// 輸入框有 min／max 時，超出範圍就用邊界值（例如金額、年數不能是負的）
+const num=id=>{const el=$(id),v=parseFloat(el.value);if(!isFinite(v))return 0;if(el.min!==""&&v<+el.min)return +el.min;if(el.max!==""&&v>+el.max)return +el.max;return v};
 function money(n){
   const a=Math.abs(n),s=n<0?"-":"";
   if(a>=1e8)return s+(a/1e8).toFixed(2)+" 億";
@@ -2082,7 +2083,7 @@ function holdPie(fx){
     <div class="lg">${a.map((x,i)=>`<div><i style="background:${PIE_COL[i]}"></i><span>${esc(x.nm)}</span><b>${(x.v/tot*100).toFixed(1)}%<small>${f0(x.v)} 元</small></b></div>`).join("")}</div>
     <p class="muted" style="align-self:stretch">用現價算市值，美股換成台幣。${miss?"有幾檔還在抓價格，還沒算進去。":""}</p>`;
 }
-/* 今年股利收入（Luna 2026-10-23）：照發放日放進每個月。已經除息的照當時股數；
+/* 今年股利收入（Luna 2026-10-23）：照除息日放進每個月。已經除息的照當時股數；
    已公布還沒除息的、還沒公布的（照去年同一次配息往後推一年）用現在的股數 */
 const DIVY_KEY="facai-divy";let divyMem=null;
 async function divyGet(codes){
@@ -2101,9 +2102,10 @@ function holdDivCalc(fx){
   codes.forEach(c=>{const m=divyMem&&divyMem[c],us=!!idxOf[c][4];if(!m||(us&&!fx)){if(cur[c])miss++;return}
     const k=us?fx:1,n0=cur[c]||0,a=lg[c],at=ex=>{if(!a)return n0;let v=0;a.forEach(e=>{if(e[0]<ex)v=e[1]});return v};
     const D=m.d,L=D.length?D[D.length-1][0]:"";let got=0,est=0;
-    const add=(pay,v,g)=>{const i=+pay.slice(5,7)-1;if(g){mon[i].got+=v;got+=v}else{mon[i].est+=v;est+=v}};
-    D.forEach(([ex,amt,pay])=>{const p=pay||plus(ex,30);if(+p.slice(0,4)!==Y)return;const n=at(ex);if(n>0)add(p,amt*n*k,p<=today)});
-    if(n0>0&&L)D.forEach(([ex,amt,pay])=>{const e1=nextY(ex);if(e1<=plus(L,15)||e1<=today)return;const p1=pay?nextY(pay):plus(e1,30);if(+p1.slice(0,4)===Y)add(p1,amt*n0*k,false)});
+    const add=(dt,v,g)=>{const i=+dt.slice(5,7)-1;if(g){mon[i].got+=v;got+=v}else{mon[i].est+=v;est+=v}};
+    // 以除息日為準（Luna 2026-10-23）：今年除息的才算今年，放在除息那個月
+    D.forEach(([ex,amt])=>{if(+ex.slice(0,4)!==Y)return;const n=at(ex);if(n>0)add(ex,amt*n*k,ex<=today)});
+    if(n0>0&&L)D.forEach(([ex,amt])=>{const e1=nextY(ex);if(e1<=plus(L,15)||e1<=today||+e1.slice(0,4)!==Y)return;add(e1,amt*n0*k,false)});
     if(got+est>0)per.push({c,got,est})});
   return{Y,mon,per:per.sort((x,y)=>y.got+y.est-x.got-x.est),miss};
 }
@@ -2116,10 +2118,10 @@ function holdDiv(fx){
   if(!divyMem){box.innerHTML=hd+'<p class="wempty">讀取配息資料中…</p>';return}
   const x=holdDivCalc(fx),f0=v=>Math.round(v).toLocaleString("zh-TW"),G=x.mon.reduce((s,m)=>s+m.got,0),E=x.mon.reduce((s,m)=>s+m.est,0);
   box.innerHTML=`<h2>${x.Y} 年股利收入${qm("除權息")}</h2>
-    <div class="kv3"><div><b>${f0(G+E)}</b><span>全年預估（元）</span></div><div><b>${f0(G)}</b><span>已經領到</span></div><div><b>${f0(E)}</b><span>還會領到</span></div></div>
-    <div class="mon">${x.mon.map((m,i)=>{const v=m.got+m.est;return `<div class="${m.got>0?"got":v>0?"":"zero"}"><span>${i+1} 月</span><b>${v>0?f0(v):"—"}</b>${v>0?`<small>${m.est>0?(m.got>0?"部分已領":"預估"):"已領"}</small>`:""}</div>`}).join("")}</div>
+    <div class="kv3"><div><b>${f0(G+E)}</b><span>全年預估（元）</span></div><div><b>${f0(G)}</b><span>已經除息</span></div><div><b>${f0(E)}</b><span>還沒除息</span></div></div>
+    <div class="mon">${x.mon.map((m,i)=>{const v=m.got+m.est;return `<div class="${m.got>0?"got":v>0?"":"zero"}"><span>${i+1} 月</span><b>${v>0?f0(v):"—"}</b>${v>0?`<small>${m.est>0?(m.got>0?"部分已除息":"預估"):"已除息"}</small>`:""}</div>`}).join("")}</div>
     ${x.per.length?`<div class="per" style="margin-top:12px">${x.per.map(p=>`<div><span>${esc(idxOf[p.c][1])}${holds.some(h=>h.c===p.c)?"":"（已賣出）"}</span><b>${f0(p.got+p.est)} 元</b></div>`).join("")}</div>`:'<p class="muted">今年這一頁的股票沒有現金股利。</p>'}
-    <p class="muted">金額照發放日放在每個月（台幣，美股用現在匯率換算）。已經除息的照當時的股數算，之後再買進或賣出都不會改到；還沒除息的用現在的股數，還沒公布的照去年同一次的配息估。${x.miss?"有幾檔的配息資料還在抓。":""}</p>`;
+    <p class="muted">金額照除息日放在每個月（台幣，美股用現在匯率換算），實際入帳通常晚 3～5 週。已經除息的照當時的股數算，之後再買進或賣出都不會改到；還沒除息的用現在的股數，還沒公布的照去年同一次的配息估。${x.miss?"有幾檔的配息資料還在抓。":""}</p>`;
 }
 function holdForm(i){
   holdEditAt=i;const h=holds[i];holdPick=h?h.c:"";
@@ -2200,7 +2202,7 @@ function plRender(){
   let val=0,miss=0;
   $("pl-list").innerHTML=pl.items.map((x,i)=>{const r=idxOf[x.c],it=watchItem(x.c),last=it&&!it.loading?it.last:null;
     if(last==null)miss++;else val+=last*x.n;
-    return `<div class="prow"><span class="nm"><b>${esc(r[1])}</b><small>${esc(x.c)}　${x.n%1000===0?x.n/1000+" 張":f0(x.n)+" 股"}</small></span><span class="v">${last==null?"…":f0(last*x.n)+" 元"}<small>現價 ${last==null?"—":f2(last)}</small></span><button class="x" data-pl="${i}" aria-label="移除 ${esc(r[1])}">✕</button></div>`}).join("")||'<p class="wempty">還沒有質押的股票，在下面加入。</p>';
+    return `<div class="prow"><span class="nm"><b>${esc(r[1])}</b><small>${esc(x.c)}　${+(x.n/1000).toFixed(3)} 張</small></span><span class="v">${last==null?"…":f0(last*x.n)+" 元"}<small>現價 ${last==null?"—":f2(last)}</small></span><button class="x" data-pl="${i}" aria-label="移除 ${esc(r[1])}">✕</button></div>`}).join("")||'<p class="wempty">還沒有質押的股票，在下面加入。</p>';
   const L=pl.loan,box=$("pl-res");
   if(!pl.items.length||!(L>0)){box.innerHTML=`<p>${!pl.items.length?"先加入質押的股票，":""}${L>0?"":"再輸入借款金額，"}就會算出維持率。</p>`;return}
   const m=val/L*100,cls=m<130?"bad":m<166?"warn":"ok",word=m<130?"已低於 130%，會被追繳":m<166?"偏低，小心追繳":"安全";
@@ -2220,7 +2222,7 @@ function plInit(){
   if(plInit.done){plQuote();return}plInit.done=1;
   plLoad();$("pl-loan").value=pl.loan||"";plQuote();
   clrBtn("pl-clr",()=>(pl.items.length||pl.loan)&&confirm("確定要清除全部質押股票和借款金額嗎？\n（按「取消」就不會清除）"),()=>{pl={items:[],loan:0};plSave();$("pl-loan").value="";plRender()});
-  $("pl-loan").addEventListener("input",()=>{pl.loan=parseFloat($("pl-loan").value)||0;plSave();plRender()});
+  $("pl-loan").addEventListener("input",()=>{pl.loan=Math.max(0,parseFloat($("pl-loan").value)||0);plSave();plRender()});
   $("pl-list").addEventListener("click",e=>{const b=e.target.closest("[data-pl]");if(!b)return;pl.items.splice(+b.dataset.pl,1);plSave();plRender()});
   const q=$("pl-q"),sug=$("pl-sug");
   q.addEventListener("input",()=>{const t=q.value.trim().toLowerCase();if(!t){sug.hidden=true;return}
@@ -2229,9 +2231,9 @@ function plInit(){
     sug.innerHTML=hits.length?hits.map(r=>`<li role="option" data-code="${r[0]}"><span>${esc(r[1])}</span><b>${r[0]}</b></li>`).join(""):`<li class="none">找不到「${esc(q.value.trim())}」</li>`;sug.hidden=false});
   sug.addEventListener("pointerdown",e=>{const li=e.target.closest("[data-code]");if(!li)return;e.preventDefault();plPick=li.dataset.code;q.value="";sug.hidden=true;$("pl-pick").textContent=`${idxOf[plPick][1]}（${plPick}）`;$("pl-sh").focus()});
   q.addEventListener("blur",()=>setTimeout(()=>sug.hidden=true,150));
-  $("pl-add").addEventListener("click",()=>{const n=Math.round(parseFloat($("pl-sh").value));
+  $("pl-add").addEventListener("click",()=>{const n=Math.round(parseFloat($("pl-sh").value)*1000);/* 輸入張數（Luna 2026-10-23），存成股數 */
     if(!idxOf[plPick]){toast("請先輸入並選一檔股票");q.focus();return}
-    if(!(n>0)){toast("請輸入股數");$("pl-sh").focus();return}
+    if(!(n>0)){toast("請輸入張數");$("pl-sh").focus();return}
     const j=pl.items.findIndex(x=>x.c===plPick);if(j>=0)pl.items[j].n=n;else pl.items.push({c:plPick,n});
     plPick="";$("pl-pick").textContent="";$("pl-sh").value="";plSave();plQuote()});
   $("pl-hold").addEventListener("click",()=>holdChoose("帶入我的持股（質押）",(holdPagesLoad(),new Set([holdPages[0].id])),(ids,pick)=>{if(!pick.length)return;const by={};pick.forEach(x=>by[x.c]=(by[x.c]||0)+x.n);
@@ -2273,10 +2275,10 @@ function p2Init(){
   p2Mem();pick();p2Calc();
   const load=async()=>{const c=p2.c;await (stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null));if(ON_CF){const d=await api(`/api/quote?c=${c}`);if(d)Object.assign(watchLive,d)}pick();if(!p2.px)$("p2-px").placeholder=p2Live()!=null?String(p2Live()):"";p2Calc()};
   load();p2Init.load=load;
-  $("p2-mem").addEventListener("input",e=>{const el=e.target.closest("[data-k]"),box=e.target.closest("[data-i]");if(!el||!box)return;const m=p2.mem[+box.dataset.i],k=el.dataset.k;m[k]=k==="n"?el.value:parseFloat(el.value)||0;p2Save();p2Calc()});
+  $("p2-mem").addEventListener("input",e=>{const el=e.target.closest("[data-k]"),box=e.target.closest("[data-i]");if(!el||!box)return;const m=p2.mem[+box.dataset.i],k=el.dataset.k;m[k]=k==="n"?el.value:Math.max(0,parseFloat(el.value)||0);p2Save();p2Calc()});
   $("p2-mem").addEventListener("click",e=>{const b=e.target.closest("[data-del]");if(!b)return;const m=p2.mem[+b.dataset.del];if(!confirm(`確定刪除「${m.n||"未命名"}」？`))return;p2.mem.splice(+b.dataset.del,1);p2Save();p2Mem();p2Calc()});
   $("p2-add").addEventListener("click",()=>{p2.mem.push({n:`成員 ${p2.mem.length+1}`,s:0,p:0,l:0});p2Save();p2Mem();p2Calc()});
-  [["p2-px","px"],["p2-cash","cash"],["p2-add-sh","add"],["p2-warn","warn"]].forEach(([id,k])=>$(id).addEventListener("input",()=>{p2[k]=parseFloat($(id).value)||(k==="warn"?140:0);if(k==="px"&&!p2[k])p2.px=null;p2Save();p2Calc()}));
+  [["p2-px","px"],["p2-cash","cash"],["p2-add-sh","add"],["p2-warn","warn"]].forEach(([id,k])=>$(id).addEventListener("input",()=>{p2[k]=Math.max(0,parseFloat($(id).value)||0)||(k==="warn"?140:0);if(k==="px"&&!p2[k])p2.px=null;p2Save();p2Calc()}));
   const q=$("p2-q"),sug=$("p2-sug");
   q.addEventListener("input",()=>{const t=q.value.trim().toLowerCase();if(!t){sug.hidden=true;return}
     const sc=r=>r[0].toLowerCase().startsWith(t)?0:r[1].toLowerCase().startsWith(t)?1:r[1].toLowerCase().includes(t)?2:9;
@@ -2297,7 +2299,7 @@ function dbItems(){const sel=dbSel();return holdAllItems().filter(g=>sel.has(g.p
 function dbStock(){const hm=dbItems(),fx=usdTwd();let v=0,miss=0;
   hm.forEach(h=>{const it=watchItem(h.c),us=!!idxOf[h.c][4];if(!it||it.loading||it.last==null||(us&&!fx)){miss++;return}v+=it.last*h.n*(us?fx:1)});return{v,miss,n:hm.length}}
 function dbRender(){
-  const f0=v=>Math.round(v).toLocaleString("zh-TW"),g=id=>parseFloat($(id).value)||0;
+  const f0=v=>Math.round(v).toLocaleString("zh-TW"),g=id=>Math.max(0,parseFloat($(id).value)||0);
   const st=dbStock();plLoad();const pll=pl.loan||0;
   $("db-stk").innerHTML=`<span>股票市值<small>${st.n?`來自「我的持股損益」${[...dbSel()].map(id=>(holdPages.find(pg=>pg.id===id)||{}).name).filter(Boolean).join("、")}`+(st.miss?"，有幾檔還在抓價格":""):"還沒有帶入持股"}</small><button class="dbpick" id="db-pick">選擇要帶入的持股</button></span><b>${f0(st.v)}</b>`;
   $("db-pl").innerHTML=`<span>質押借款<small>${pll?"來自「質押維持率」":"「質押維持率」沒有填借款"}</small></span><b>${f0(pll)}</b>`;

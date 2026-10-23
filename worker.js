@@ -891,6 +891,52 @@ export class Counter extends DurableObject {
   }
 }
 
+// 一年股利收入（Luna 2026-10-23）：近兩年多的每一次現金股利 [除息日, 每股金額, 發放日]
+// 台股用 FinMind 股利政策（含已公布還沒除息的）；美股用 Nasdaq 配息紀錄（ETF 和個股網址不同，兩個都試）
+async function divYear(code, us) {
+  const y0 = new Date().getUTCFullYear() - 2;
+  try {
+    if (!us) {
+      const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${code}&start_date=${y0}-01-01`)).json();
+      if (!Array.isArray(j.data)) return { divs: [], __partial: 1 };
+      const divs = j.data.filter(x => x.CashExDividendTradingDate && (x.CashEarningsDistribution + x.CashStatutorySurplus) > 0)
+        .map(x => [x.CashExDividendTradingDate, rp(x.CashEarningsDistribution + x.CashStatutorySurplus), x.CashDividendPaymentDate || ""]).sort((a, b) => a[0] < b[0] ? -1 : 1);
+      return { divs };
+    }
+    const iso = s => s && s.includes("/") ? `${s.slice(6)}-${s.slice(0, 2)}-${s.slice(3, 5)}` : "";
+    for (const ac of ["etf", "stocks"]) {
+      const j = await (await get(`https://api.nasdaq.com/api/quote/${code}/dividends?assetclass=${ac}`, { headers: { Accept: "application/json" } })).json();
+      const rows = ((j.data || {}).dividends || {}).rows || [];
+      if (rows.length) return { divs: rows.filter(r => r.type === "Cash" && iso(r.exOrEffDate) >= `${y0}-01-01`).map(r => [iso(r.exOrEffDate), rp(parseFloat(String(r.amount).replace(/[$,]/g, ""))), iso(r.paymentDate)]).filter(r => r[1] > 0).sort((a, b) => a[0] < b[0] ? -1 : 1) };
+    }
+    return { divs: [] };
+  } catch (_) { return { divs: [], __partial: 1 }; }
+}
+
+// ETF 成分股前十大（Luna 2026-10-23）：台股用 Yahoo 奇摩股市「持股」頁（每月更新），美股用 Yahoo Finance 的 holdings 頁
+async function etfHold(code, us) {
+  if (!us) {
+    for (const sfx of [".TW", ".TWO"]) {
+      let h;
+      try { h = await (await get(`https://tw.stock.yahoo.com/quote/${code}${sfx}/holding`)).text(); } catch (_) { continue; }
+      const i = h.indexOf('"holdingDetail":');
+      if (i < 0) continue;
+      const s = h.slice(i + 16, i + 16 + 4);
+      if (s === "null") return { list: [] };
+      const arr = JSON.parse(h.slice(i + 16, h.indexOf("]", i) + 1));
+      return { date: (arr[0] && arr[0].date || "").replace(/\//g, "-"), list: arr.slice(0, 10).map(x => [String(x.ticker || "").replace(/\.TWO?$/, ""), x.name, parseFloat(x.weighting) || 0]) };
+    }
+    return { list: [], __partial: 1 };
+  }
+  const h = await (await get(`https://finance.yahoo.com/quote/${code}/holdings/`)).text();
+  const i = h.indexOf('\\"holdings\\":[');
+  if (i < 0) return { list: [], __partial: 1 };
+  const seg = h.slice(i, h.indexOf("]", i)), list = [];
+  for (const m of seg.matchAll(/\\"symbol\\":\\"([^\\"]*)\\",\\"holdingName\\":\\"((?:[^"\\]|\\\\.)*)\\",\\"holdingPercent\\":\{\\"raw\\":([\d.eE-]+)/g))
+    list.push([m[1], m[2].replace(/\\\\(.)/g, "$1"), Math.round(parseFloat(m[3]) * 1e4) / 100]);
+  return { list: list.slice(0, 10) };
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -930,6 +976,20 @@ export default {
         const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
         if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 86400, () => valuation(c, false));
         if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 86400, () => valuation(u, true));
+        return new Response("{}", { status: 400 });
+      }
+      case "/api/divy": {
+        // ?c=2330 或 ?us=NVDA → 近兩年多的現金股利，1 天內共用
+        const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 86400, () => divYear(c, false));
+        if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 86400, () => divYear(u, true));
+        return new Response("{}", { status: 400 });
+      }
+      case "/api/etfh": {
+        // ?c=0050 或 ?us=SOXX → ETF 前十大成分股，1 天內共用
+        const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 86400, () => etfHold(c, false));
+        if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 86400, () => etfHold(u, true));
         return new Response("{}", { status: 400 });
       }
       case "/api/ixk": {

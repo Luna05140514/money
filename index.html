@@ -339,6 +339,38 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .sg-pop[hidden]{display:none}
 .sg-card{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px 26px}
 .sg-card h2{font-size:22px;margin:4px 0 8px}
+.qm{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin-left:6px;border-radius:50%;border:2px solid var(--line);background:var(--bg);color:var(--muted);font:inherit;font-size:17px;font-weight:800;vertical-align:middle;cursor:pointer;padding:0;line-height:1}
+.glrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 0;font-size:17px;color:var(--muted)}
+.qc{font:inherit;font-size:17px;font-weight:700;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+#gl-pop{z-index:70}
+.gl-card p{font-size:20px;line-height:1.7;margin:10px 0}
+.gl-card .ex{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:18px}
+.hpie{display:flex;flex-direction:column;align-items:center;gap:10px}
+.hpie h2,.hdiv h2{align-self:stretch;margin:0 0 4px;font-size:22px}
+.hpie svg{width:210px;height:210px}
+.hpie .lg{width:100%}
+.hpie .lg div{display:grid;grid-template-columns:16px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:18px}
+.hpie .lg i{width:16px;height:16px;border-radius:4px;display:block}
+.hpie .lg b{font-family:var(--num);font-size:20px;text-align:right}
+.hpie .lg b small{display:block;color:var(--muted);font-size:14px;font-weight:400}
+.hdiv .kv3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center;margin:8px 0 12px}
+.hdiv .kv3 b{display:block;font-family:var(--num);font-size:22px}
+.hdiv .kv3 span{font-size:15px;color:var(--muted)}
+.hdiv .mon{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.hdiv .mon div{border:2px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center}
+.hdiv .mon span{display:block;font-size:16px;color:var(--muted)}
+.hdiv .mon b{display:block;font-family:var(--num);font-size:18px}
+.hdiv .mon small{display:block;font-size:13px;color:var(--muted)}
+.hdiv .mon .got{background:var(--gold-soft);border-color:var(--gold)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hdiv .mon .got{background:transparent}}
+.hdiv .mon .zero b{color:var(--muted);font-weight:400}
+.hdiv .per div{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:18px}
+.hdiv .per b{font-family:var(--num);white-space:nowrap}
+.etfh .er{display:grid;grid-template-columns:26px minmax(0,1fr) 110px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.etfh .rk{font-family:var(--num);color:var(--muted);font-size:17px}
+.etfh .nm b{display:block;font-size:19px;overflow-wrap:anywhere}.etfh .nm small{color:var(--muted);font-family:var(--num);font-size:14px}
+.etfh .w{text-align:right}.etfh .w b{font-family:var(--num);font-size:19px}
+.etfh .w i{display:block;height:8px;border-radius:4px;background:var(--red);margin-left:auto;margin-top:4px}
 .sg-x{float:right;font:inherit;font-size:17px;font-weight:700;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 12px}
 .sg-res{font-size:19px;margin:0 0 12px}.sg-res b{font-size:24px}.sg-res span{display:block;font-size:16px;color:var(--muted)}
 .sg-rows div{display:grid;grid-template-columns:7.5em 1fr;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:17px}
@@ -531,6 +563,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <h1>全球大盤</h1>
     <p class="lead" id="idx-lead">台股與美股主要指數的當天走勢。</p>
     <div class="watch-tabs" id="idx-tabs" role="tablist"></div>
+    <p class="glrow">看不懂？點這裡：<button class="qc" data-term="KD">短線／長線（KD）</button></p>
     <div class="wlist" id="idx-cards" style="margin-top:12px"></div>
     <div class="ibig" id="idx-big" hidden></div>
     <p class="note">加權、櫃買指數來自 Yahoo 奇摩股市，台指期為期交所近月合約日盤，美股、日經、韓股指數和匯率來自 Yahoo Finance（日韓約延遲 20 分鐘；日圓、韓元用美元匯率換算）。美股是美東時間，台灣白天看到的是前一個交易日；日韓是台灣時間。點任一列可以看 K 線。</p>
@@ -546,6 +579,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="hpg"><b id="hold-title"></b><button id="hold-ren">改名</button><button id="hold-del-page">刪除這頁</button></div>
     <div class="panel hsum" id="hold-sum"></div>
     <div class="wlist" id="hold-list" style="margin-top:12px"></div>
+    <div class="panel hpie" id="hold-pie" hidden style="margin-top:12px"></div>
+    <div class="panel hdiv" id="hold-div" hidden style="margin-top:12px"></div>
     <div class="panel hform" id="hold-form" style="margin-top:12px">
       <h2 id="hold-ft">新增持股</h2>
       <div class="field"><label for="hold-q">股票</label><div class="search"><input id="hold-q" type="search" placeholder="輸入代號或名字，例如 0050、台積電" autocomplete="off" aria-label="輸入股票代號或名字"><ul id="hold-sug" role="listbox" hidden></ul></div></div>
@@ -573,6 +608,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="watch">
       <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit" id="watch-edit" aria-pressed="false">編輯</button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
+      <p class="glrow">看不懂？點這裡：<button class="qc" data-term="KD">短線／長線（KD）</button><button class="qc" data-term="本益比">本益比</button><button class="qc" data-term="股淨比">股淨比</button></p>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
     </div>
@@ -1101,7 +1137,7 @@ function navInit(){
       <div class="navgrid">
         <div><div class="k">市價</div><div class="v">${f2(px)}</div></div>
         <div><div class="k">預估淨值</div><div class="v">${f2(nav)}</div></div>
-        <div><div class="k">折溢價</div><div class="v ${pc}">${prem==null?"—":(prem>0?"+":"")+prem.toFixed(2)+"%"}<small>${word}</small></div></div>
+        <div><div class="k">折溢價${qm("折溢價")}</div><div class="v ${pc}">${prem==null?"—":(prem>0?"+":"")+prem.toFixed(2)+"%"}<small>${word}</small></div></div>
         <div><div class="k">前日淨值</div><div class="v">${f2(prev)}</div></div>
         <div><div class="k">規模（估）</div><div class="v">${units&&nav?bigMoney(units*nav):"—"}</div></div>
         <div><div class="k">發行單位數增減</div><div class="v ${chg>0?"up":chg<0?"down":""}">${chg==null?"—":(chg>0?"+":"")+Math.round(chg/1000).toLocaleString("zh-TW")+"<small>張</small>"}</div></div>
@@ -1408,6 +1444,31 @@ function idxInit(){
    在 Claude 上抓不到，就維持內嵌（每天排程更新）的資料 */
 const ON_CF=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
 async function api(path){if(!ON_CF)return null;try{const r=await fetch(path,{cache:"no-store"});if(!r.ok)return null;const d=await r.json();return d&&!d.error?d:null}catch(_){return null}}
+/* 名詞小幫手（Luna 2026-10-23）：名詞旁邊的「？」，點了用白話解釋 */
+const GLOSS={
+  KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；20 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
+  本益比:["本益比","本益比 = 股價 ÷ 每股一年賺的錢（EPS）。意思是：用現在的價格買，大概要幾年才能靠公司賺的錢回本。數字越低越便宜。","「今年／明年本益比」是用法人（分析師）預估的 EPS 算的。便宜、合理、昂貴是跟這檔股票自己過去 5 年的本益比比較。","例：股價 100 元、一年每股賺 5 元，本益比 = 20 倍。"],
+  股淨比:["股淨比（股價淨值比）","股淨比 = 股價 ÷ 每股淨值。淨值是公司把東西全賣掉、債還清以後，每一股可以分到的錢。1 倍表示股價剛好等於公司的家當。","金融股、賺錢不穩定的股票，常用股淨比看便宜或貴。","例：每股淨值 50 元、股價 75 元，股淨比 = 1.5 倍。"],
+  EPS:["EPS（每股盈餘）","公司賺的錢，平均分到每一股是多少元。越高代表公司越會賺錢。","",""],
+  殖利率:["殖利率","一年領到的股利 ÷ 股價，就像存款的利率。","","例：股價 100 元、一年配 5 元，殖利率 = 5%。"],
+  除權息:["除權息、發放日","公司發股利的日子。要在「除息日」的前一天還持有股票，才領得到。除息當天股價會扣掉股利。","「發放日」是錢真正匯進銀行帳戶的那天，通常比除息日晚 3～5 週。",""],
+  折溢價:["折溢價","ETF 的市價和它真正的價值（淨值）差多少。溢價表示買貴了，折價表示買便宜了。","溢價超過 1% 時買進要小心。",""],
+  維持率:["維持率","維持率 = 質押股票的市值 ÷ 借的錢。股價跌，維持率就跟著降。","跌到 130% 以下會被追繳，要補錢或補股票。","例：股票值 200 萬、借 100 萬，維持率 = 200%。"],
+  追繳:["追繳","維持率跌到 130% 以下，銀行或券商會通知你補錢或補股票。沒有補，可能會被賣掉股票（俗稱斷頭）。","",""],
+  負債比:["負債比","負債比 = 全部負債 ÷ 全部資產。30% 以下算健康，30%～50% 要注意，超過 50% 負擔偏重。","",""],
+  河流圖:["本益比河流圖","把股價和幾條「用不同本益比算出來的價格」畫在一起，像一條條河道。股價在下面幾條時算便宜，在上面幾條時算貴。","",""],
+  MACD:["MACD","看股價趨勢的指標。柱子在 0 以上表示趨勢偏向上漲，在 0 以下表示偏向下跌。","",""],
+  布林:["布林 %b","看股價在「平常波動範圍」的哪個位置。100% 以上是碰到上緣（偏高），0% 以下是碰到下緣（偏低），50% 在正中間。","",""],
+  成交量:["成交量","這一天總共買賣了多少股。量大表示很多人在交易，漲跌比較有力；量很小時，漲跌比較不可靠。","",""],
+  成分股:["成分股","ETF 像一個籃子，裡面裝了很多股票，這些股票就是成分股。比例越高的，對 ETF 漲跌的影響越大。","",""],
+};
+const qm=k=>`<button class="qm" data-term="${k}" aria-label="${GLOSS[k][0]}是什麼">?</button>`;
+function glShow(k){const g=GLOSS[k];if(!g)return;let box=$("gl-pop");
+  if(!box){box=document.createElement("div");box.id="gl-pop";box.className="sg-pop";document.body.appendChild(box);
+    box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
+  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${g[0]}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${g[0]} 是什麼？</h2><p>${g[1]}</p>${g[2]?`<p>${g[2]}</p>`:""}${g[3]?`<p class="ex">${g[3]}</p>`:""}</div>`;box.hidden=false}
+window.addEventListener("hashchange",()=>{const b=$("gl-pop");if(b)b.hidden=true});
+window.addEventListener("click",e=>{const b=e.target.closest("[data-term]");if(!b)return;e.preventDefault();e.stopPropagation();glShow(b.dataset.term)},true);
 const LIVE="（即時）";
 // 使用人數：這台手機／電腦一個隨機編號，同一天只算 1 位
 async function liveHits(){
@@ -1519,7 +1580,7 @@ function kdRows(o,isDay,tr){
 function sgShow(key){const x=SGINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
-  box.innerHTML=`<div class="sg-card" role="dialog" aria-label="${esc(x.title)}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(x.title)}</h2><p class="sg-res">結果：<b>${x.main}</b>${x.sub?`<span>${x.sub}</span>`:""}</p>
+  box.innerHTML=`<div class="sg-card" role="dialog" aria-label="${esc(x.title)}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(x.title)}${qm("KD")}</h2><p class="sg-res">結果：<b>${x.main}</b>${x.sub?`<span>${x.sub}</span>`:""}</p>
     ${x.hit!=null&&SG_LOGIC[x.t]?`<h3 class="sg-h">怎麼判斷（由上往下，先符合的就是）</h3><table class="sg-tbl sg-ltbl"><thead><tr><th>條件</th><th>結論</th></tr></thead><tbody>${SG_LOGIC[x.t].map((r,i)=>`<tr${i===x.hit?' class="on"':""}><td>${i===x.hit?"<b>▶ 現在：</b>":""}${r[0]}</td><td><b>${r[2]}</b></td></tr>`).join("")}</tbody></table><h3 class="sg-h">各指標</h3>`:""}
     <table class="sg-tbl sg-ptbl"><thead><tr><th>指標</th><th>目前數字</th><th>判斷規則</th><th>結果</th></tr></thead><tbody>${x.rows.map(r=>`<tr class="${r[3]}"><th>${r[0]}</th><td>${r[1]}</td><td class="rule">${r[4]||""}</td><td><b>${r[2]||"—"}</b></td></tr>`).join("")}</tbody></table>
     <p class="muted">盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
@@ -1752,7 +1813,7 @@ async function wdRender(c){
     if(y0||y1)wdK.peY={y0,y1,band:b5?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${b5.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${b5.avg} 倍</span><small>5 年平均</small></div><div class="hi"><b>昂貴</b><span>${b5.hi} 倍</span><small>以上</small></div></div><p class="muted">近 5 年平均本益比 ${b5.avg} 倍（每月收盤 ÷ 當時近四季 EPS）。比平均低一段算便宜，高一段算昂貴。</p>`:""};
   }
   body.innerHTML=html;
-  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdLivePatch();wdKDraw();
+  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;wdK.etf=etf;if(wdK.period==="hold"&&!etf)wdK.period="d";if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdLivePatch();wdKDraw();
 }
 // 自選股詳細頁：用即時報價更新今天那根 K 棒和上面的價格（台股有開高低量，美股只更新價格）
 function wdLivePatch(){
@@ -1825,27 +1886,37 @@ function wdKDraw(){
   // 第一排：日 週 月 配息 EPS（ETF 是折溢價）；第二排：預估本益比 河流圖 股淨比
   const btns=a=>a.map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("");
   const segR1=[["d","日"],["w","週"],["m","月"],...(wdK.ix?[]:[["div","配息"]]),...(wdK.eps?[["eps","EPS"]]:[]),...(nv?[["prem","折溢價"]]:[])];
-  const segR2=[...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[]),...(wdK.pb?[["pb","股淨比"]]:[])];
+  const segR2=[...(wdK.etf&&!wdK.ix&&ON_CF?[["hold","成分股"]]:[]),...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[]),...(wdK.pb?[["pb","股淨比"]]:[])];
   const seg=`<div class="wd-seg r1" style="grid-template-columns:repeat(${Math.max(4,segR1.length)},1fr)">${btns(segR1)}</div>${segR2.length?`<div class="wd-seg r2" style="grid-template-columns:${segR2.length===3?"1.4fr 1fr 1fr":`repeat(${segR2.length},1fr)`}">${btns(segR2)}</div>`:""}`;
   if(wdK.period==="pe"&&wdK.pe){
-    if(typeof wdK.pe==="string"){box.innerHTML=`<h2>預估本益比</h2>${seg}${wdK.pe}`;wdKBind();return}
+    if(typeof wdK.pe==="string"){box.innerHTML=`<h2>預估本益比${qm("本益比")}</h2>${seg}${wdK.pe}`;wdKBind();return}
     const ks=["y0","y1"].filter(k=>wdK.pe[k]);if(!ks.includes(wdK.pey))wdK.pey=ks[0];
     const sub=`<div class="wd-seg wd-sub">${ks.map(k=>`<button data-pey="${k}" aria-pressed="${k===wdK.pey}">${k==="y0"?"今年本益比":"明年本益比"}</button>`).join("")}</div>`;
-    box.innerHTML=`<h2>預估本益比</h2>${seg}${wdK.pe.band}${sub}${wdK.pe[wdK.pey]}`;wdKBind();return}
-  if(wdK.period==="pb"&&wdK.pb){box.innerHTML=`<h2>股價淨值比</h2>${seg}${wdK.pb}`;wdKBind();return}
-  if(wdK.period==="eps"&&wdK.eps){box.innerHTML=`<h2>EPS（每股盈餘）</h2>${seg}${wdK.eps}`;wdKBind();return}
-  if(wdK.period==="rv"&&wdK.rv){box.innerHTML=`<h2>本益比河流圖</h2>${seg}${wdK.rv}`;wdKBind();return}
+    box.innerHTML=`<h2>預估本益比${qm("本益比")}</h2>${seg}${wdK.pe.band}${sub}${wdK.pe[wdK.pey]}`;wdKBind();return}
+  // ETF 成分股前十大（Luna 2026-10-23）：點了才去抓，一天內共用
+  if(wdK.period==="hold"&&wdK.etf){const c=wdK.code,us=wdK.us,h=(wdK.etfh=wdK.etfh||{})[c],hd=`<h2>前十大成分股${qm("成分股")}</h2>${seg}`;
+    if(!h){box.innerHTML=hd+'<p class="wempty">讀取中…</p>';wdKBind();
+      if(wdK.etfhWait!==c){wdK.etfhWait=c;api(`/api/etfh?${us?"us":"c"}=${c}&v=1`).then(d=>{if(wdK.etfhWait===c)wdK.etfhWait="";wdK.etfh[c]=d&&Array.isArray(d.list)?d:{list:[],err:1};if(wdK.code===c&&wdK.period==="hold")wdKDraw()})}return}
+    if(h.err)delete wdK.etfh[c];
+    const mx=Math.max(1,...h.list.map(x=>x[2])),sum=h.list.reduce((a,x)=>a+x[2],0);
+    box.innerHTML=hd+(h.list.length?`<div class="etfh">${h.list.map((x,i)=>{const r=idxOf[x[0]];return `<div class="er"><span class="rk">${i+1}</span><span class="nm"><b>${esc(r?r[1]:x[1])}</b><small>${esc(r||x[0].length<=6?x[0]:"")}</small></span><span class="w"><b>${x[2].toFixed(2)}%</b><i style="width:${(x[2]/mx*100).toFixed(1)}%"></i></span></div>`}).join("")}</div>
+      <p class="muted">前十大合計佔 <b>${sum.toFixed(1)}%</b>。${h.date?`資料日期 ${h.date.replace(/-/g,"/")}，`:""}來源：${us?"Yahoo Finance":"Yahoo 奇摩股市（投信每月公布）"}。</p>`
+      :`<p class="wempty">${h.err?"暫時抓不到成分股，等一下再點一次。":"這一檔查不到成分股（期貨、槓桿或反向型 ETF 通常沒有公布）。"}</p>`);
+    wdKBind();return}
+  if(wdK.period==="pb"&&wdK.pb){box.innerHTML=`<h2>股價淨值比${qm("股淨比")}</h2>${seg}${wdK.pb}`;wdKBind();return}
+  if(wdK.period==="eps"&&wdK.eps){box.innerHTML=`<h2>EPS（每股盈餘）${qm("EPS")}</h2>${seg}${wdK.eps}`;wdKBind();return}
+  if(wdK.period==="rv"&&wdK.rv){box.innerHTML=`<h2>本益比河流圖${qm("河流圖")}</h2>${seg}${wdK.rv}`;wdKBind();return}
   if(wdK.period==="prem"&&nv){
     const [,px,nav,prem,prev,,,at]=nv,f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
     const cls=prem>0?"up":prem<0?"down":"flat",word=prem==null?"":prem>0?`溢價：市價比淨值貴 ${Math.abs(prem).toFixed(2)}%`:prem<0?`折價：市價比淨值便宜 ${Math.abs(prem).toFixed(2)}%`:"市價等於淨值";
-    box.innerHTML=`<h2>折溢價</h2>${seg}<div class="wd-kpi"><div style="grid-column:1/-1"><b class="${cls}" style="font-size:36px">${prem==null?"—":(prem>0?"+":"")+prem.toFixed(2)+"%"}</b><span>${word}</span></div><div><b>${f2(px)}</b><span>市價</span></div><div><b>${f2(nav)}</b><span>預估淨值</span></div><div><b>${f2(prev)}</b><span>前日淨值</span></div><div><b style="font-size:18px">${at||"—"}</b><span>資料時間</span></div></div>
+    box.innerHTML=`<h2>折溢價${qm("折溢價")}</h2>${seg}<div class="wd-kpi"><div style="grid-column:1/-1"><b class="${cls}" style="font-size:36px">${prem==null?"—":(prem>0?"+":"")+prem.toFixed(2)+"%"}</b><span>${word}</span></div><div><b>${f2(px)}</b><span>市價</span></div><div><b>${f2(nav)}</b><span>預估淨值</span></div><div><b>${f2(prev)}</b><span>前日淨值</span></div><div><b style="font-size:18px">${at||"—"}</b><span>資料時間</span></div></div>
     <p class="muted">折溢價 =（市價 − 預估淨值）÷ 預估淨值。溢價超過 1% 時買進要小心，可能買貴。資料來自證交所。</p>`;
     wdKBind();return;
   }
   if(wdK.period==="div"){
     const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),dv=wdK.divs.filter((v,i,a)=>a.findIndex(w=>w[0]===v[0])===i),last=wdK.last;
     const yr=new Date(Date.now()-365*864e5).toISOString().slice(0,10),sum=dv.filter(v=>v[0]>=yr).reduce((a,v)=>a+v[1],0),ds=v=>v?v.replace(/-/g,"/"):"—";
-    box.innerHTML=`<h2>配息</h2>${seg}${dv.length?`<div class="wd-kpi"><div><b>${f2(sum)}</b><span>近一年配息${wdK.us?"（美元）":"（元）"}</span></div><div><b>${last?(sum/last*100).toFixed(2)+"%":"—"}</b><span>殖利率</span></div></div>
+    box.innerHTML=`<h2>配息${qm("除權息")}</h2>${seg}${dv.length?`<div class="wd-kpi"><div><b>${f2(sum)}</b><span>近一年配息${wdK.us?"（美元）":"（元）"}</span></div><div><b>${last?(sum/last*100).toFixed(2)+"%":"—"}</b><span>殖利率${qm("殖利率")}</span></div></div>
     ${(()=>{const by={},seen={},ty=new Date().getFullYear()+"";dv.forEach(v=>{if(seen[v[0]])return;seen[v[0]]=1;(by[v[0].slice(0,4)]=by[v[0].slice(0,4)]||[]).push(v)});
       return Object.keys(by).sort().reverse().slice(0,5).map(y=>{const l=by[y],t=l.reduce((a,v)=>a+v[1],0);
         return `<div class="wd-eps wd-dv"><div class="q">${l.map(v=>`<div><span>除息 ${v[0].slice(5).replace("-","/")}${v[2]?`<small>發放 ${v[2].slice(5).replace("-","/")}</small>`:""}</span><b>${f2(v[1])}</b></div>`).join("")}</div><div class="t"><span>${y} 年</span><b>${f2(t)}</b><small>${y===ty?"今年累計":"全年合計"}</small></div></div>`}).join("")})()}
@@ -1893,7 +1964,7 @@ function wdKDraw(){
   <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
   ${main}
-  <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","布林%b",wdK.ind)}</div>
+  <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","布林%b",wdK.ind)}</div><p class="glrow" style="margin:4px 0 0">${(()=>{const m={vol:["成交量","成交量"],kdj:["KD","KDJ"],macd:["MACD","MACD"],pb:["布林","布林%b"]}[wdK.ind]||["成交量","成交量"];return `<button class="qc" data-term="${m[0]}">${m[1]} 是什麼？</button>`})()}</p>
   <div class="wd-vals">${vals2}</div>
   ${sub}
   <p class="muted">${wdK.period==="m"?"月 K":wdK.period==="w"?"週 K":"日 K"}，紅 K 收盤比開盤高、綠 K 收盤比開盤低。用手指點圖，或按「前一天／後一天」移動虛線，可以看那一天的數字。</p>`;
@@ -1946,6 +2017,15 @@ const holdMain=()=>{holdPagesLoad();return holdPages.flatMap(pg=>holdRead(holdKe
 function holdLoad(){holdPagesLoad();holds=holdRead(holdKeyOf(holdPages[holdCur]))}
 function holdSave(){try{localStorage.setItem(holdKeyOf(holdPages[holdCur]),JSON.stringify(holds))}catch(_){}}
 // 帶入我的持股：跳出清單勾選要帶入哪幾頁（Luna 2026-10-23：選到頁就好，不用一檔一檔），回傳選到的頁裡全部持股 [{pg,c,n}]
+/* 持股異動紀錄（Luna 2026-10-23）：新增、改股數、刪除都記 [日期, 股數]。算股利時，已經除息的照當時股數，
+   之後買進或賣出都不會改到已經發的股利。還沒有紀錄的舊持股，當作一直都是現在的股數 */
+const twDay=()=>new Date(Date.now()+8*3600e3).toISOString().slice(0,10);
+const holdLogKey=pg=>holdKeyOf(pg)+"-log";
+function holdLogRead(pg){try{const v=JSON.parse(localStorage.getItem(holdLogKey(pg)));if(v&&typeof v==="object"&&!Array.isArray(v))return v}catch(_){}return{}}
+function holdLogSet(c,n,old){const pg=holdPages[holdCur],lg=holdLogRead(pg),d=twDay();let a=lg[c];
+  if(!a)a=lg[c]=old>0?[["0000-00-00",old]]:[];
+  if(a.length&&a[a.length-1][0]===d)a[a.length-1][1]=n;else a.push([d,n]);
+  try{localStorage.setItem(holdLogKey(pg),JSON.stringify(lg))}catch(_){}}
 function holdAllItems(){holdPagesLoad();return holdPages.map(pg=>({pg,list:holdRead(holdKeyOf(pg))}))}
 function holdChoose(title,sel,ok,filter){
   const all=holdAllItems().map(g=>({...g,list:g.list.filter(x=>!filter||filter(x.c))}));
@@ -1974,17 +2054,72 @@ function holdRender(){
     return `<button class="hrow" data-h="${i}" aria-label="修改 ${esc(r[1])}"><span class="nm"><b>${esc(r[1])}</b><small>${esc(h.c)}</small></span><span class="pl ${cls(dp)}">${sg(dp)}${us?" 美元":" 元"}<small>${pc(pct)}</small></span>
       <span class="dt">現價 <b>${f2(last)}</b>　漲跌 <b class="${cls(dp)}">${last>prev?"▲":last<prev?"▼":"－"}${f2(Math.abs(last-prev))}</b>　${h.n%1000===0?`<b>${h.n/1000}</b> 張`:`<b>${f0(h.n)}</b> 股`}</span></button>`}).join("");
   $("hold-list").innerHTML=rows||'<p class="wempty">還沒有持股，在下面輸入第一檔。</p>';
-  $("hold-sum").hidden=!holds.length;
+  $("hold-sum").hidden=!holds.length;holdPie(fx);holdDiv(fx);
   $("hold-sum").innerHTML=`<div><b class="${cls(day)}">${sg(day)}</b><span>當日損益合計（元）</span></div><div><b class="${cls(day)}">${base?pc(day/base*100):"—"}</b><span>當日漲跌幅</span></div>`;
   const t=new Date(Date.now()+8*3600e3).toISOString();
   $("hold-lead").textContent=holds.length?(ON_CF?`現價更新於 ${t.slice(11,16)}${LIVE}，每分鐘自動更新。`:`現價資料 ${STOCK.updated}。`)+(miss?"有幾檔還在抓價格。":""):"輸入股數，看今天漲跌多少、賺賠多少錢。";
 }
 async function holdQuote(){
-  const codes=[...new Set(holds.map(h=>h.c))];if(!codes.length){holdRender();return}
+  const codes=[...new Set(holds.map(h=>h.c))];if(!codes.length){holdRender();const lc=Object.keys(holdLogRead(holdPages[holdCur])).filter(c=>idxOf[c]);if(lc.length){await divyGet(lc);holdRender()}return}
   await Promise.all(codes.map(c=>stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null)));holdRender();
   if(!ON_CF)return;
   const d=await api(`/api/quote?c=${codes.filter(c=>!idxOf[c][4]).join(",")}&us=${codes.filter(c=>idxOf[c][4]).join(",")}`);
   if(d){Object.assign(watchLive,d);holdRender()}
+  const lg=holdLogRead(holdPages[holdCur]);await divyGet([...new Set([...codes,...Object.keys(lg).filter(c=>idxOf[c])])]);holdRender();
+}
+/* 持股比例圓餅圖（Luna 2026-10-23）：這一頁每檔的市值（美股換成台幣）佔多少 */
+const PIE_COL=["var(--s1)","var(--s2)","var(--s3)","var(--s4)","var(--s5)","var(--l-red)","var(--gold)","var(--muted)"];
+function holdPie(fx){
+  const box=$("hold-pie");let a=[],miss=0;
+  holds.forEach(h=>{const r=idxOf[h.c],it=watchItem(h.c),last=it&&!it.loading?it.last:null,us=!!r[4];if(last==null||(us&&!fx)){miss++;return}a.push({nm:r[1],c:h.c,v:last*h.n*(us?fx:1)})});
+  if(holds.length<1||!a.length){box.hidden=true;return}
+  a.sort((x,y)=>y.v-x.v);if(a.length>8){const rest=a.slice(7);a=a.slice(0,7);a.push({nm:`其他 ${rest.length} 檔`,c:"",v:rest.reduce((s,x)=>s+x.v,0)})}
+  const tot=a.reduce((s,x)=>s+x.v,0)||1,C=2*Math.PI*70;let off=0;
+  const arcs=a.map((x,i)=>{const L=x.v/tot*C,s=`<circle r="70" cx="100" cy="100" fill="none" stroke="${PIE_COL[i]}" stroke-width="44" stroke-dasharray="${L.toFixed(2)} ${(C-L).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 100 100)"/>`;off+=L;return s}).join("");
+  const f0=v=>Math.round(v).toLocaleString("zh-TW");
+  box.hidden=false;
+  box.innerHTML=`<h2>持股比例</h2><svg viewBox="0 0 200 200" role="img" aria-label="持股比例圓餅圖">${arcs}<text x="100" y="96" text-anchor="middle" style="font-size:15px;fill:var(--muted)">總市值</text><text x="100" y="118" text-anchor="middle" style="font:700 17px var(--num);fill:var(--ink)">${tot>=1e8?(tot/1e8).toFixed(2)+" 億":tot>=1e4?f0(tot/1e4)+" 萬":f0(tot)}</text></svg>
+    <div class="lg">${a.map((x,i)=>`<div><i style="background:${PIE_COL[i]}"></i><span>${esc(x.nm)}</span><b>${(x.v/tot*100).toFixed(1)}%<small>${f0(x.v)} 元</small></b></div>`).join("")}</div>
+    <p class="muted" style="align-self:stretch">用現價算市值，美股換成台幣。${miss?"有幾檔還在抓價格，還沒算進去。":""}</p>`;
+}
+/* 今年股利收入（Luna 2026-10-23）：照發放日放進每個月。已經除息的照當時股數；
+   已公布還沒除息的、還沒公布的（照去年同一次配息往後推一年）用現在的股數 */
+const DIVY_KEY="facai-divy";let divyMem=null;
+async function divyGet(codes){
+  if(!ON_CF)return;if(!divyMem){try{divyMem=JSON.parse(localStorage.getItem(DIVY_KEY))||{}}catch(_){divyMem={}}}
+  const now=Date.now(),need=codes.filter(c=>!(divyMem[c]&&now-divyMem[c].t<864e5));if(!need.length)return;
+  await Promise.all(need.map(async c=>{const d=await api(`/api/divy?${idxOf[c][4]?"us":"c"}=${c}&v=1`);
+    if(d&&Array.isArray(d.divs)&&(!d.__partial||!divyMem[c]))divyMem[c]={t:d.__partial?now-864e5+6e5:now,d:d.divs}}));
+  for(const k in divyMem)if(now-divyMem[k].t>7*864e5)delete divyMem[k];
+  try{localStorage.setItem(DIVY_KEY,JSON.stringify(divyMem))}catch(_){}
+}
+function holdDivCalc(fx){
+  const today=twDay(),Y=+today.slice(0,4),lg=holdLogRead(holdPages[holdCur]),cur={};holds.forEach(h=>cur[h.c]=h.n);
+  const codes=[...new Set([...holds.map(h=>h.c),...Object.keys(lg).filter(c=>idxOf[c])])];
+  const mon=Array.from({length:12},()=>({got:0,est:0})),per=[];let miss=0;
+  const nextY=d=>(+d.slice(0,4)+1)+d.slice(4),plus=(d,n)=>new Date(Date.parse(d)+n*864e5).toISOString().slice(0,10);
+  codes.forEach(c=>{const m=divyMem&&divyMem[c],us=!!idxOf[c][4];if(!m||(us&&!fx)){if(cur[c])miss++;return}
+    const k=us?fx:1,n0=cur[c]||0,a=lg[c],at=ex=>{if(!a)return n0;let v=0;a.forEach(e=>{if(e[0]<ex)v=e[1]});return v};
+    const D=m.d,L=D.length?D[D.length-1][0]:"";let got=0,est=0;
+    const add=(pay,v,g)=>{const i=+pay.slice(5,7)-1;if(g){mon[i].got+=v;got+=v}else{mon[i].est+=v;est+=v}};
+    D.forEach(([ex,amt,pay])=>{const p=pay||plus(ex,30);if(+p.slice(0,4)!==Y)return;const n=at(ex);if(n>0)add(p,amt*n*k,p<=today)});
+    if(n0>0&&L)D.forEach(([ex,amt,pay])=>{const e1=nextY(ex);if(e1<=plus(L,15)||e1<=today)return;const p1=pay?nextY(pay):plus(e1,30);if(+p1.slice(0,4)===Y)add(p1,amt*n0*k,false)});
+    if(got+est>0)per.push({c,got,est})});
+  return{Y,mon,per:per.sort((x,y)=>y.got+y.est-x.got-x.est),miss};
+}
+function holdDiv(fx){
+  const box=$("hold-div");
+  if(!holds.length&&!Object.keys(holdLogRead(holdPages[holdCur])).length){box.hidden=true;return}
+  box.hidden=false;
+  const hd=`<h2>今年股利收入${qm("除權息")}</h2>`;
+  if(!ON_CF){box.innerHTML=hd+'<p class="muted">股利收入要用 Cloudflare 的網址打開才看得到。</p>';return}
+  if(!divyMem){box.innerHTML=hd+'<p class="wempty">讀取配息資料中…</p>';return}
+  const x=holdDivCalc(fx),f0=v=>Math.round(v).toLocaleString("zh-TW"),G=x.mon.reduce((s,m)=>s+m.got,0),E=x.mon.reduce((s,m)=>s+m.est,0);
+  box.innerHTML=`<h2>${x.Y} 年股利收入${qm("除權息")}</h2>
+    <div class="kv3"><div><b>${f0(G+E)}</b><span>全年預估（元）</span></div><div><b>${f0(G)}</b><span>已經領到</span></div><div><b>${f0(E)}</b><span>還會領到</span></div></div>
+    <div class="mon">${x.mon.map((m,i)=>{const v=m.got+m.est;return `<div class="${m.got>0?"got":v>0?"":"zero"}"><span>${i+1} 月</span><b>${v>0?f0(v):"—"}</b>${v>0?`<small>${m.est>0?(m.got>0?"部分已領":"預估"):"已領"}</small>`:""}</div>`}).join("")}</div>
+    ${x.per.length?`<div class="per" style="margin-top:12px">${x.per.map(p=>`<div><span>${esc(idxOf[p.c][1])}${holds.some(h=>h.c===p.c)?"":"（已賣出）"}</span><b>${f0(p.got+p.est)} 元</b></div>`).join("")}</div>`:'<p class="muted">今年這一頁的股票沒有現金股利。</p>'}
+    <p class="muted">金額照發放日放在每個月（台幣，美股用現在匯率換算）。已經除息的照當時的股數算，之後再買進或賣出都不會改到；還沒除息的用現在的股數，還沒公布的照去年同一次的配息估。${x.miss?"有幾檔的配息資料還在抓。":""}</p>`;
 }
 function holdForm(i){
   holdEditAt=i;const h=holds[i];holdPick=h?h.c:"";
@@ -2004,7 +2139,7 @@ function holdInit(){
   $("hold-ren").addEventListener("click",()=>{const pg=holdPages[holdCur],n=(prompt("這一頁要改成什麼名字？",pg.name)||"").trim();if(!n)return;pg.name=n.slice(0,10);holdPagesSave();holdTabs()});
   $("hold-del-page").addEventListener("click",()=>{const pg=holdPages[holdCur];
     if(!confirm(`確定要刪除「${pg.name}」這一頁和裡面的持股嗎？\n（按「取消」就不會刪除）`))return;
-    try{localStorage.removeItem(holdKeyOf(pg))}catch(_){}holdPages.splice(holdCur,1);holdCur=0;
+    try{localStorage.removeItem(holdKeyOf(pg));localStorage.removeItem(holdLogKey(pg))}catch(_){}holdPages.splice(holdCur,1);holdCur=0;
     if(!holdPages.length)holdPages=[{id:Date.now().toString(36),name:"我的持股"}];/* 全部刪光時留一頁空的 */holdPagesSave();holdLoad();holdTabs();holdForm(-1);holdQuote();toast("已刪除")});
   $("hold-list").addEventListener("click",e=>{const b=e.target.closest("[data-h]");if(!b)return;holdForm(+b.dataset.h);$("hold-form").scrollIntoView({behavior:"smooth",block:"start"})});
   const q=$("hold-q"),sug=$("hold-sug");
@@ -2018,12 +2153,13 @@ function holdInit(){
     const n=Math.round(parseFloat($("hold-sh").value));
     if(!idxOf[holdPick]){toast("請先輸入並選一檔股票");q.focus();return}
     if(!(n>0)){toast("請輸入股數");$("hold-sh").focus();return}
-    const h={c:holdPick,n};
+    const h={c:holdPick,n},o=holdEditAt>=0?holds[holdEditAt]:holds.find(x=>x.c===holdPick);
+    if(o&&o.c!==holdPick)holdLogSet(o.c,0,o.n);holdLogSet(holdPick,n,o&&o.c===holdPick?o.n:(holds.find(x=>x.c===holdPick)||{}).n||0);
     if(holdEditAt>=0)holds[holdEditAt]=h;else{const j=holds.findIndex(x=>x.c===holdPick);if(j>=0)holds[j]=h;else holds.push(h)}
     holdSave();holdForm(-1);toast("已儲存");holdQuote()});
   $("hold-cancel").addEventListener("click",()=>holdForm(-1));
-  clrBtn("hold-clr",()=>holds.length&&confirm(`確定要清除「${holdPages[holdCur].name}」這一頁的全部持股嗎？\n（按「取消」就不會清除）`),()=>{holds=[];holdSave();holdForm(-1);holdRender()});
-  $("hold-del").addEventListener("click",()=>{const h=holds[holdEditAt];if(!h)return;if(!confirm(`確定刪除 ${idxOf[h.c][1]}？`))return;holds.splice(holdEditAt,1);holdSave();holdForm(-1);holdRender()});
+  clrBtn("hold-clr",()=>holds.length&&confirm(`確定要清除「${holdPages[holdCur].name}」這一頁的全部持股嗎？\n（按「取消」就不會清除）`),()=>{holds=[];holdSave();try{localStorage.removeItem(holdLogKey(holdPages[holdCur]))}catch(_){}holdForm(-1);holdRender()});
+  $("hold-del").addEventListener("click",()=>{const h=holds[holdEditAt];if(!h)return;if(!confirm(`確定刪除 ${idxOf[h.c][1]}？`))return;holdLogSet(h.c,0,h.n);holds.splice(holdEditAt,1);holdSave();holdForm(-1);holdRender()});
 }
 calc.hold=holdInit;
 setInterval(()=>{if(ON_CF&&!document.hidden&&curPage()==="hold")holdQuote()},60000);
@@ -2069,9 +2205,9 @@ function plRender(){
   if(!pl.items.length||!(L>0)){box.innerHTML=`<p>${!pl.items.length?"先加入質押的股票，":""}${L>0?"":"再輸入借款金額，"}就會算出維持率。</p>`;return}
   const m=val/L*100,cls=m<130?"bad":m<166?"warn":"ok",word=m<130?"已低於 130%，會被追繳":m<166?"偏低，小心追繳":"安全";
   const drop=(1-1.3*L/val)*100,need=Math.max(0,L-val/1.66);
-  box.innerHTML=`<div class="lb">目前維持率</div><div class="big ${m<130?"down":""}">${m.toFixed(1)}%</div><div class="st ${cls}">${word}</div>
+  box.innerHTML=`<div class="lb">目前維持率${qm("維持率")}</div><div class="big ${m<130?"down":""}">${m.toFixed(1)}%</div><div class="st ${cls}">${word}</div>
     <div class="kv"><div><b>${f0(val)}</b><span>質押市值（元）</span></div><div><b>${f0(L)}</b><span>借款（元）</span></div></div>
-    <p>${m>=130?`股價全部再跌 <b>${drop.toFixed(1)}%</b> 會跌破 130% 追繳線。`:`要補回 166%，大約要還款 <b>${f0(need)}</b> 元，或補進同樣市值的股票。`}</p>${miss?'<p class="muted">有幾檔還在抓價格，數字稍後會更新。</p>':""}`;
+    <p>${m>=130?`股價全部再跌 <b>${drop.toFixed(1)}%</b> 會跌破 130% 追繳線${qm("追繳")}。`:`要補回 166%，大約要還款 <b>${f0(need)}</b> 元，或補進同樣市值的股票。`}</p>${miss?'<p class="muted">有幾檔還在抓價格，數字稍後會更新。</p>':""}`;
   const t=new Date(Date.now()+8*3600e3).toISOString();
   $("pl-lead").textContent=ON_CF?`現價更新於 ${t.slice(11,16)}${LIVE}，每分鐘自動更新。`:`現價資料 ${STOCK.updated}。`;
 }
@@ -2122,7 +2258,7 @@ function p2Calc(){
     return `<div class="p2r${cls?" "+cls:""}"><span class="nm">${esc(nm)}<small>${sub}</small></span><span class="m ${c}">${m.toFixed(2)}%</span><span class="pr">注意價（${Math.round(W*100)}%）<b>${f0(warn)}</b><br>追繳價（130%）<b>${f0(call)}</b><br>股價再跌 <b>${Math.max(0,(1-call/px)*100).toFixed(1)}%</b> 會碰到追繳</span></div>`};
   const P=p2.mem.reduce((a,m)=>a+(+m.p||0),0),L=p2.mem.reduce((a,m)=>a+(+m.l||0),0),S=p2.mem.reduce((a,m)=>a+(+m.s||0),0);
   const cash=Math.min(+p2.cash||0,L),add=Math.min(+p2.add||0,S),L2=L-cash,P2=P+add;
-  let h=`<h2 class="dvh">現況（股價 ${px.toLocaleString("zh-TW")}）</h2><div class="wlist">`+p2.mem.map(m=>row(m.n||"未命名",`質押 ${+m.p||0} 張・借款 ${fw(+m.l||0)}${+m.s?`・現股 ${+m.s} 張`:""}`,+m.p,+m.l)).join("")
+  let h=`<h2 class="dvh">現況（股價 ${px.toLocaleString("zh-TW")}）${qm("維持率")}</h2><div class="wlist">`+p2.mem.map(m=>row(m.n||"未命名",`質押 ${+m.p||0} 張・借款 ${fw(+m.l||0)}${+m.s?`・現股 ${+m.s} 張`:""}`,+m.p,+m.l)).join("")
     +(p2.mem.length>1?row(`${p2.mem.length} 人合併`,`質押 ${P} 張・借款 ${fw(L)}`,P,L,"sum"):"")+"</div>";
   if(cash>0||add>0){
     h+=`<h2 class="dvh">還款 ${fw(cash)}＋再質押 ${add} 張之後</h2><div class="wlist">`+(L2>0?row("合併後",`借款 ${fw(L)} − ${fw(cash)} ＝ ${fw(L2)}・質押 ${P} ＋ ${add} ＝ ${P2} 張`,P2,L2,"sum"):`<div class="p2r sum"><span class="nm">借款全部還清了</span></div>`)+"</div>";
@@ -2169,7 +2305,7 @@ function dbRender(){
   const box=$("db-res");
   if(!(A>0)){box.innerHTML="<p>在下面填入資產和負債，就會算出負債比。</p>";return}
   const r=D/A*100,cls=r>50?"bad":r>30?"warn":"ok",word=r>50?"偏高":r>30?"要注意":"健康";
-  box.innerHTML=`<div class="lb">總資產負債比</div><div class="big">${r.toFixed(1)}%</div><div class="st ${cls}">${word}</div>
+  box.innerHTML=`<div class="lb">總資產負債比${qm("負債比")}</div><div class="big">${r.toFixed(1)}%</div><div class="st ${cls}">${word}</div>
     <div class="kv"><div><b>${f0(A)}</b><span>總資產（元）</span></div><div><b>${f0(D)}</b><span>總負債（元）</span></div></div>
     <p>淨資產（資產 − 負債）<b>${f0(A-D)}</b> 元</p>`;
 }

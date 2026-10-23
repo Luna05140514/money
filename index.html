@@ -106,6 +106,9 @@ button,input,select{font:inherit;color:inherit}
 .prow .nm b{display:block;font-size:20px;line-height:1.3}.prow .nm small{font-size:15px;color:var(--muted)}
 .prow .v{text-align:right;font-family:var(--num);font-size:19px;font-weight:700;line-height:1.35}.prow .v small{display:block;font-size:15px;font-weight:600;color:var(--muted)}
 .prow .x{all:unset;cursor:pointer;width:36px;height:36px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-size:17px}
+.hform .auto{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:17px;background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.hform .auto b{font-family:var(--num);font-size:20px}
+.hform .auto small{display:block;font-size:14px;color:var(--muted)}
 /* 我的持股、除權息行事曆 */
 .hsum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:center}
 .hsum b{display:block;font-family:var(--num);font-size:24px;line-height:1.25}
@@ -442,11 +445,12 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="idx"><span class="glyph">盤</span><div><h2>全球大盤</h2><p>台股、美股、日韓指數和匯率，含 K 線和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="watch"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="hold"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="pledge"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、股數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="debt"><span class="glyph">債</span><div><h2>總資產負債比</h2><p>股票、存款、房子和各種借款加起來，看負債佔資產多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="divc"><span class="glyph">息</span><div><h2>除權息行事曆</h2><p>自選股和持股這個月哪天除息、每股配多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="mkt"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
       <button class="entry" data-go="stock"><span class="glyph">比</span><div><h2>股票報酬比較</h2><p>ETF 與個股的含息報酬走勢、殖利率、費用並排比較</p></div><span class="go">›</span></button>
       <button class="entry" data-go="nav"><span class="glyph">淨</span><div><h2>淨值查詢</h2><p>輸入 ETF 代號或名字，查市價、淨值和折溢價</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="pledge"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、股數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
       <button class="entry" data-go="dca"><span class="glyph">測</span><div><h2>回測報酬率</h2><p>用真實含息股價回測定期定額，看每月投入到現在賺多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="fire"><span class="glyph">由</span><div><h2>財務自由計算機</h2><p>算出需要多少錢、還要幾年才能財務自由</p></div><span class="go">›</span></button>
       <button class="entry" data-go="compound"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
@@ -605,6 +609,23 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <p class="note">維持率 = 質押股票現在的市值 ÷ 借款金額。一般券商低於 130% 會通知追繳，要在期限內補錢或補股票，多數要補回 166% 以上（各家券商規定可能不同，以你的券商為準）。美股不能質押，所以只能選台股。</p>
   </section>
 
+  <!-- 總資產負債比（Luna 2026-10-23） -->
+  <section id="debt" class="page" hidden>
+    <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <h1>總資產負債比</h1>
+    <p class="lead">負債比 = 總負債 ÷ 總資產。股票市值和質押借款會自動帶入，其他自己填，沒有的留空。資料只存在這支手機。</p>
+    <div class="panel pl-res" id="db-res"></div>
+    <div class="panel hform" style="margin-top:12px">
+      <h2>資產</h2>
+      <div class="auto" id="db-stk"></div>
+      <div class="field"><label for="db-cash">現金、存款</label><div class="unit"><input id="db-cash" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-inv">其他投資（基金、保單、沒放進我的持股的股票）</label><div class="unit"><input id="db-inv" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-home">房地產（現在的市價）</label><div class="unit"><input id="db-home" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-oth">其他資產（車子等）</label><div class="unit"><input id="db-oth" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div>
+      <h2 style="margin-top:14px">負債</h2>
+      <div class="auto" id="db-pl"></div>
+      <div class="field"><label for="db-mort">房貸（還沒還的本金）</label><div class="unit"><input id="db-mort" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-loan">信貸、車貸</label><div class="unit"><input id="db-loan" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div><div class="field"><label for="db-card">其他負債（卡債、借款）</label><div class="unit"><input id="db-card" type="number" inputmode="numeric" min="0" step="10000" placeholder=""><span>元</span></div></div>
+    </div>
+    <p class="note">一般參考：負債比 30% 以下算健康，30%～50% 要注意，超過 50% 偏高。股票市值來自「我的持股損益」（美股用即時匯率換成台幣），質押借款來自「質押維持率」。</p>
+  </section>
+
   <!-- 複利 -->
   <section id="compound" class="page" hidden>
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
@@ -681,7 +702,7 @@ const pct=n=>(n>=0?"+":"")+(n*100).toFixed(2)+"%";
 const short=n=>n>=1e8?(n/1e8).toFixed(1)+"億":n>=1e4?Math.round(n/1e4)+"萬":Math.round(n)+"";
 
 /* 路由：#stock #compound #fire #nav #dca #mkt #idx */
-const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch","wdetail","hold","divc","pledge"];
+const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch","wdetail","hold","divc","pledge","debt"];
 function show(p){
   if(!pages.includes(p))p="home";
   pages.forEach(x=>$(x).hidden=x!==p);
@@ -1981,6 +2002,34 @@ function plInit(){
     pl.items=tw.map(h=>({c:h.c,n:h.n}));plSave();plQuote();toast("已帶入我的持股")});
 }
 calc.pledge=plInit;
+/* 總資產負債比（Luna 2026-10-23）：股票市值（我的持股）、質押借款（質押維持率）自動帶入，其他自己填，存在這支手機 */
+const DB_KEY="facai-debt",DB_IN=["db-cash","db-inv","db-home","db-oth","db-mort","db-loan","db-card"];
+function dbStock(){holdLoad();const fx=usdTwd();let v=0,miss=0;
+  holds.forEach(h=>{const it=watchItem(h.c),us=!!idxOf[h.c][4];if(!it||it.loading||it.last==null||(us&&!fx)){miss++;return}v+=it.last*h.n*(us?fx:1)});return{v,miss,n:holds.length}}
+function dbRender(){
+  const f0=v=>Math.round(v).toLocaleString("zh-TW"),g=id=>parseFloat($(id).value)||0;
+  const st=dbStock();plLoad();const pll=pl.loan||0;
+  $("db-stk").innerHTML=`<span>股票市值<small>${st.n?"來自「我的持股損益」"+(st.miss?"，有幾檔還在抓價格":""):"「我的持股損益」還沒有股票"}</small></span><b>${f0(st.v)}</b>`;
+  $("db-pl").innerHTML=`<span>質押借款<small>${pll?"來自「質押維持率」":"「質押維持率」沒有填借款"}</small></span><b>${f0(pll)}</b>`;
+  const A=st.v+g("db-cash")+g("db-inv")+g("db-home")+g("db-oth"),D=pll+g("db-mort")+g("db-loan")+g("db-card");
+  const box=$("db-res");
+  if(!(A>0)){box.innerHTML="<p>在下面填入資產和負債，就會算出負債比。</p>";return}
+  const r=D/A*100,cls=r>50?"bad":r>30?"warn":"ok",word=r>50?"偏高":r>30?"要注意":"健康";
+  box.innerHTML=`<div class="lb">總資產負債比</div><div class="big">${r.toFixed(1)}%</div><div class="st ${cls}">${word}</div>
+    <div class="kv"><div><b>${f0(A)}</b><span>總資產（元）</span></div><div><b>${f0(D)}</b><span>總負債（元）</span></div></div>
+    <p>淨資產（資產 − 負債）<b>${f0(A-D)}</b> 元</p>`;
+}
+async function dbInit(){
+  if(!dbInit.done){dbInit.done=1;
+    try{const v=JSON.parse(localStorage.getItem(DB_KEY))||{};DB_IN.forEach(id=>{if(v[id])$(id).value=v[id]})}catch(_){}
+    DB_IN.forEach(id=>$(id).addEventListener("input",()=>{try{const o={};DB_IN.forEach(k=>{if($(k).value)o[k]=$(k).value});localStorage.setItem(DB_KEY,JSON.stringify(o))}catch(_){}dbRender()}))}
+  dbRender();holdLoad();
+  const codes=[...new Set(holds.map(h=>h.c))];if(!codes.length)return;
+  await Promise.all(codes.map(c=>stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null)));dbRender();
+  if(!ON_CF)return;const d=await api(`/api/quote?c=${codes.filter(c=>!idxOf[c][4]).join(",")}&us=${codes.filter(c=>idxOf[c][4]).join(",")}`);if(d){Object.assign(watchLive,d);dbRender()}
+}
+calc.debt=dbInit;
+
 setInterval(()=>{if(ON_CF&&!document.hidden&&curPage()==="pledge")plQuote()},60000);
 
 

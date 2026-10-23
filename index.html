@@ -110,8 +110,23 @@ button,input,select{font:inherit;color:inherit}
 .hform .auto b{font-family:var(--num);font-size:20px}
 .hform .auto small{display:block;font-size:14px;color:var(--muted)}
 .local{text-align:center;font-size:17px;font-weight:700;color:var(--ink);background:var(--gold-soft);border-radius:999px;padding:6px 14px;margin:-6px auto 16px;width:fit-content}
+.pl-note{font-size:18px;line-height:1.55;margin:10px 2px 0}
 .hclr{display:flex;justify-content:center;margin-top:16px}
 .hclr button{font:inherit;font-size:18px;font-weight:700;min-height:50px;padding:0 26px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.p2m{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.p2m .hd{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.p2m .hd input{flex:1;min-width:0;width:100%;box-sizing:border-box;font:inherit;font-size:20px;font-weight:700;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.p2m .hd button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;background:var(--surface);border:2px solid var(--line);color:var(--muted);display:grid;place-items:center;font-size:17px}
+.p2m .g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.p2m label{display:block;font-size:15px;color:var(--muted);margin-bottom:2px}
+.p2m .g input{width:100%;box-sizing:border-box;min-width:0;font-family:var(--num);font-size:19px;padding:9px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.p2r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:14px;border-top:1px solid var(--line)}
+.p2r:first-child{border-top:0}
+.p2r.sum{background:var(--gold-soft)}
+.p2r .nm{font-size:20px;font-weight:800}.p2r .nm small{display:block;font-size:15px;font-weight:600;color:var(--muted)}
+.p2r .m{text-align:right;font-family:var(--num);font-size:26px;font-weight:800}
+.p2r .m.bad{color:var(--up)}.p2r .m.warn{color:#b07a00}
+.p2r .pr{grid-column:1/-1;font-size:17px;color:var(--muted)}.p2r .pr b{font-family:var(--num);color:var(--ink)}
 /* 我的持股、除權息行事曆 */
 .hsum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:center}
 .hsum b{display:block;font-family:var(--num);font-size:24px;line-height:1.25}
@@ -602,6 +617,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <h1>質押維持率</h1>
     <p class="lead" id="pl-lead">輸入質押的股票、股數和借款金額，用現價算出維持率。</p>
     <p class="local">📱 資料只存在這支手機，不會上傳</p>
+    <div class="watch-tabs" id="pl-tabs" role="tablist" style="margin-bottom:12px"><button role="tab" data-pt="0" aria-selected="true">簡單計算</button><button role="tab" data-pt="1" aria-selected="false">多人合併試算</button></div>
+    <div id="pl-t0">
     <div class="panel pl-res" id="pl-res"></div>
     <div class="wlist" id="pl-list" style="margin-top:12px"></div>
     <div class="panel hform" style="margin-top:12px">
@@ -614,6 +631,27 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     </div>
     <div class="hclr"><button id="pl-clr">清除全部</button></div>
     <p class="note">維持率 = 質押股票現在的市值 ÷ 借款金額。一般券商低於 130% 會通知追繳，要在期限內補錢或補股票，多數要補回 166% 以上（各家券商規定可能不同，以你的券商為準）。美股不能質押，所以只能選台股。</p>
+    </div>
+    <div id="pl-t1" hidden>
+      <div class="panel hform">
+        <h2>質押的股票（大家同一檔）</h2>
+        <div class="field"><label for="p2-q">股票</label><div class="search"><input id="p2-q" type="search" placeholder="輸入代號或名字，例如 台積電" autocomplete="off" aria-label="輸入股票代號或名字"><ul id="p2-sug" role="listbox" hidden></ul></div></div>
+        <div class="pick" id="p2-pick"></div>
+        <div class="field"><label for="p2-px">計算用股價（自動帶現價，也可以自己改來試算）</label><div class="unit"><input id="p2-px" type="number" inputmode="decimal" min="0" step="0.01"><span>元</span></div></div>
+      </div>
+      <h2 class="dvh">每個人的質押</h2>
+      <div id="p2-mem"></div>
+      <div class="hbtns" style="margin-top:10px"><button class="sec" id="p2-add">＋ 加一個人</button></div>
+      <h2 class="dvh">還款和補質押試算</h2>
+      <div class="panel hform">
+        <div class="field"><label for="p2-cash">拿多少現金還款</label><div class="unit"><input id="p2-cash" type="number" inputmode="decimal" min="0" step="1"><span>萬</span></div></div>
+        <div class="field"><label for="p2-add-sh">再拿多少張現股去質押</label><div class="unit"><input id="p2-add-sh" type="number" inputmode="numeric" min="0" step="1"><span>張</span></div></div>
+        <div class="field"><label for="p2-warn">注意線（維持率低於多少要開始注意）</label><div class="unit"><input id="p2-warn" type="number" inputmode="numeric" min="131" step="1" value="140"><span>%</span></div></div>
+      </div>
+      <div id="p2-out"></div>
+      <div class="hclr"><button id="p2-clr">清除全部</button></div>
+      <p class="note">維持率 = 質押張數 × 1000 × 股價 ÷ 借款。追繳價 = 維持率剛好 130% 時的股價，注意價 = 維持率剛好到注意線時的股價。「三人合併」是把所有人的質押張數和借款加起來算，只有在同一家券商、可以合併計算時才適用。還款和補質押試算是用合併後的數字算。</p>
+    </div>
   </section>
 
   <!-- 總資產負債比（Luna 2026-10-23） -->
@@ -2014,7 +2052,58 @@ function plInit(){
   $("pl-hold").addEventListener("click",()=>{holdLoad();const tw=holds.filter(h=>!idxOf[h.c][4]);if(!tw.length){toast("「我的持股」還沒有台股");return}
     pl.items=tw.map(h=>({c:h.c,n:h.n}));plSave();plQuote();toast("已帶入我的持股")});
 }
-calc.pledge=plInit;
+calc.pledge=()=>{plInit();let t=0;try{t=+localStorage.getItem("facai-pl-tab")||0}catch(_){}plTab(t);if(t===1&&p2Init.load)p2Init.load()};
+/* 質押維持率「多人合併試算」（Luna 2026-10-23，照她平常問 AI 的算法）：同一檔股票，每人質押張數＋借款（萬），
+   算每人和合併的維持率、注意價、追繳價（130%），再試算拿現金還款＋多質押幾張現股之後的合併結果 */
+const P2_KEY="facai-pledge2";
+let p2={c:"2330",px:null,mem:[{n:"成員 1",s:0,p:0,l:0}],cash:0,add:0,warn:140};
+function p2Load(){try{const v=JSON.parse(localStorage.getItem(P2_KEY));if(v&&Array.isArray(v.mem)&&v.mem.length)p2=Object.assign(p2,v)}catch(_){}if(!idxOf[p2.c]||idxOf[p2.c][4])p2.c="2330"}
+function p2Save(){try{localStorage.setItem(P2_KEY,JSON.stringify(p2))}catch(_){}}
+function p2Live(){const it=watchItem(p2.c);return it&&!it.loading?it.last:null}
+function p2Mem(){
+  $("p2-mem").innerHTML=p2.mem.map((m,i)=>`<div class="p2m" data-i="${i}"><div class="hd"><input data-k="n" value="${esc(m.n)}" aria-label="名字">${p2.mem.length>1?`<button data-del="${i}" aria-label="刪除 ${esc(m.n)}">✕</button>`:""}</div>
+    <div class="g"><div><label>現股（張）</label><input data-k="s" type="number" inputmode="numeric" min="0" value="${m.s||""}"></div><div><label>質押（張）</label><input data-k="p" type="number" inputmode="numeric" min="0" value="${m.p||""}"></div><div><label>借款（萬）</label><input data-k="l" type="number" inputmode="decimal" min="0" value="${m.l||""}"></div></div></div>`).join("");
+}
+function p2Calc(){
+  const px=p2.px>0?p2.px:p2Live(),W=(p2.warn>130?p2.warn:140)/100,f0=v=>Math.round(v).toLocaleString("zh-TW"),fw=v=>(Math.round(v*100)/100).toLocaleString("zh-TW")+" 萬";
+  const r=$("p2-out");
+  if(!(px>0)){r.innerHTML='<p class="wempty">還在抓股價，或請在上面輸入計算用股價。</p>';return}
+  const row=(nm,sub,p,l,cls)=>{if(!(p>0)||!(l>0))return `<div class="p2r${cls?" "+cls:""}"><span class="nm">${esc(nm)}<small>${sub}</small></span><span class="m">—</span><span class="pr">請填質押張數和借款</span></div>`;
+    const m=p*1000*px/(l*1e4)*100,c=m<130?"bad":m<W*100?"warn":"",call=1.3*l*1e4/(p*1000),warn=W*l*1e4/(p*1000);
+    return `<div class="p2r${cls?" "+cls:""}"><span class="nm">${esc(nm)}<small>${sub}</small></span><span class="m ${c}">${m.toFixed(2)}%</span><span class="pr">注意價（${Math.round(W*100)}%）<b>${f0(warn)}</b><br>追繳價（130%）<b>${f0(call)}</b><br>股價再跌 <b>${Math.max(0,(1-call/px)*100).toFixed(1)}%</b> 會碰到追繳</span></div>`};
+  const P=p2.mem.reduce((a,m)=>a+(+m.p||0),0),L=p2.mem.reduce((a,m)=>a+(+m.l||0),0),S=p2.mem.reduce((a,m)=>a+(+m.s||0),0);
+  const cash=Math.min(+p2.cash||0,L),add=Math.min(+p2.add||0,S),L2=L-cash,P2=P+add;
+  let h=`<h2 class="dvh">現況（股價 ${px.toLocaleString("zh-TW")}）</h2><div class="wlist">`+p2.mem.map(m=>row(m.n||"未命名",`質押 ${+m.p||0} 張・借款 ${fw(+m.l||0)}${+m.s?`・現股 ${+m.s} 張`:""}`,+m.p,+m.l)).join("")
+    +(p2.mem.length>1?row(`${p2.mem.length} 人合併`,`質押 ${P} 張・借款 ${fw(L)}`,P,L,"sum"):"")+"</div>";
+  if(cash>0||add>0){
+    h+=`<h2 class="dvh">還款 ${fw(cash)}＋再質押 ${add} 張之後</h2><div class="wlist">`+(L2>0?row("合併後",`借款 ${fw(L)} − ${fw(cash)} ＝ ${fw(L2)}・質押 ${P} ＋ ${add} ＝ ${P2} 張`,P2,L2,"sum"):`<div class="p2r sum"><span class="nm">借款全部還清了</span></div>`)+"</div>";
+    if(L2>0&&L>0&&P>0){const c1=1.3*L*1e4/(P*1000),c2=1.3*L2*1e4/(P2*1000);h+=`<p class="pl-note">追繳價從 <b>${f0(c1)}</b> 降到 <b>${f0(c2)}</b>，股價要跌 <b>${((1-c2/px)*100).toFixed(1)}%</b> 才會碰到追繳。</p>`}
+  }
+  r.innerHTML=h;
+}
+function p2Init(){
+  if(p2Init.done){p2Calc();return}p2Init.done=1;p2Load();
+  const pick=()=>{const r=idxOf[p2.c];$("p2-pick").textContent=r?`${r[1]}（${r[0]}）　現價 ${p2Live()!=null?p2Live().toLocaleString("zh-TW"):"抓取中…"}`:""};
+  $("p2-px").value=p2.px||"";$("p2-cash").value=p2.cash||"";$("p2-add-sh").value=p2.add||"";$("p2-warn").value=p2.warn||140;
+  p2Mem();pick();p2Calc();
+  const load=async()=>{const c=p2.c;await (stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null));if(ON_CF){const d=await api(`/api/quote?c=${c}`);if(d)Object.assign(watchLive,d)}pick();if(!p2.px)$("p2-px").placeholder=p2Live()!=null?String(p2Live()):"";p2Calc()};
+  load();p2Init.load=load;
+  $("p2-mem").addEventListener("input",e=>{const el=e.target.closest("[data-k]"),box=e.target.closest("[data-i]");if(!el||!box)return;const m=p2.mem[+box.dataset.i],k=el.dataset.k;m[k]=k==="n"?el.value:parseFloat(el.value)||0;p2Save();p2Calc()});
+  $("p2-mem").addEventListener("click",e=>{const b=e.target.closest("[data-del]");if(!b)return;const m=p2.mem[+b.dataset.del];if(!confirm(`確定刪除「${m.n||"未命名"}」？`))return;p2.mem.splice(+b.dataset.del,1);p2Save();p2Mem();p2Calc()});
+  $("p2-add").addEventListener("click",()=>{p2.mem.push({n:`成員 ${p2.mem.length+1}`,s:0,p:0,l:0});p2Save();p2Mem();p2Calc()});
+  [["p2-px","px"],["p2-cash","cash"],["p2-add-sh","add"],["p2-warn","warn"]].forEach(([id,k])=>$(id).addEventListener("input",()=>{p2[k]=parseFloat($(id).value)||(k==="warn"?140:0);if(k==="px"&&!p2[k])p2.px=null;p2Save();p2Calc()}));
+  const q=$("p2-q"),sug=$("p2-sug");
+  q.addEventListener("input",()=>{const t=q.value.trim().toLowerCase();if(!t){sug.hidden=true;return}
+    const sc=r=>r[0].toLowerCase().startsWith(t)?0:r[1].toLowerCase().startsWith(t)?1:r[1].toLowerCase().includes(t)?2:9;
+    const hits=STOCK.index.filter(r=>!r[4]).map(r=>[sc(r),r]).filter(x=>x[0]<9).sort((a,b)=>a[0]-b[0]||a[1][0].length-b[1][0].length).slice(0,8).map(x=>x[1]);
+    sug.innerHTML=hits.length?hits.map(r=>`<li role="option" data-code="${r[0]}"><span>${esc(r[1])}</span><b>${r[0]}</b></li>`).join(""):`<li class="none">找不到「${esc(q.value.trim())}」</li>`;sug.hidden=false});
+  sug.addEventListener("pointerdown",e=>{const li=e.target.closest("[data-code]");if(!li)return;e.preventDefault();p2.c=li.dataset.code;p2.px=null;$("p2-px").value="";q.value="";sug.hidden=true;p2Save();load()});
+  q.addEventListener("blur",()=>setTimeout(()=>sug.hidden=true,150));
+  clrBtn("p2-clr",()=>confirm("確定要清除多人合併試算的全部資料嗎？\n（按「取消」就不會清除）"),()=>{p2={c:"2330",px:null,mem:[{n:"成員 1",s:0,p:0,l:0}],cash:0,add:0,warn:140};p2Save();$("p2-px").value="";$("p2-cash").value="";$("p2-add-sh").value="";$("p2-warn").value=140;p2Mem();load()});
+}
+function plTab(t){try{localStorage.setItem("facai-pl-tab",t)}catch(_){}document.querySelectorAll("#pl-tabs [data-pt]").forEach(b=>b.setAttribute("aria-selected",+b.dataset.pt===t));$("pl-t0").hidden=t!==0;$("pl-t1").hidden=t!==1;if(t===1)p2Init()}
+$("pl-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-pt]");if(b)plTab(+b.dataset.pt)});
+
 /* 總資產負債比（Luna 2026-10-23）：股票市值（我的持股）、質押借款（質押維持率）自動帶入，其他自己填，存在這支手機 */
 const DB_KEY="facai-debt",DB_IN=["db-cash","db-inv","db-home","db-oth","db-mort","db-loan","db-card"];
 function dbStock(){holdLoad();const fx=usdTwd();let v=0,miss=0;
@@ -2045,7 +2134,7 @@ async function dbInit(){
 }
 calc.debt=dbInit;
 
-setInterval(()=>{if(ON_CF&&!document.hidden&&curPage()==="pledge")plQuote()},60000);
+setInterval(()=>{if(ON_CF&&!document.hidden&&curPage()==="pledge"){plQuote();if(p2Init.load)p2Init.load()}},60000);
 
 
 stockInit();

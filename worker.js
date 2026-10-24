@@ -13,8 +13,10 @@ const FX = [["TWD=X", "美元", 1, null], ["JPYTWD=X", "日圓", 100, "JPY=X"], 
 const METAL = [["GC=F", "黃金", "XAU"], ["SI=F", "白銀", "XAG"]];
 // 虛擬幣（Luna 2026-10-24）：幣安（Binance 公開行情 data-api.binance.vision）的 BTC/USDT、ETH/USDT，抓不到改用 OKX；日 K 以台灣時間換日
 const CRYPTO = [["BTC-USDT", "比特幣", "BTC-USD"], ["ETH-USDT", "以太幣", "ETH-USD"]];
+// 穩定幣（Luna 2026-10-24）：USDT、USDC 對台幣，用台灣交易所 MAX（max-api.maicoin.com 公開行情）
+const STABLE = [["USDT-TWD", "泰達幣"], ["USDC-TWD", "USDC"]];
 const ixSym = k => (CRYPTO.find(c => c[0] === k) || [0, 0, k])[2];
-const IXKEY = /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH)-USDT)$/;
+const IXKEY = /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH)-USDT|(USDT|USDC)-TWD)$/;
 const fxScale = s => (FX.find(f => f[0] === s) || [0, 0, 1])[2];
 const ixTz = s => /=X$/.test(s) ? "Asia/Taipei" : /-USD$/.test(s) ? "UTC" : s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
 const PICKS = [["TSM", "台積電ADR"], ["TSMX", "台積電ADR 2倍"]];
@@ -143,6 +145,18 @@ async function crypto() {
     return { key: s, name, cr: 1, date: day, prev: today.length ? today[0][1] : null, pts: today.map(x => [hm(x[0], "Asia/Taipei"), r2(x[2])]) };
   }));
 }
+const maxK = (key, period, limit) => get(`https://max-api.maicoin.com/api/v2/k?market=${key.replace("-", "").toLowerCase()}&period=${period}&limit=${limit}`).then(r => r.json());
+async function stable() {
+  return Promise.all(STABLE.map(async ([s, name]) => {
+    const rows = (await maxK(s, 5, 300)).map(x => [x[0], +x[1], +x[4]]);
+    const day = rows.length ? ymd(rows[rows.length - 1][0], "Asia/Taipei") : "", today = rows.filter(x => ymd(x[0], "Asia/Taipei") === day);
+    return { key: s, name, cr: 1, tw: 1, date: day, prev: today.length ? today[0][1] : null, pts: today.map(x => [hm(x[0], "Asia/Taipei"), +x[2].toFixed(3)]) };
+  }));
+}
+// MAX 日 K（最近 1000 天）：[日期, 開, 高, 低, 收, 量]
+async function maxDaily(key) {
+  return (await maxK(key, 1440, 1000)).map(x => [ymd(x[0], "Asia/Taipei"), +x[1], +x[2], +x[3], +x[4], Math.round(+x[5])]);
+}
 async function spark(list, asia) {
   const url = "https://query1.finance.yahoo.com/v8/finance/spark?range=1d&interval=5m&symbols=" +
     list.map(([s]) => encodeURIComponent(s)).join(",");
@@ -159,7 +173,7 @@ async function spark(list, asia) {
 async function build() {
   const jobs = {
     twii: yahooTw("^TWII", "加權指數"), otc: yahooTw("^TWOII", "櫃買指數"),
-    us: spark([...US, ...PICKS]), asia: spark(ASIA, true), tw2330: yahooTw("2330.TW", "台積電"), fx: fxSpark(), mt: metals(), cr: crypto(),
+    us: spark([...US, ...PICKS]), asia: spark(ASIA, true), tw2330: yahooTw("2330.TW", "台積電"), fx: fxSpark(), mt: metals(), cr: crypto(), st: stable(),
   };
   const w = wtx();
   jobs.txf = w.then(txfDay).catch(() => txf());
@@ -173,6 +187,7 @@ async function build() {
   if (got.fx) items.push(...got.fx);
   if (got.mt) items.push(...got.mt);
   if (got.cr) items.push(...got.cr);
+  if (got.st) items.push(...got.st);
   const now = new Date(Date.now() + 8 * 3600e3).toISOString();
   const data = { updated: `${now.slice(0, 10)} ${now.slice(11, 16)}`, live: 1, items: items.filter(x => x.pts.length && x.prev) };
   const tsm = got.us && got.us.find(x => x.key === "TSM"), tw = got.tw2330, fx = got.fx && got.fx.find(x => x.key === "TWD=X");
@@ -854,6 +869,10 @@ async function monthOne(sym) {
     const m = new Map(); for (const x of j.data || []) if (x.close > 0) m.set(x.date.slice(0, 7), x.close);
     return monthMacd([...m.keys()].sort().map(k => m.get(k)));
   }
+  if (/-TWD$/.test(sym)) { // MAX 日 K 合成月線（每月最後一天的收盤）
+    const m = new Map(); for (const b of await maxDaily(sym)) m.set(b[0].slice(0, 7), b[4]);
+    return monthMacd([...m.keys()].sort().map(k => m.get(k)));
+  }
   if (/-USDT$/.test(sym)) {
     const j = await (await get(`https://data-api.binance.vision/api/v3/klines?symbol=${bnSym(sym)}&interval=1M&limit=120&timeZone=8`)).json();
     return monthMacd(j.map(x => +x[4]));
@@ -871,7 +890,7 @@ async function monthOne(sym) {
 async function monthList(tw, us, ks) {
   const ixs = { twii: "^TWII", txf: "^TWII", txfn: "^TWII", otc: "^TWOII", 2330: "2330.TW" };
   const jobs = [...tw.map(c => [c, async () => (await monthOne(c + ".TW")) || monthOne(c + ".TWO")]), ...us.map(c => [c, () => monthOne(c)]),
-    ...ks.map(k => [k, () => monthOne(ixs[k] || ixSym(k) && (/-USDT$/.test(k) ? k : ixSym(k)))])];
+    ...ks.map(k => [k, () => monthOne(ixs[k] || ixSym(k) && (/-USDT$|-TWD$/.test(k) ? k : ixSym(k)))])];
   const got = await Promise.all(jobs.map(([c, f]) => f().then(v => [c, v], () => [c, null])));
   return Object.fromEntries(got.filter(x => x[1]));
 }
@@ -950,6 +969,7 @@ async function indexKline(key, part = 0) {
     const k = d.timestamp.map((t, i) => [ymd(t, "Asia/Taipei"), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
     return { kline: k, volUnit: "twshares" };
   }
+  if (/-TWD$/.test(key)) return { kline: await maxDaily(key), volUnit: "shares" };
   if (/-USDT$/.test(key)) {
     const k = await bnDaily(key).catch(() => null);
     if (k && k.length) return { kline: k, volUnit: "shares" };
@@ -985,6 +1005,8 @@ async function indexKd(keys) {
           const b = best[x.date]; if (!b || x.volume > b.volume) best[x.date] = x;
         }
         k = Object.keys(best).sort().map(d => [d, best[d].max, best[d].min, best[d].close, best[d].volume || 0]);
+      } else if (/-TWD$/.test(key)) {
+        k = (await maxDaily(key)).slice(-400).map(b => [b[0], b[2], b[3], b[4], b[5]]);
       } else if (/-USDT$/.test(key) && (k = await bnDaily(key).catch(() => null)) && k.length) {
         k = k.slice(-400).map(b => [b[0], b[2], b[3], b[4], b[5]]);
       } else {

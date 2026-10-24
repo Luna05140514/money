@@ -14,7 +14,7 @@ const METAL = [["GC=F", "黃金", "XAU"], ["SI=F", "白銀", "XAG"]];
 // 虛擬幣（Luna 2026-10-24）：幣安（Binance 公開行情 data-api.binance.vision）的 BTC/USDT、ETH/USDT，抓不到改用 OKX；日 K 以台灣時間換日
 const CRYPTO = [["BTC-USDT", "比特幣", "BTC-USD"], ["ETH-USDT", "以太幣", "ETH-USD"]];
 // 穩定幣（Luna 2026-10-24）：USDT、USDC 對台幣，用台灣交易所 MAX（max-api.maicoin.com 公開行情）
-const STABLE = [["USDT-TWD", "泰達幣"], ["USDC-TWD", "USDC"]];
+const STABLE = [["USDT-TWD", "USDT"], ["USDC-TWD", "USDC"]];
 const ixSym = k => (CRYPTO.find(c => c[0] === k) || [0, 0, k])[2];
 const IXKEY = /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH)-USDT|(USDT|USDC)-TWD)$/;
 const fxScale = s => (FX.find(f => f[0] === s) || [0, 0, 1])[2];

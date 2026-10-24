@@ -311,6 +311,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .watch-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
 .watch-tabs button{all:unset;cursor:pointer;text-align:center;padding:12px 4px;border-radius:999px;font-size:19px;font-weight:700;color:var(--ink)}
 .watch-tabs button[aria-selected="true"]{background:var(--red);color:#fff}
+#watch-tabs{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));border-radius:24px}
+#watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .watch-tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .wlist{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .wrow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:16px 14px;border-top:1px solid var(--line);width:100%;box-sizing:border-box;font:inherit;color:inherit;background:none;text-align:left}
@@ -368,6 +370,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .hsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:18px;color:var(--muted)}
 .hsel button{font:inherit;font-size:19px;font-weight:700;border:2px solid var(--line);background:var(--surface);color:var(--muted);border-radius:12px;padding:8px 14px;cursor:pointer}
 .hsel button[aria-pressed="true"]{border-color:var(--red);color:var(--ink);background:var(--gold-soft)}
+.wpg{margin-top:14px;justify-content:center}
 .hdiv .mon [data-dm]{cursor:pointer}
 .dtin{width:100%;font:inherit;font-size:20px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .dm-tot{font-size:20px;margin:4px 0 8px}.dm-tot b{font-family:var(--num);font-size:24px}
@@ -626,6 +629,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <p class="glrow">看不懂？點這裡：<button class="qc" data-term="KD">短線／長線（KD）</button><button class="qc" data-term="本益比">本益比</button><button class="qc" data-term="股淨比">股淨比</button></p>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
+      <div class="hpg wpg"><button id="watch-ren">✎ 改名這頁</button></div>
     </div>
   </section>
 
@@ -1540,7 +1544,8 @@ const WATCH_KEY="facai-watch3",WATCH_DEFAULT=[
   {name:"ETF",list:["00878","00919","00713","0050","006208","00923","00894","009804","00981A","00685L"]},
   {name:"權值股",list:["2330","2454","2308","2317","3231","2891","2801"]},
   {name:"期貨",list:["00763U","00642U","00738U","00753L"]},
-  {name:"美股",list:["NVDA","GOOG","SPCX","SOXX","VOO","QQQ","TSM","TSMX"]}];
+  {name:"美股",list:["NVDA","GOOG","SPCX","SOXX","VOO","QQQ","TSM","TSMX"]},
+  {name:"觀察股",list:[],obs:1}];
 const clone=x=>JSON.parse(JSON.stringify(x));
 let watchGroups=clone(WATCH_DEFAULT),watchLive={},watchEdit=false,watchTab=0;
 const watchAll=()=>watchGroups.flatMap(g=>g.list);
@@ -1549,14 +1554,16 @@ function watchLoadSaved(){
   const ok=v=>Array.isArray(v)&&v.every(g=>g&&typeof g.name==="string"&&Array.isArray(g.list));
   // 2026/10/21 加的「期貨」分頁：舊的自選股清單沒有就插在權值股後面
   const addFut=v=>{if(!v.some(g=>g.name==="期貨")){const i=v.findIndex(g=>g.name==="權值股");v.splice(i<0?v.length:i+1,0,clone(WATCH_DEFAULT.find(g=>g.name==="期貨")))}return v};
-  try{const v=JSON.parse(localStorage.getItem(WATCH_KEY));if(ok(v)){watchGroups=addFut(v);watchSave();return}}catch(_){}
+  // 2026/10/24 加的「觀察股」分頁（Luna）：舊清單沒有就加在最後；用 obs 記號認，改名後也不會重複加
+  const addObs=v=>{if(!v.some(g=>g.obs))v.push({name:"觀察股",list:[],obs:1});return v};
+  try{const v=JSON.parse(localStorage.getItem(WATCH_KEY));if(ok(v)){watchGroups=addObs(addFut(v));watchSave();return}}catch(_){}
   // 上一版的分類（高股息／權值股／個股／美股…）：ETF 類併成 ETF、個股改叫權值股
   try{const v=JSON.parse(localStorage.getItem("facai-watch2"));if(!ok(v))return;
     const g=n=>(v.find(x=>x.name===n)||{list:[]}).list,uniq=a=>[...new Set(a)];
     const etf=uniq([...g("高股息"),...g("權值股"),...g("主動型"),...g("加權正二")]);
     const stk=g("個股").slice();if(!stk.includes("3231")){const i=stk.indexOf("2317");stk.splice(i<0?stk.length:i+1,0,"3231")}
     const us=v.find(x=>x.name==="美股")?g("美股"):WATCH_DEFAULT.find(x=>x.name==="美股").list.slice();
-    watchGroups=addFut([{name:"ETF",list:etf},{name:"權值股",list:stk},{name:"美股",list:us}]);watchSave()}catch(_){}
+    watchGroups=addObs(addFut([{name:"ETF",list:etf},{name:"權值股",list:stk},{name:"美股",list:us}]));watchSave()}catch(_){}
 }
 function watchItem(c){
   const r=idxOf[c];if(!r)return null;
@@ -1725,6 +1732,8 @@ function watchInit(){
     const c=li.dataset.code,g=watchGroups[watchTab];if(!g.list.includes(c)){g.list.push(c);watchSave()}
     q.value="";sug.hidden=true;watchRender();watchLoad()});
   q.addEventListener("blur",()=>setTimeout(()=>sug.hidden=true,150));
+  // 改名這頁（Luna 2026-10-24）
+  $("watch-ren").addEventListener("click",()=>{const g=watchGroups[watchTab];if(!g)return;const n=(prompt("這一頁要改成什麼名字？",g.name)||"").trim();if(!n)return;g.name=n.slice(0,10);watchSave();watchRender()});
 }
 
 /* 自選股詳細頁：點一檔才向 Cloudflare 的 /api/detail 抓那一檔（K 線、配息、EPS、本益比、河流圖） */

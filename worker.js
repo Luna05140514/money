@@ -874,8 +874,12 @@ async function monthOne(sym) {
     return monthMacd([...m.keys()].sort().map(k => m.get(k)));
   }
   if (/-USDT$/.test(sym)) {
-    const j = await (await get(`https://data-api.binance.vision/api/v3/klines?symbol=${bnSym(sym)}&interval=1M&limit=120&timeZone=8`)).json();
-    return monthMacd(j.map(x => +x[4]));
+    // Cloudflare 有些機房連不到幣安，連不到就改用 Yahoo 的 BTC-USD、ETH-USD 月線（K 線頁也是這樣備援）
+    try {
+      const j = await (await get(`https://data-api.binance.vision/api/v3/klines?symbol=${bnSym(sym)}&interval=1M&limit=120&timeZone=8`)).json();
+      if (Array.isArray(j) && j.length) return monthMacd(j.map(x => +x[4]));
+    } catch (_) {}
+    sym = ixSym(sym);
   }
   for (const host of ["query1", "query2"]) {
     try {

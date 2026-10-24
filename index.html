@@ -343,6 +343,10 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .sigs.sigs3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.wrow .sigs3 .sg{font-size:15px;padding:3px 4px}.wrow .sigs3 .sg small{display:block;margin:0;font-size:12px}
 .wrow .sg.sg-sum{grid-column:1/-1;font-size:17px;padding:6px 8px;text-align:left;cursor:pointer}.wrow .sg.sg-sum small{display:inline;font-size:13px;margin-right:8px}
 .wrow .sg.na{background:var(--bg);color:var(--muted)}
+/* 價值投資、技術分析各框成一塊（Luna 2026-10-24） */
+.wrow .vbox,.wrow .tbox{border:2px solid var(--line);border-radius:12px;padding:6px 8px 8px;margin:2px 0 0;background:var(--surface)}
+.wrow .vbox{flex-direction:column;align-items:stretch;gap:4px}.wrow .vbox>span{justify-content:space-between}
+.wrow .vh{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-start!important;font-size:16px;font-weight:800;color:var(--ink)}.wrow .vh .qm{width:24px;height:24px;font-size:15px}
 .sg-now{font-size:16px;line-height:1.6;color:var(--muted)}.sg-sumt td,.sg-sumt th{font-size:14px;white-space:normal;vertical-align:top}
 .wrow .sg{font-style:normal;font-size:15px;font-weight:700;padding:3px 6px;text-align:center;border-radius:6px;line-height:1.35;background:var(--bg);color:var(--muted)}
 .wrow .sg.buy{background:#fbe3e6;color:#a10d26}
@@ -1670,7 +1674,9 @@ const GLOSS={
   成交量:["成交量","這一天總共買賣了多少股。量大表示很多人在交易，漲跌比較有力；量很小時，漲跌比較不可靠。","",""],
   金銀:["黃金、白銀的買入／賣出價","上面大字是國際期貨價（每盎司、美元）。下面「買入」是你買要付的價錢，「賣出」是你賣掉能拿到的價錢，用國際現貨報價換算成台幣每公克。","銀行黃金存摺、銀樓的牌價會再加上手續費和價差，實際買賣請以銀行或銀樓公告為準。台灣的銀行沒有白銀存摺。","1 盎司 ＝ 31.1035 公克；1 台錢 ＝ 3.75 公克。"],
   USDT:["USDT","USDT（泰達幣）是一種跟美元綁在一起的虛擬幣，1 USDT 大約等於 1 美元。BTC/USDT 就是 1 顆比特幣值多少 USDT。","",""],
-  總結論:["總結論（日KD／週KD／月MACD）","把三個時間一起看：月 MACD 和月線看大方向，週 KD 看位階，日 KD 找時間點。三項都符合表裡同一列，就寫出那一列的策略。","8 個階段：底🌱試單、漲🔥重倉、升🚀抱牢、回🎯低接、警⚠️減半、空💰清倉、跌🛑觀望、彈⚡短搶。另外：週 KD 鈍化時日 KD 死叉只算洗盤；創高但 MACD 背離又破 5 月線就全出；20 號後站上 10 月線＋週金叉可先卡位。","點「總結論」那一格，可以看每一項有沒有符合。"],
+  價值投資:["價值投資（存股）","看「價格貴不貴」（位階）。存股是左側交易：趁落難時買便宜，看估值為主。","本益比、股淨比比過去 5 年平均低＝便宜，高＝昂貴。",""],
+  技術分析:["技術分析（價差）","看「資金進場了沒」（時機）。價差是右側交易：趁起漲時追動能，看技術為主。","月 MACD 看大方向，週 KD 看高低檔，日 KD 找買點。",""],
+  總結論:["總結論（日KD／週KD／月MACD）","把三個時間一起看：月 MACD 和月線看大方向，週 KD 看位階，日 KD 找時間點。三項都符合表裡同一列，就寫出那一列的策略。","8 個階段：底🌱試單、漲🔥重倉、升🚀抱牢、回🎯低接、警⚠️減半、空💰清倉、跌🛑觀望、彈⚡短搶。另外：週 KD 鈍化時日 KD 死叉只算洗盤；創高但 MACD 背離又破 5 月線就分批賣出；20 號後站上 10 月線＋週金叉可先卡位。","點「總結論」那一格，可以看每一項有沒有符合。"],
   成分股:["成分股","ETF 像一個籃子，裡面裝了很多股票，這些股票就是成分股。比例越高的，對 ETF 漲跌的影響越大。","",""],
 };
 const qm=k=>`<button class="qm" data-term="${k}" aria-label="${GLOSS[k][0]}是什麼">?</button>`;
@@ -1832,12 +1838,12 @@ const SUM_RULES=[
     M=>!M.red&&M.grow&&M.m.c<=M.m.ma10*.85,W=>W.pk!=null&&W.pk<=20&&W.k>W.pk,D=>kdX(D).xu&&xK(D)<=20&&D.g20>=2]];
 // 三項都符合時，賣出的先看（警、空、跌），再看買進
 const SUM_ORDER=[4,5,6,0,1,2,3,7];
-const SUM_NOTES=[["鈍","週 KD 連 3 週 80 以上＝主升段，日 KD 死叉只是洗盤"],["背","創新高但月 MACD 柱沒有跟著創高（背離），再跌破 5 月線就全出"],["預","每月 20 號後收盤站上 10 月線＋週 KD 金叉，可以先卡位"]];
+const SUM_NOTES=[["鈍","週 KD 連 3 週 80 以上＝主升段，日 KD 死叉只是洗盤"],["背","創新高但月 MACD 柱沒有跟著創高（背離），再跌破 5 月線就分批賣出"],["預","每月 20 號後收盤站上 10 月線＋週 KD 金叉，可以先卡位"]];
 const SUMINFO=new Map();
 function sumOf(dy,wk,M){const ok=(f,x)=>{try{return!!(x&&f(x))}catch(_){return false}};
   wk=wk&&wk.k!=null?wk:null;dy=dy&&dy.k!=null?dy:null;
   const m=SUM_RULES.map(r=>[ok(r[6],M),ok(r[7],wk),ok(r[8],dy)]),R=(i,txt,cls,note)=>({i,txt,cls,m,note});
-  if(M&&M.m.bd&&!M.a5)return R(-1,"💰 背離＋跌破 5 月線，全出","sell",1);
+  if(M&&M.m.bd&&!M.a5)return R(-1,"💰 背離＋跌破 5 月線，分批賣出","sell",1);
   const full=SUM_ORDER.find(i=>m[i].every(Boolean));
   if(full!=null){const r=SUM_RULES[full];return R(full,`${r[2]}・${r[0]}`,r[1])}
   if(wk&&dy&&kdAll(wk,v=>v>=80)&&kdX(dy).xd)return R(-1,"🚀 主升段，日 KD 死叉只是洗盤，抱牢","buy",0);
@@ -1873,7 +1879,7 @@ function kdBoxes(dy,wk,name,mo){
       ["10 月線",`10 月線 ${f(mo.ma10)}`,M.a10?"站上":"跌破",M.a10?"up":"down","收盤在最近 10 個月平均價上面是站上"]],null,"月 MACD")}
   const s=sumOf(dy,wk,M);let sum="";
   if(name){const k=name+"｜總結論";SUMINFO.set(k,{name,s,M,wk:wk&&wk.k!=null?wk:null,dy:dy&&dy.k!=null?dy:null});sum=`<i class="sg sg-sum ${s.cls}" data-sum="${esc(k)}" role="button" tabindex="0"><small>總結論</small>${esc(s.txt)}</i>`}
-  return `<span class="sigs sigs3">${sum}${dBox}${wBox}${mBox}</span>`}
+  return `<span class="sigs sigs3 tbox">${name?`<span class="vh">技術分析<i class="qm" data-term="技術分析" role="button" tabindex="0" aria-label="技術分析是什麼">?</i></span>`:""}${sum}${dBox}${wBox}${mBox}</span>`}
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
@@ -1901,7 +1907,7 @@ function watchValTag(c,last){const v=watchVal[c];if(!v||!(last>0))return"";
     out.push(`<span>本益比 ${pe.map(([n,e])=>{const x=last/e,[k,t]=lv(x,v);return `${n} ${x.toFixed(1)}<i class="val ${k}">${t}</i>`}).join("")}</span>`);
     // 合理價：近 5 年本益比區間（平均 ±1 個標準差）× 今年預估 EPS
     const fe=pe[0][1];if(v.lo>0&&v.hi>0&&v.avg>0)out.push(band(v,fe))}
-  return out.length?`<span class="vals">${out.join("")}</span>`:""}
+  return out.length?`<span class="vals vbox"><span class="vh">價值投資<i class="qm" data-term="價值投資" role="button" tabindex="0" aria-label="價值投資是什麼">?</i></span>${out.join("")}</span>`:""}
 // 詳細頁抓到的本益比、股淨比也拿來補清單（清單那邊一時沒抓到時，點進去看過就會出現）
 function watchValFromDetail(c,x){if(!x||!x.pe5)return;const k=x.kline||[],price=x.est&&x.est.price||(k.length?k[k.length-1][4]:null),v={...x.pe5};
   if(x.est&&x.est.y0&&x.est.y0.avg>0)v.eps=x.est.y0.avg;if(x.est&&x.est.y1&&x.est.y1.avg>0)v.eps1=x.est.y1.avg;

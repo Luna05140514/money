@@ -311,8 +311,10 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .watch-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
 .watch-tabs button{all:unset;cursor:pointer;text-align:center;padding:12px 4px;border-radius:999px;font-size:19px;font-weight:700;color:var(--ink)}
 .watch-tabs button[aria-selected="true"]{background:var(--red);color:#fff}
-#watch-tabs{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));border-radius:24px}
-#watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 五個分頁排成一排（Luna 2026-10-24），字小一點，太長的名字用…… */
+#watch-tabs{grid-auto-columns:minmax(0,1fr);gap:2px;padding:3px}
+#watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;padding:12px 2px;min-width:0}
+.wedit2{margin-left:0}
 .watch-tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .wlist{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .wrow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:16px 14px;border-top:1px solid var(--line);width:100%;box-sizing:border-box;font:inherit;color:inherit;background:none;text-align:left}
@@ -624,12 +626,11 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>自選股</h1>
     <div class="watch">
-      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit" id="watch-edit" aria-pressed="false">編輯</button></div>
+      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit" id="watch-ren">✎ 改名</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <p class="glrow">看不懂？點這裡：<button class="qc" data-term="KD">短線／長線（KD）</button><button class="qc" data-term="本益比">本益比</button><button class="qc" data-term="股淨比">股淨比</button></p>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
-      <div class="hpg wpg"><button id="watch-ren">✎ 改名這頁</button></div>
     </div>
   </section>
 

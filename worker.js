@@ -747,7 +747,7 @@ async function detail(code, us) {
 function kdLast2(bars, n = 9) {
   if (bars.length < n + 1) return null;
   let k = 50, dv = 50, prev = null;
-  const ks = [], all = [], kd4 = [];
+  const ks = [], all = [], kd4 = []; let prev0 = null, g20 = 0;
   bars.forEach((b, i) => {
     const win = bars.slice(Math.max(0, i - n + 1), i + 1), H = Math.max(...win.map(x => x[0])), L = Math.min(...win.map(x => x[1]));
     const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100;
@@ -756,10 +756,12 @@ function kdLast2(bars, n = 9) {
     if (i >= bars.length - 3) ks.push(k);
     if (i >= bars.length - 25) all.push(k);
     if (i >= bars.length - 4) kd4.push([k, dv]);
+    if (i >= bars.length - 20 && prev0 && prev0[0] <= prev0[1] && k > dv && Math.min(prev0[0], k) <= 20) g20++;
+    prev0 = [k, dv];
   });
   const r = v => Math.round(v * 10) / 10;
   // ks：最近 3 根的 K（判斷鈍化：連 3 根 K≥80 或 ≤20）
-  const out = { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]), ks: ks.map(r) };
+  const out = { k: r(k), d: r(dv), pk: r(prev[0]), pd: r(prev[1]), ks: ks.map(r), g20 }; // g20：最近 20 根內 K 在 20 以下的金叉次數（二次金叉）
   // 最近 3 根內的交叉（之後 K 一直在 D 同一邊）：xc = [1 金叉／-1 死叉, 幾根前, 交叉時 K 的低點／高點]，讓訊號連續顯示 3 天（週）
   for (let a = 0; a < 3 && kd4.length >= a + 2; a++) {
     const [k1, d1] = kd4[kd4.length - 1 - a], [k0, d0] = kd4[kd4.length - 2 - a];
@@ -789,7 +791,7 @@ function dayExtras(cl, vol) {
   const ma20 = cl.slice(-20).reduce((a, b) => a + b, 0) / 20;
   let e12 = cl[0], e26 = cl[0], dea = 0;
   cl.forEach((c, i) => { e12 += (c - e12) * 2 / 13; e26 += (c - e26) * 2 / 27; if (i) dea += (e12 - e26 - dea) * 2 / 10; });
-  const out = { above20: cl[n - 1] >= ma20 ? 1 : 0, osc: Math.round((e12 - e26 - dea) * 1000) / 1000 };
+  const out = { above20: cl[n - 1] >= ma20 ? 1 : 0, dn: cl[n - 1] < cl[n - 2] ? 1 : 0, osc: Math.round((e12 - e26 - dea) * 1000) / 1000 };
   if (vol && vol.length === n) { const p5 = vol.slice(-6, -1), a = p5.reduce((x, y) => x + y, 0) / 5; if (a > 0 && vol[n - 1] > 0) out.vr = Math.round(vol[n - 1] / a * 100) / 100; }
   return out;
 }
@@ -835,22 +837,30 @@ function monthMacd(cl) {
   const n = cl.length; if (n < 12) return null;
   let e12 = cl[0], e26 = cl[0], dea = 0; const osc = [];
   cl.forEach((c, i) => { e12 += (c - e12) * 2 / 13; e26 += (c - e26) * 2 / 27; if (i) dea += (e12 - e26 - dea) * 2 / 10; osc.push(e12 - e26 - dea); });
-  const ma = k => cl.slice(-k).reduce((a, b) => a + b, 0) / k, r = v => +v.toPrecision(5);
-  return { osc: r(osc[n - 1]), posc: r(osc[n - 2]), c: r(cl[n - 1]), ma5: r(ma(5)), ma10: r(ma(10)) };
+  const ma = (k, e = 0) => n - e < k ? null : cl.slice(n - e - k, n - e).reduce((a, b) => a + b, 0) / k, r = v => v == null ? null : +v.toPrecision(5);
+  // 8 階段表（Luna 2026-10-24）另外要：60 月線、上個月的 5／10 月線（看均線往上）、前 11 個月最高收盤（創高）、
+  // 上上個月柱子（翻紅）、背離 bd：近 3 個月內收盤創 12 個月新高，但那個月的 MACD 柱比前 12 個月最高的柱子低
+  let bd = 0;
+  for (let j = n - 1; j >= Math.max(12, n - 3); j--) {
+    const pc = cl.slice(j - 12, j), po = osc.slice(j - 12, j);
+    if (cl[j] >= Math.max(...pc) && osc[j] < Math.max(...po)) { bd = 1; break; }
+  }
+  return { osc: r(osc[n - 1]), posc: r(osc[n - 2]), pposc: r(osc[n - 3]), c: r(cl[n - 1]), ma5: r(ma(5)), ma10: r(ma(10)), ma60: r(ma(60)),
+    pma5: r(ma(5, 1)), pma10: r(ma(10, 1)), hi: r(Math.max(...cl.slice(Math.max(0, n - 12), n - 1))), bd };
 }
 async function monthOne(sym) {
   if (sym === "^TWOII") { // Yahoo 沒有櫃買指數的月線，用 FinMind 日線取每月最後一天
-    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TPEx&start_date=${new Date().getUTCFullYear() - 5}-01-01`)).json();
+    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TPEx&start_date=${new Date().getUTCFullYear() - 10}-01-01`)).json();
     const m = new Map(); for (const x of j.data || []) if (x.close > 0) m.set(x.date.slice(0, 7), x.close);
     return monthMacd([...m.keys()].sort().map(k => m.get(k)));
   }
   if (/-USDT$/.test(sym)) {
-    const j = await (await get(`https://data-api.binance.vision/api/v3/klines?symbol=${bnSym(sym)}&interval=1M&limit=60&timeZone=8`)).json();
+    const j = await (await get(`https://data-api.binance.vision/api/v3/klines?symbol=${bnSym(sym)}&interval=1M&limit=120&timeZone=8`)).json();
     return monthMacd(j.map(x => +x[4]));
   }
   for (const host of ["query1", "query2"]) {
     try {
-      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=5y&interval=1mo`, { headers: { "User-Agent": UA } });
+      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=10y&interval=1mo`, { headers: { "User-Agent": UA } });
       if (!r.ok) continue;
       const res = (await r.json()).chart?.result?.[0]; if (!res) return null;
       return monthMacd((res.indicators.quote[0].close || []).filter(v => v != null));

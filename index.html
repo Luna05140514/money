@@ -1622,7 +1622,7 @@ async function idxKdLoad(){
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
   // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
   // 夜指期和台指期是同一個合約，KD 沿用台指期的日 K
-  const got=await Promise.all(idxItems.filter(it=>it.key!=="txfn").map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=7`)));idxKdBusy=0;
+  const got=await Promise.all(idxItems.filter(it=>it.key!=="txfn").map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=9`)));idxKdBusy=0;
   const d=Object.assign({},...got.filter(Boolean));if(d.txf)d.txfn=d.txf;
   if(!Object.keys(d).length)return;Object.assign(idxKd,d);idxInit()}
 function idxInit(){
@@ -1673,7 +1673,7 @@ const GLOSS={
   成交量:["成交量","這一天總共買賣了多少股。量大表示很多人在交易，漲跌比較有力；量很小時，漲跌比較不可靠。","",""],
   金銀:["黃金、白銀的買入／賣出價","上面大字是國際期貨價（每盎司、美元）。下面「買入」是你買要付的價錢，「賣出」是你賣掉能拿到的價錢，用國際現貨報價換算成台幣每公克。","銀行黃金存摺、銀樓的牌價會再加上手續費和價差，實際買賣請以銀行或銀樓公告為準。台灣的銀行沒有白銀存摺。","1 盎司 ＝ 31.1035 公克；1 台錢 ＝ 3.75 公克。"],
   USDT:["USDT","USDT（泰達幣）是一種跟美元綁在一起的虛擬幣，1 USDT 大約等於 1 美元。BTC/USDT 就是 1 顆比特幣值多少 USDT。","",""],
-  總結論:["總結論（日KD／週KD／月MACD）","把三個時間一起看：月 MACD 看大方向，週 KD 看現在在高檔還是低檔，日 KD 找買賣的時間點。三項都符合表裡同一列，就寫出那一列的操作策略。","🔥 最佳波段買點：月紅柱站上 10 月線＋週 KD 20～50 金叉＋日 KD 低檔金叉。🚀 強勢續抱／加碼：月紅柱放大＋週 KD 80 以上鈍化＋日 KD 回 50 附近金叉。💰 波段停利出場：月紅柱縮小跌破 5 月線＋週 KD 高檔死叉＋日 KD 死叉。⚠️ 短線反彈快跑：月綠柱放大跌破 10 月線＋週 KD 向下發散＋日 KD 低檔金叉。","點「總結論」那一格，可以看三項各自有沒有符合。"],
+  總結論:["總結論（日KD／週KD／月MACD）","把三個時間一起看：月 MACD 和月線看大方向，週 KD 看位階，日 KD 找時間點。三項都符合表裡同一列，就寫出那一列的策略。","8 個階段：底🌱試單、漲🔥重倉、升🚀抱牢、回🎯低接、警⚠️減半、空💰清倉、跌🛑觀望、彈⚡短搶。另外：週 KD 鈍化時日 KD 死叉只算洗盤；創高但 MACD 背離又破 5 月線就全出；20 號後站上 10 月線＋週金叉可先卡位。","點「總結論」那一格，可以看每一項有沒有符合。"],
   成分股:["成分股","ETF 像一個籃子，裡面裝了很多股票，這些股票就是成分股。比例越高的，對 ETF 漲跌的影響越大。","",""],
 };
 const qm=k=>`<button class="qm" data-term="${k}" aria-label="${GLOSS[k][0]}是什麼">?</button>`;
@@ -1809,34 +1809,58 @@ const mkData={},mkAt={};
 async function mkLoad(tw,us,ks,after){if(!ON_CF)return;const fresh=c=>mkAt[c]>Date.now()-36e5;
   const T=tw.filter(c=>!fresh(c)),U=us.filter(c=>!fresh(c)),K=ks.filter(c=>!fresh(c));if(!T.length&&!U.length&&!K.length)return;
   [...T,...U,...K].forEach(c=>mkAt[c]=Date.now());
-  const d=await api(`/api/mk?c=${T.slice(0,20).join(",")}&us=${U.slice(0,20).join(",")}&k=${K.slice(0,20).map(encodeURIComponent).join(",")}&v=2`);
+  const d=await api(`/api/mk?c=${T.slice(0,20).join(",")}&us=${U.slice(0,20).join(",")}&k=${K.slice(0,20).map(encodeURIComponent).join(",")}&v=3`);
   if(!d){[...T,...U,...K].forEach(c=>delete mkAt[c]);return}Object.assign(mkData,d);if(after)after()}
 // 月 MACD 狀態：紅柱／綠柱、放大／縮小（剛翻紅、翻綠也算放大）、收盤在 5 月線、10 月線上面還是下面
 function moState(m){if(!m||m.osc==null||m.posc==null)return null;const red=m.osc>0,flip=Math.sign(m.osc)!==Math.sign(m.posc),grow=flip||Math.abs(m.osc)>Math.abs(m.posc);
-  return{red,grow,flip,a5:m.c>=m.ma5,a10:m.c>=m.ma10,label:(red?"紅柱":"綠柱")+(flip?(red?"翻紅":"翻綠"):grow?"放大":"縮小")}}
+  return{m,red,grow,flip,a5:m.c>=m.ma5,a10:m.c>=m.ma10,label:(red?"紅柱":"綠柱")+(flip?(red?"翻紅":"翻綠"):grow?"放大":"縮小")}}
 const xK=o=>o.xc?o.xc[2]:Math.min(o.pk??o.k,o.k);
-// [結論, 顏色, 月條件, 週條件, 日條件, 月判斷, 週判斷, 日判斷]
+// 8 階段表（Luna 2026-10-24 第二版）：[策略, 顏色, 階段, 月條件, 週條件, 日條件, 月判斷, 週判斷, 日判斷]；M 帶月 MACD 原始數字 M.m
+const kdIn=(o,lo,hi)=>xK(o)>=lo&&xK(o)<=hi,kdAll=(o,f)=>o.ks&&o.ks.length>=3&&o.ks.every(f);
 const SUM_RULES=[
-  ["🔥 最佳波段買點","buy","紅柱＋站上 10 月線","20～50 金叉（K 50 以下）","低檔金叉（K 小於 30）",M=>M.red&&M.a10,W=>kdX(W).xu&&xK(W)<=50,D=>kdX(D).up],
-  ["🚀 強勢續抱／加碼","buy","紅柱放大（主升）","80 以上鈍化","回到 50 附近金叉（K 30～65）",M=>M.red&&M.grow,W=>W.ks&&W.ks.length>=3&&W.ks.every(v=>v>=80),D=>kdX(D).xu&&xK(D)>=30&&xK(D)<=65],
-  ["💰 波段停利出場","sell","紅柱縮小＋跌破 5 月線","高檔死叉（K 大於 70）","反彈死叉",M=>M.red&&!M.grow&&!M.a5,W=>kdX(W).dn,D=>kdX(D).xd],
-  ["⚠️ 短線反彈快跑","sell","綠柱放大＋跌破 10 月線","向下發散（K 在 D 下面越拉越開）","低檔金叉（K 小於 30）",M=>!M.red&&M.grow&&!M.a10,W=>W.pk!=null&&W.k<W.d&&W.k<W.pk&&W.d-W.k>W.pd-W.pk,D=>kdX(D).up]];
+  ["🌱 試單","buy","底","綠柱縮小＋測試 60 月線（收盤在 60 月線上下 5% 內）","20 以下金叉","20 以下金叉＋帶量（量是前 5 天平均 1.5 倍以上）",
+    M=>!M.red&&!M.grow&&M.m.ma60&&Math.abs(M.m.c/M.m.ma60-1)<=.05,W=>kdX(W).xu&&xK(W)<=20,D=>kdX(D).xu&&xK(D)<=20&&D.vr>=1.5],
+  ["🔥 重倉","buy","漲","翻紅（這個月或上個月由綠轉紅）＋站上 10 月線","20～50 金叉","20 以下或 50 附近（40～60）金叉",
+    M=>M.red&&(M.flip||M.m.pposc<=0)&&M.a10,W=>kdX(W).xu&&xK(W)>20&&xK(W)<=50,D=>kdX(D).xu&&(xK(D)<=20||kdIn(D,40,60))],
+  ["🚀 抱牢","buy","升","紅柱放大＋5、10 月線都往上","80 以上鈍化（連 3 週 K 在 80 以上）","回到 50 不跌破就金叉（金叉時 K 45～65）",
+    M=>M.red&&M.grow&&M.m.pma5!=null&&M.m.ma5>M.m.pma5&&M.m.ma10>M.m.pma10,W=>kdAll(W,v=>v>=80),D=>kdX(D).xu&&kdIn(D,45,65)],
+  ["🎯 低接","low","回","紅柱縮小＋守住 10 月線","死叉後往 50 走（K 在 D 下面、50～80）","20 以下再金叉",
+    M=>M.red&&!M.grow&&M.a10,W=>W.k<W.d&&W.k>=50&&W.k<80,D=>kdX(D).xu&&xK(D)<=20],
+  ["⚠️ 減半","sell","警","創 12 個月新高但紅柱縮小","80 以上死叉","80 以上死叉＋爆量（1.5 倍以上）＋收跌",
+    M=>M.red&&!M.grow&&M.m.hi!=null&&M.m.c>=M.m.hi,W=>kdX(W).xd&&xK(W)>=80,D=>kdX(D).xd&&xK(D)>=80&&D.vr>=1.5&&D.dn],
+  ["💰 清倉","sell","空","紅柱縮小＋跌破 5 月線","跌破 80（上週 80 以上、這週掉到 80 以下）","反彈到 50～80 死叉",
+    M=>M.red&&!M.grow&&!M.a5,W=>W.pk>=80&&W.k<80&&W.k<W.d,D=>kdX(D).xd&&xK(D)>=55&&xK(D)<80],
+  ["🛑 觀望","high","跌","綠柱放大＋跌破 10 月線","20 以下鈍化（連 3 週 K 在 20 以下）","反彈到 50 就死叉（死叉時 K 40～55）",
+    M=>!M.red&&M.grow&&!M.a10,W=>kdAll(W,v=>v<=20),D=>kdX(D).xd&&kdIn(D,40,55)],
+  ["⚡ 短搶","low","彈","綠柱放大＋比 10 月線低 15% 以上（乖離大）","20 以下勾頭往上","20 以下第二次金叉（最近 20 天內）",
+    M=>!M.red&&M.grow&&M.m.c<=M.m.ma10*.85,W=>W.pk!=null&&W.pk<=20&&W.k>W.pk,D=>kdX(D).xu&&xK(D)<=20&&D.g20>=2]];
+// 三項都符合時，賣出的先看（警、空、跌），再看買進
+const SUM_ORDER=[4,5,6,0,1,2,3,7];
+const SUM_NOTES=[["鈍","週 KD 連 3 週 80 以上＝主升段，日 KD 死叉只是洗盤"],["背","創新高但月 MACD 柱沒有跟著創高（背離），再跌破 5 月線就全出"],["預","每月 20 號後收盤站上 10 月線＋週 KD 金叉，可以先卡位"]];
 const SUMINFO=new Map();
-function sumOf(dy,wk,M){const ok=(f,x)=>!!(x&&f(x));
-  const m=SUM_RULES.map(r=>[ok(r[5],M),ok(r[6],wk&&wk.k!=null?wk:null),ok(r[7],dy&&dy.k!=null?dy:null)]);
-  const full=m.findIndex(x=>x.every(Boolean));if(full>=0)return{i:full,txt:SUM_RULES[full][0],cls:SUM_RULES[full][1],m};
-  const near=m.findIndex(x=>x[0]&&x.filter(Boolean).length===2);
-  if(near>=0){const r=SUM_RULES[near],miss=!m[near][1]?"週 KD "+r[3]:"日 KD "+r[4];return{i:-1,near,txt:`接近「${r[0].slice(2).trim()}」，還差${miss}`,cls:"na",m}}
-  return{i:-1,txt:!M?"資料不足，觀望":M.red?"大方向偏多（月紅柱），先觀望":"大方向偏空（月綠柱），先觀望",cls:M?(M.red?"low":"high"):"na",m}}
+function sumOf(dy,wk,M){const ok=(f,x)=>{try{return!!(x&&f(x))}catch(_){return false}};
+  wk=wk&&wk.k!=null?wk:null;dy=dy&&dy.k!=null?dy:null;
+  const m=SUM_RULES.map(r=>[ok(r[6],M),ok(r[7],wk),ok(r[8],dy)]),R=(i,txt,cls,note)=>({i,txt,cls,m,note});
+  if(M&&M.m.bd&&!M.a5)return R(-1,"💰 背離＋跌破 5 月線，全出","sell",1);
+  const full=SUM_ORDER.find(i=>m[i].every(Boolean));
+  if(full!=null){const r=SUM_RULES[full];return R(full,`${r[2]}・${r[0]}`,r[1])}
+  if(wk&&dy&&kdAll(wk,v=>v>=80)&&kdX(dy).xd)return R(-1,"🚀 主升段，日 KD 死叉只是洗盤，抱牢","buy",0);
+  if(M&&M.a10&&wk&&kdX(wk).xu&&+new Date(Date.now()+288e5).toISOString().slice(8,10)>=20)return R(-1,"🌱 月底站上 10 月線＋週金叉，可先卡位","buy",2);
+  const near=SUM_ORDER.find(i=>m[i][0]&&m[i].filter(Boolean).length===2);
+  if(near!=null){const r=SUM_RULES[near],miss=!m[near][1]?"週 KD "+r[4]:"日 KD "+r[5];const o=R(-1,`接近「${r[2]}・${r[0].slice(2).trim()}」，還差${miss}`,"na");o.near=near;return o}
+  if(M&&M.m.bd)return R(-1,"背離：創高但月 MACD 柱沒創高，小心","high",1);
+  return R(-1,!M?"資料不足，觀望":M.red?"大方向偏多（月紅柱），先觀望":"大方向偏空（月綠柱），先觀望",M?(M.red?"low":"high"):"na")}
 function sumShow(key){const x=SUMINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
-  const ck=v=>v?'<b class="up">✓</b>':'<span class="muted">✗</span>',r1=v=>v==null?"—":(Math.round(v*10)/10).toString();
+  const ck=v=>v?'<b class="up">✓</b>':'<span class="muted">✗</span>',r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),f=v=>v==null?"—":(+v).toLocaleString("zh-TW",{maximumFractionDigits:4});
+  const M=x.M,mm=M&&M.m;
   box.innerHTML=`<div class="sg-card" role="dialog" aria-label="${esc(x.name)} 總結論"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(x.name)}・總結論</h2><p class="sg-res">結果：<b>${esc(x.s.txt)}</b></p>
-    <p class="sg-now">現在：月 MACD ${x.M?esc(x.M.label)+"、"+(x.M.a10?"站上":"跌破")+" 10 月線、"+(x.M.a5?"站上":"跌破")+" 5 月線":"—"}；週 KD ${x.wk?`K ${r1(x.wk.k)}、D ${r1(x.wk.d)}`:"—"}；日 KD ${x.dy?`K ${r1(x.dy.k)}、D ${r1(x.dy.d)}`:"—"}</p>
+    <p class="sg-now">現在：月 MACD ${M?`${esc(M.label)}、收盤 ${f(mm.c)}（5 月線 ${f(mm.ma5)}、10 月線 ${f(mm.ma10)}、60 月線 ${f(mm.ma60)}）${mm.bd?"、有背離":""}`:"—"}；週 KD ${x.wk?`K ${r1(x.wk.k)}、D ${r1(x.wk.d)}`:"—"}；日 KD ${x.dy?`K ${r1(x.dy.k)}、D ${r1(x.dy.d)}`:"—"}</p>
     <h3 class="sg-h">怎麼判斷（三項都符合才算；只差一項會寫「接近」）</h3>
-    <table class="sg-tbl sg-sumt"><thead><tr><th>月線（大方向）</th><th>週 KD（位階）</th><th>日 KD（買賣）</th><th>操作策略</th></tr></thead><tbody>${SUM_RULES.map((r,i)=>`<tr${i===x.s.i||i===x.s.near?' class="on"':""}><td>${ck(x.s.m[i][0])} ${r[2]}</td><td>${ck(x.s.m[i][1])} ${r[3]}</td><td>${ck(x.s.m[i][2])} ${r[4]}</td><td><b>${r[0]}</b></td></tr>`).join("")}</tbody></table>
-    <p class="muted">月 MACD 用 12、26、9；KD 用 9、3、3；交叉後 3 根內都算。盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
+    <table class="sg-tbl sg-sumt"><thead><tr><th>月（MACD／月線）</th><th>週 KD</th><th>日 KD</th><th>策略</th></tr></thead><tbody>${SUM_RULES.map((r,i)=>`<tr${i===x.s.i||i===x.s.near?' class="on"':""}><td>${ck(x.s.m[i][0])} ${r[3]}</td><td>${ck(x.s.m[i][1])} ${r[4]}</td><td>${ck(x.s.m[i][2])} ${r[5]}</td><td><b>${r[2]}<br>${r[0]}</b></td></tr>`).join("")}</tbody></table>
+    <h3 class="sg-h">另外三條</h3><table class="sg-tbl"><tbody>${SUM_NOTES.map((n,i)=>`<tr${x.s.note===i?' class="on"':""}><th>${n[0]}</th><td>${n[1]}</td></tr>`).join("")}</tbody></table>
+    <p class="muted">月 MACD 用 12、26、9；KD 用 9、3、3；交叉後 3 根內都算。「收跌」是今天收盤比昨天低。盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
 document.addEventListener("click",e=>{const g=e.target.closest(".sg-sum[data-sum]");if(!g)return;e.preventDefault();e.stopPropagation();sumShow(g.dataset.sum)},true);
 function kdBoxes(dy,wk,name,mo){
   const one=(t,key,cls,main,rows,hit,ttl)=>{let a="";if(rows&&name){const k=name+"｜"+t;SGINFO.set(k,{title:`${name}・${ttl}`,main,sub:"",rows,t:key,hit});a=` data-sg="${esc(k)}" role="button" tabindex="0"`}
@@ -1857,7 +1881,7 @@ function kdBoxes(dy,wk,name,mo){
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
-  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=7`);
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=8`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
@@ -1941,7 +1965,7 @@ let coinKdAt=0;
 async function coinKdLoad(items){
   mkLoad([],[],items.map(it=>it.key),()=>{if(homeCoin())coinInit()});
   if(!ON_CF||coinKdAt>Date.now()-6e5)return;coinKdAt=Date.now();
-  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=8`)));
+  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=9`)));
   const d=Object.assign({},...got.filter(Boolean));if(!Object.keys(d).length){coinKdAt=0;return}Object.assign(idxKd,d);if(homeCoin())coinInit()}
 function coinInit(){
   const items=coinList();

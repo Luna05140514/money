@@ -311,6 +311,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .watch-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
 .watch-tabs button{all:unset;cursor:pointer;text-align:center;padding:12px 4px;border-radius:999px;font-size:19px;font-weight:700;color:var(--ink)}
 .watch-tabs button[aria-selected="true"]{background:var(--red);color:#fff}
+#home-tabs{margin:0 0 14px}
+.home-empty{text-align:center;font-size:20px;color:var(--muted);padding:28px 16px}
 /* 五個分頁排成一排（Luna 2026-10-24），字小一點，太長的名字用…… */
 #watch-tabs{grid-auto-columns:minmax(0,1fr);gap:2px;padding:3px}
 #watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;padding:12px 2px;min-width:0}
@@ -518,19 +520,21 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <h1>賺大錢發發發</h1>
       <p>常用的投資試算與查詢工具，輸入數字就能看到結果。</p>
     </header>
-    <div class="grid">
-      <button class="entry" data-go="idx"><span class="glyph">盤</span><div><h2>全球大盤</h2><p>台股、美股、日韓指數和匯率，含 K 線和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="mkt"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="watch"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="hold"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="pledge"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、張數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="debt"><span class="glyph">債</span><div><h2>總資產負債比</h2><p>股票、存款、房子和各種借款加起來，看負債佔資產多少</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="divc"><span class="glyph">息</span><div><h2>除權息行事曆</h2><p>自選股和持股這個月哪天除息、每股配多少</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="stock"><span class="glyph">比</span><div><h2>股票報酬比較</h2><p>ETF 與個股的含息報酬走勢、殖利率、費用並排比較</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="nav"><span class="glyph">淨</span><div><h2>淨值查詢</h2><p>輸入 ETF 代號或名字，查市價、淨值和折溢價</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="dca"><span class="glyph">測</span><div><h2>回測報酬率</h2><p>用真實含息股價回測定期定額，看每月投入到現在賺多少</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="fire"><span class="glyph">由</span><div><h2>財務自由計算機</h2><p>算出需要多少錢、還要幾年才能財務自由</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="compound"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
+    <div class="watch-tabs" id="home-tabs" role="tablist"><button role="tab" data-ht="stk" aria-selected="true">股市</button><button role="tab" data-ht="coin" aria-selected="false">虛擬幣</button><button role="tab" data-ht="calc" aria-selected="false">財務計算機</button></div>
+    <p class="panel home-empty" id="home-coin" hidden>虛擬幣的功能還在準備中。</p>
+    <div class="grid" id="home-grid">
+      <button class="entry" data-go="idx" data-cat="stk"><span class="glyph">盤</span><div><h2>全球大盤</h2><p>台股、美股、日韓指數和匯率，含 K 線和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="mkt" data-cat="stk"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="watch" data-cat="stk"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="hold" data-cat="stk"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="pledge" data-cat="calc"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、張數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="debt" data-cat="calc"><span class="glyph">債</span><div><h2>總資產負債比</h2><p>股票、存款、房子和各種借款加起來，看負債佔資產多少</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="divc" data-cat="stk"><span class="glyph">息</span><div><h2>除權息行事曆</h2><p>自選股和持股這個月哪天除息、每股配多少</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="stock" data-cat="stk"><span class="glyph">比</span><div><h2>股票報酬比較</h2><p>ETF 與個股的含息報酬走勢、殖利率、費用並排比較</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="nav" data-cat="stk"><span class="glyph">淨</span><div><h2>淨值查詢</h2><p>輸入 ETF 代號或名字，查市價、淨值和折溢價</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="dca" data-cat="stk"><span class="glyph">測</span><div><h2>回測報酬率</h2><p>用真實含息股價回測定期定額，看每月投入到現在賺多少</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="fire" data-cat="calc"><span class="glyph">由</span><div><h2>財務自由計算機</h2><p>算出需要多少錢、還要幾年才能財務自由</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。</p>
     <div class="hits" id="hits" hidden></div>
@@ -828,6 +832,12 @@ function show(p){
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // 重新整理：記住目前頁面再重新載入整頁（拿最新發布的資料）；若外框擋住重新載入，就原地重畫並提示資料時間
+// 首頁分頁（Luna 2026-10-24）：股市／虛擬幣／財務計算機，記住上次看的
+function homeTab(k){if(!["stk","coin","calc"].includes(k))k="stk";try{localStorage.setItem("facai-home-tab",k)}catch(_){}
+  document.querySelectorAll("#home-tabs [data-ht]").forEach(b=>b.setAttribute("aria-selected",b.dataset.ht===k));
+  let n=0;document.querySelectorAll("#home-grid [data-cat]").forEach(b=>{b.hidden=b.dataset.cat!==k;if(!b.hidden)n++});$("home-coin").hidden=k!=="coin"||n>0}
+$("home-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-ht]");if(b)homeTab(b.dataset.ht)});
+try{homeTab(localStorage.getItem("facai-home-tab")||"stk")}catch(_){homeTab("stk")}
 const curPage=()=>pages.find(x=>!$(x).hidden)||"home";
 function toast(msg){let t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}
   t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}

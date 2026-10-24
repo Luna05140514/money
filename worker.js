@@ -9,8 +9,14 @@ const ASIA = [["^N225", "日經指數"], ["^KS11", "韓國指數"]];
 // 匯率（Luna 2026-10-23）：1 美元、100 日圓、1000 韓元換多少台幣，放在全球大盤「匯率」分頁
 // Yahoo 的日圓、韓元兌台幣報價只到小數 4 位（韓元 0.0246 太粗），改用美元兌台幣 ÷ 美元兌日圓／韓元算
 const FX = [["TWD=X", "美元", 1, null], ["JPYTWD=X", "日圓", 100, "JPY=X"], ["KRWTWD=X", "韓元", 1000, "KRW=X"]];
+// 黃金、白銀（Luna 2026-10-24）：國際期貨價（Yahoo，每盎司美元）放在「匯率」分頁；買入／賣出用 Swissquote 的國際現貨報價
+const METAL = [["GC=F", "黃金", "XAU"], ["SI=F", "白銀", "XAG"]];
+// 虛擬幣（Luna 2026-10-24）：幣安（Binance 公開行情 data-api.binance.vision）的 BTC/USDT、ETH/USDT，抓不到改用 OKX；日 K 以台灣時間換日
+const CRYPTO = [["BTC-USDT", "比特幣", "BTC-USD"], ["ETH-USDT", "以太幣", "ETH-USD"]];
+const ixSym = k => (CRYPTO.find(c => c[0] === k) || [0, 0, k])[2];
+const IXKEY = /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH)-USDT)$/;
 const fxScale = s => (FX.find(f => f[0] === s) || [0, 0, 1])[2];
-const ixTz = s => /=X$/.test(s) ? "Asia/Taipei" : s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
+const ixTz = s => /=X$/.test(s) ? "Asia/Taipei" : /-USD$/.test(s) ? "UTC" : s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
 const PICKS = [["TSM", "台積電ADR"], ["TSMX", "台積電ADR 2倍"]];
 const CACHE_SEC = 60;
 
@@ -107,6 +113,36 @@ async function fxSpark() {
     return { key: s, name, fx: 1, date: ts.length ? ymd(ts[ts.length - 1], "Asia/Taipei") : "", prev: Math.round(prev * 1000) / 1000, pts };
   });
 }
+async function metals() {
+  const u = "https://query1.finance.yahoo.com/v8/finance/spark?symbols=GC%3DF,SI%3DF&range=";
+  const sq = s => get(`https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/${s}/USD`).then(x => x.json()).then(j => {
+    const p = j[0].spreadProfilePrices[0]; return [p.bid, p.ask];
+  }).catch(() => null);
+  // 昨收用 1 天走勢的 chartPreviousClose（期貨是前一個交易日的收盤，週末也對）
+  const [r, ...ba] = await Promise.all([get(u + "1d&interval=5m").then(x => x.json()), ...METAL.map(m => sq(m[2]))]);
+  return METAL.map(([s, name], i) => {
+    const v = r[s] || {}, ts = v.timestamp || [], cl = v.close || [], prev = null;
+    const ok = ts.map((t, k) => [t, cl[k]]).filter(p => p[1] != null), pts = ok.map(([t, c]) => [hm(t, "Asia/Taipei"), r2(c)]);
+    // 日期和 K 線同樣用美東日期（最後一筆有價格的時間）
+    return { key: s, name, fx: 1, mt: 1, date: ok.length ? ymd(ok[ok.length - 1][0], "America/New_York") : "", prev: prev ?? v.chartPreviousClose ?? v.previousClose, pts, ...(ba[i] ? { ba: ba[i] } : {}) };
+  });
+}
+// 虛擬幣：今天（台灣時間 0 點起）的 5 分 K；昨收用台灣時間 0 點的開盤價
+const bnSym = s => s.replace("-", "");
+async function crypto() {
+  return Promise.all(CRYPTO.map(async ([s, name]) => {
+    let rows;
+    try {
+      const j = await (await get(`https://data-api.binance.vision/api/v3/klines?symbol=${bnSym(s)}&interval=5m&limit=300`)).json();
+      rows = j.map(x => [x[0] / 1000, +x[1], +x[4]]);
+    } catch (_) {
+      const j = await (await get(`https://www.okx.com/api/v5/market/candles?instId=${s}&bar=5m&limit=300`)).json();
+      rows = (j.data || []).map(x => [+x[0] / 1000, +x[1], +x[4]]).sort((a, b) => a[0] - b[0]);
+    }
+    const day = rows.length ? ymd(rows[rows.length - 1][0], "Asia/Taipei") : "", today = rows.filter(x => ymd(x[0], "Asia/Taipei") === day);
+    return { key: s, name, cr: 1, date: day, prev: today.length ? today[0][1] : null, pts: today.map(x => [hm(x[0], "Asia/Taipei"), r2(x[2])]) };
+  }));
+}
 async function spark(list, asia) {
   const url = "https://query1.finance.yahoo.com/v8/finance/spark?range=1d&interval=5m&symbols=" +
     list.map(([s]) => encodeURIComponent(s)).join(",");
@@ -123,7 +159,7 @@ async function spark(list, asia) {
 async function build() {
   const jobs = {
     twii: yahooTw("^TWII", "加權指數"), otc: yahooTw("^TWOII", "櫃買指數"),
-    us: spark([...US, ...PICKS]), asia: spark(ASIA, true), tw2330: yahooTw("2330.TW", "台積電"), fx: fxSpark(),
+    us: spark([...US, ...PICKS]), asia: spark(ASIA, true), tw2330: yahooTw("2330.TW", "台積電"), fx: fxSpark(), mt: metals(), cr: crypto(),
   };
   const w = wtx();
   jobs.txf = w.then(txfDay).catch(() => txf());
@@ -135,8 +171,10 @@ async function build() {
   if (got.us) items.push(...got.us.map(x => PICKS.some(p => p[0] === x.key) ? { ...x, pick: 1 } : x));
   if (got.asia) items.push(...got.asia);
   if (got.fx) items.push(...got.fx);
+  if (got.mt) items.push(...got.mt);
+  if (got.cr) items.push(...got.cr);
   const now = new Date(Date.now() + 8 * 3600e3).toISOString();
-  const data = { updated: `${now.slice(0, 10)} ${now.slice(11, 16)}`, live: 1, items: items.filter(x => x.pts.length) };
+  const data = { updated: `${now.slice(0, 10)} ${now.slice(11, 16)}`, live: 1, items: items.filter(x => x.pts.length && x.prev) };
   const tsm = got.us && got.us.find(x => x.key === "TSM"), tw = got.tw2330, fx = got.fx && got.fx.find(x => x.key === "TWD=X");
   if (tsm && tsm.pts.length && tw && tw.pts.length && fx && fx.pts.length)
     data.adr = { adr: tsm.pts.at(-1)[1], adrDate: tsm.date, tw: tw.pts.at(-1)[1], twDate: tw.date, fx: Math.round(fx.pts.at(-1)[1] * 1000) / 1000 };
@@ -793,15 +831,24 @@ async function indexKline(key, part = 0) {
     const k = d.timestamp.map((t, i) => [ymd(t, "Asia/Taipei"), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
     return { kline: k, volUnit: "twshares" };
   }
-  if (/^\^?[A-Z0-9]{2,6}$|^[A-Z]{3,6}=X$/.test(key)) {
-    const d = await chart(key); if (!d || !(d.timestamp || []).length) throw new Error("no data");
+  if (/-USDT$/.test(key)) {
+    const k = await bnDaily(key).catch(() => null);
+    if (k && k.length) return { kline: k, volUnit: "shares" };
+  }
+  if (/^\^?[A-Z0-9]{2,6}$|^[A-Z]{3,6}=X$|^[A-Z]{2}=F$|-USDT$/.test(key)) {
+    const d = await chart(ixSym(key)); if (!d || !(d.timestamp || []).length) throw new Error("no data");
     const q = d.indicators.quote[0], n = fxScale(key), f = v => v == null ? null : rp(v * n);
-    const k = d.timestamp.map((t, i) => [ymd(t, ixTz(key)), f(q.open[i]), f(q.high[i]), f(q.low[i]), f(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
+    const k = d.timestamp.map((t, i) => [ymd(t, ixTz(ixSym(key))), f(q.open[i]), f(q.high[i]), f(q.low[i]), f(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
     return { kline: k, volUnit: "shares" };
   }
   throw new Error("bad key");
 }
 
+// 幣安日 K（台灣時間換日，最近 1000 天）：[日期, 開, 高, 低, 收, 量]
+async function bnDaily(key) {
+  const j = await (await get(`https://data-api.binance.vision/api/v3/klines?symbol=${bnSym(key)}&interval=1d&limit=1000&timeZone=8`)).json();
+  return j.map(x => [ymd(x[0] / 1000, "Asia/Taipei"), rp(+x[1]), rp(+x[2]), rp(+x[3]), rp(+x[4]), Math.round(+x[5])]);
+}
 // 大盤的短線（日 KD）、長線（週 KD）：用上面的日 K，台股三個再接上今天盤中的最新價
 async function indexKd(keys) {
   const y1 = `${new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10)}`;
@@ -819,8 +866,10 @@ async function indexKd(keys) {
           const b = best[x.date]; if (!b || x.volume > b.volume) best[x.date] = x;
         }
         k = Object.keys(best).sort().map(d => [d, best[d].max, best[d].min, best[d].close, best[d].volume || 0]);
+      } else if (/-USDT$/.test(key) && (k = await bnDaily(key).catch(() => null)) && k.length) {
+        k = k.slice(-400).map(b => [b[0], b[2], b[3], b[4], b[5]]);
       } else {
-        const sym = key === "twii" ? "^TWII" : key === "2330" ? "2330.TW" : key, tz = ixTz(sym);
+        const sym = key === "twii" ? "^TWII" : key === "2330" ? "2330.TW" : ixSym(key), tz = ixTz(sym);
         const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
         const q = r.indicators.quote[0];
         k = (r.timestamp || []).map((t, i) => [ymd(t, tz), q.high[i], q.low[i], q.close[i], q.volume[i] || 0]).filter(b => b.slice(0, 4).every(v => v != null));
@@ -1021,12 +1070,12 @@ export default {
       case "/api/ixk": {
         // ?k=twii | otc | txf | ^GSPC … → 大盤的日 K（1 小時內共用）
         const k = url.searchParams.get("k") || "";
-        if (!/^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X)$/.test(k)) return new Response("{}", { status: 400 });
+        if (!IXKEY.test(k)) return new Response("{}", { status: 400 });
         return cached(request, ctx, 3600, () => indexKline(k, +(url.searchParams.get("p") || 0)));
       }
       case "/api/ixkd": {
         // ?k=twii,txf,otc,2330 → 大盤每一列的日 KD、週 KD，10 分鐘更新一次
-        const ks = (url.searchParams.get("k") || "").split(",").filter(k => /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X)$/.test(k)).slice(0, 12);
+        const ks = (url.searchParams.get("k") || "").split(",").filter(k => IXKEY.test(k)).slice(0, 12);
         return cached(request, ctx, 600, () => indexKd(ks));
       }
       case "/api/kd": {

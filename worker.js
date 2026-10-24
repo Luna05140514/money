@@ -806,7 +806,8 @@ function dayExtras(cl, vol) {
   const ma20 = cl.slice(-20).reduce((a, b) => a + b, 0) / 20;
   let e12 = cl[0], e26 = cl[0], dea = 0;
   cl.forEach((c, i) => { e12 += (c - e12) * 2 / 13; e26 += (c - e26) * 2 / 27; if (i) dea += (e12 - e26 - dea) * 2 / 10; });
-  const out = { above20: cl[n - 1] >= ma20 ? 1 : 0, dn: cl[n - 1] < cl[n - 2] ? 1 : 0, osc: Math.round((e12 - e26 - dea) * 1000) / 1000 };
+  const ma10 = cl.slice(-10).reduce((a, b) => a + b, 0) / 10;
+  const out = { above20: cl[n - 1] >= ma20 ? 1 : 0, above10: cl[n - 1] >= ma10 ? 1 : 0, dn: cl[n - 1] < cl[n - 2] ? 1 : 0, osc: Math.round((e12 - e26 - dea) * 1000) / 1000 };
   if (vol && vol.length === n) { const p5 = vol.slice(-6, -1), a = p5.reduce((x, y) => x + y, 0) / 5; if (a > 0 && vol[n - 1] > 0) out.vr = Math.round(vol[n - 1] / a * 100) / 100; }
   return out;
 }

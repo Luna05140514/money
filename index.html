@@ -1631,7 +1631,7 @@ async function idxKdLoad(){
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
   // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
   // 夜指期和台指期是同一個合約，KD 沿用台指期的日 K
-  const got=await Promise.all(idxItems.filter(it=>it.key!=="txfn").map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=9`)));idxKdBusy=0;
+  const got=await Promise.all(idxItems.filter(it=>it.key!=="txfn").map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=10`)));idxKdBusy=0;
   const d=Object.assign({},...got.filter(Boolean));if(d.txf)d.txfn=d.txf;
   if(!Object.keys(d).length)return;Object.assign(idxKd,d);idxInit()}
 function idxInit(){
@@ -1837,8 +1837,8 @@ const SUM_RULES=[
     M=>!M.red&&!M.grow&&M.m.ma60&&Math.abs(M.m.c/M.m.ma60-1)<=.05,W=>kdX(W).xu&&xK(W)<=20,D=>kdX(D).xu&&xK(D)<=20&&D.vr>=1.5],
   ["🔥 重倉","buy","初升起漲","綠柱連 2 個月縮小或剛翻紅＋站上 10 月線","20～50 金叉","20 以下或 50 附近（40～60）金叉",
     M=>M.a10&&(M.red?(M.flip||M.m.pposc<=0):(M.m.pposc<0&&Math.abs(M.m.osc)<Math.abs(M.m.posc)&&Math.abs(M.m.posc)<Math.abs(M.m.pposc))),W=>kdX(W).xu&&xK(W)>20&&xK(W)<=50,D=>kdX(D).xu&&(xK(D)<=20||kdIn(D,40,60))],
-  ["🚀 抱牢","buy","主升段","紅柱放大＋5、10 月線都往上","80 以上鈍化（連 3 週 K 在 80 以上）","回到 50 不跌破就金叉（金叉時 K 45～65）",
-    M=>M.red&&M.grow&&M.m.pma5!=null&&M.m.ma5>M.m.pma5&&M.m.ma10>M.m.pma10,W=>kdAll(W,v=>v>=80),D=>kdX(D).xu&&kdIn(D,45,65)],
+  ["🚀 抱牢／加碼","buy","主升段","紅柱放大＋5、10 月線都往上","80 以上鈍化（連 3 週 K 在 80 以上）","回檔不破 45 就金叉（金叉時 K 45～80）",
+    M=>M.red&&M.grow&&M.m.pma5!=null&&M.m.ma5>M.m.pma5&&M.m.ma10>M.m.pma10,W=>kdAll(W,v=>v>=80),D=>kdX(D).xu&&kdIn(D,45,80)],
   ["🎯 低接","low","多頭回檔","紅柱縮小＋守住 10 月線","死叉回檔中（K 在 D 下面、30～80）","20 以下再金叉",
     M=>M.red&&!M.grow&&M.a10,W=>W.k<W.d&&W.k>=30&&W.k<80,D=>kdX(D).xu&&xK(D)<=20],
   ["⚠️ 減半","sell","末升警訊","創 12 個月新高但紅柱縮小","80 以上死叉","80 以上死叉＋收跌",
@@ -1858,7 +1858,11 @@ function sumOf(dy,wk,M){const ok=(f,x)=>{try{return!!(x&&f(x))}catch(_){return f
   const m=SUM_RULES.map(r=>[ok(r[6],M),ok(r[7],wk),ok(r[8],dy)]),R=(i,txt,cls,note)=>({i,txt,cls,m,note});
   if(M&&M.m.bd&&!M.a5)return R(-1,"💰 背離＋跌破 5 月線，分批賣出","sell",1);
   const full=SUM_ORDER.find(i=>m[i].every(Boolean));
-  if(full!=null){const r=SUM_RULES[full];return R(full,`${r[2]}・${r[0]}`,r[1])}
+  if(full!=null){const r=SUM_RULES[full];let t=r[0];
+    // Gemini 建議（Luna 2026-10-24）：末升警訊先不砍，跌破 10 日線才減半；多頭回檔在 5 月線下先買一半，站回 5 月線再補滿
+    if(full===4&&dy&&dy.above10)t="⚠️ 跌破 10 日線再減半";
+    if(full===3&&M&&!M.a5)t="🎯 低接先買一半（站回 5 月線再補滿）";
+    return R(full,`${r[2]}・${t}`,r[1])}
   if(wk&&dy&&kdAll(wk,v=>v>=80)&&kdX(dy).xd)return R(-1,"🚀 主升段，日 KD 死叉只是洗盤，抱牢","buy",0);
   if(M&&M.a10&&wk&&kdX(wk).xu&&+new Date(Date.now()+288e5).toISOString().slice(8,10)>=20)return R(-1,"🌱 月底站上 10 月線＋週金叉，可先卡位","buy",2);
   const near=SUM_ORDER.find(i=>m[i][0]&&m[i].filter(Boolean).length===2);
@@ -1875,7 +1879,7 @@ function sumShow(key){const x=SUMINFO.get(key);if(!x)return;let box=$("sg-pop");
     <h3 class="sg-h">怎麼判斷（紅字＝現在符合；三項都紅才算，只差一項會寫「接近」）</h3>
     <table class="sg-tbl sg-sumt"><thead><tr><th>月（MACD／月線）</th><th>週 KD</th><th>日 KD</th><th>策略</th></tr></thead><tbody>${SUM_RULES.map((r,i)=>`<tr${i===x.s.i||i===x.s.near?' class="on"':""}><td>${ck(x.s.m[i][0],r[3])}</td><td>${ck(x.s.m[i][1],r[4])}</td><td>${ck(x.s.m[i][2],r[5])}</td><td><b>${i+1}. ${r[2]}<br>${r[0]}</b></td></tr>`).join("")}</tbody></table>
     <h3 class="sg-h">另外三條</h3><table class="sg-tbl"><tbody>${SUM_NOTES.map((n,i)=>`<tr${x.s.note===i?' class="on"':""}><th>${n[0]}</th><td>${n[1]}</td></tr>`).join("")}</tbody></table>
-    <p class="muted">月 MACD 用 12、26、9；KD 用 9、3、3；交叉後 3 根內都算。「收跌」是今天收盤比昨天低。盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
+    <p class="muted">末升警訊：收盤還在 10 日線上先別賣，跌破 10 日線才減半。多頭回檔：還在 5 月線下只先買一半，站回 5 月線再補滿。</p><p class="muted">月 MACD 用 12、26、9；KD 用 9、3、3；交叉後 3 根內都算。「收跌」是今天收盤比昨天低。盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
 document.addEventListener("click",e=>{const g=e.target.closest(".sg-sum[data-sum]");if(!g)return;e.preventDefault();e.stopPropagation();sumShow(g.dataset.sum)},true);
 function kdBoxes(dy,wk,name,mo,mode=""){
   const one=(t,key,cls,main,rows,hit,ttl)=>{let a="";if(rows&&name){const k=name+"｜"+t;SGINFO.set(k,{title:`${name}・${ttl}`,main,sub:"",rows,t:key,hit});a=` data-sg="${esc(k)}" role="button" tabindex="0"`}
@@ -1901,7 +1905,7 @@ function kdBoxes(dy,wk,name,mo,mode=""){
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
-  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=8`);
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=9`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
@@ -1990,7 +1994,7 @@ let coinKdAt=0;
 async function coinKdLoad(items){
   mkLoad([],[],items.map(it=>it.key),()=>{if(homeCoin())coinInit()});
   if(!ON_CF||coinKdAt>Date.now()-6e5)return;coinKdAt=Date.now();
-  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=9`)));
+  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=10`)));
   const d=Object.assign({},...got.filter(Boolean));if(!Object.keys(d).length){coinKdAt=0;return}Object.assign(idxKd,d);if(homeCoin())coinInit()}
 function coinInit(){
   const items=coinList();

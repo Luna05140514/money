@@ -561,7 +561,6 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="watch-tabs" id="home-sub" role="tablist"><button role="tab" data-hs="1" aria-selected="true">看盤</button><button role="tab" data-hs="2" aria-selected="false">持股</button><button role="tab" data-hs="3" aria-selected="false">工具</button></div>
     <div class="watch-tabs" id="home-csub" role="tablist" hidden><button role="tab" data-hc="1" aria-selected="true">虛擬幣</button><button role="tab" data-hc="2" aria-selected="false">持有</button></div>
     <div id="hc-rows" hidden><div class="wlist" id="coin-cards"></div><p class="lead" id="coin-lead" style="margin-top:10px"></p>
-      <p class="glrow">看不懂？點這裡：<button class="qc" data-term="KD">日KD／週KD</button><button class="qc" data-term="MACD">月MACD</button><button class="qc" data-term="總結論">總結論</button><button class="qc" data-term="USDT">USDT</button></p>
       <p class="src">資料來源：幣安 Binance 公開行情（抓不到時改用 OKX）；換算台幣用 Yahoo Finance 的美元匯率。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p></div>
     <div id="hc-hold" hidden></div>
     <div class="grid" id="home-grid">
@@ -628,7 +627,6 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <h1>全球大盤</h1>
     <p class="lead" id="idx-lead">台股與美股主要指數的當天走勢。</p>
     <div class="watch-tabs" id="idx-tabs" role="tablist"></div>
-    <p class="glrow">看不懂？點這裡：<button class="qc" data-term="KD">日KD／週KD</button><button class="qc" data-term="MACD">月MACD</button><button class="qc" data-term="總結論">總結論</button><button class="qc" data-term="金銀">黃金白銀買賣價</button></p>
     <div class="wlist" id="idx-cards" style="margin-top:12px"></div>
     <div class="ibig" id="idx-big" hidden></div>
     <p class="note">加權、櫃買指數來自 Yahoo 奇摩股市，台指期為期交所近月合約日盤，美股、日經、韓股指數和匯率來自 Yahoo Finance（日韓約延遲 20 分鐘；日圓、韓元用美元匯率換算）。美股是美東時間，台灣白天看到的是前一個交易日；日韓是台灣時間。點任一列可以看 K 線。</p>
@@ -690,7 +688,6 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="watch">
       <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit" id="watch-ren">✎ 改名</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
-      <p class="glrow">看不懂？點這裡：<button class="qc" data-term="KD">日KD／週KD</button><button class="qc" data-term="MACD">月MACD</button><button class="qc" data-term="總結論">總結論</button><button class="qc" data-term="本益比">本益比</button><button class="qc" data-term="股淨比">股淨比</button></p>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
     </div>
@@ -1800,8 +1797,7 @@ function sgShow(key){const x=SGINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
   box.innerHTML=`<div class="sg-card" role="dialog" aria-label="${esc(x.title)}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(x.title)}${qm("KD")}</h2><p class="sg-res">結果：<b>${x.main}</b>${x.sub?`<span>${x.sub}</span>`:""}</p>
-    ${x.hit!=null&&SG_LOGIC[x.t]?`<h3 class="sg-h">怎麼判斷（由上往下，先符合的就是）</h3><table class="sg-tbl sg-ltbl"><thead><tr><th>條件</th><th>結論</th></tr></thead><tbody>${SG_LOGIC[x.t].map((r,i)=>`<tr${i===x.hit?' class="on"':""}><td>${i===x.hit?"<b>▶ 現在：</b>":""}${r[0]}</td><td><b>${r[2]}</b></td></tr>`).join("")}</tbody></table><h3 class="sg-h">各指標</h3>`:""}
-    <table class="sg-tbl sg-ptbl"><thead><tr><th>指標</th><th>目前數字</th><th>判斷規則</th><th>結果</th></tr></thead><tbody>${x.rows.map(r=>`<tr class="${r[3]}"><th>${r[0]}</th><td>${r[1]}</td><td class="rule">${r[4]||""}</td><td><b>${r[2]||"—"}</b></td></tr>`).join("")}</tbody></table>
+    ${x.hit!=null&&SG_LOGIC[x.t]?`<h3 class="sg-h">怎麼判斷（由上往下，先符合的就是）</h3><table class="sg-tbl sg-ltbl"><thead><tr><th>條件</th><th>結論</th></tr></thead><tbody>${SG_LOGIC[x.t].map((r,i)=>`<tr${i===x.hit?' class="on"':""}><td>${i===x.hit?"<b>▶ 現在：</b>":""}${r[0]}</td><td><b>${r[2]}</b></td></tr>`).join("")}</tbody></table>`:`<table class="sg-tbl sg-ptbl"><thead><tr><th>指標</th><th>目前數字</th><th>判斷規則</th><th>結果</th></tr></thead><tbody>${x.rows.map(r=>`<tr class="${r[3]}"><th>${r[0]}</th><td>${r[1]}</td><td class="rule">${r[4]||""}</td><td><b>${r[2]||"—"}</b></td></tr>`).join("")}</tbody></table>`}
     <p class="muted">盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
 document.addEventListener("click",e=>{const g=e.target.closest(".sg[data-sg]");if(!g)return;e.preventDefault();e.stopPropagation();sgShow(g.dataset.sg)},true);
 /* 日KD／週KD／月MACD 三格＋總結論（Luna 2026-10-24，照她給的表）：月線看大方向、週 KD 看位階、日 KD 看買賣點 */
@@ -1818,21 +1814,21 @@ const xK=o=>o.xc?o.xc[2]:Math.min(o.pk??o.k,o.k);
 // 8 階段表（Luna 2026-10-24 第二版）：[策略, 顏色, 階段, 月條件, 週條件, 日條件, 月判斷, 週判斷, 日判斷]；M 帶月 MACD 原始數字 M.m
 const kdIn=(o,lo,hi)=>xK(o)>=lo&&xK(o)<=hi,kdAll=(o,f)=>o.ks&&o.ks.length>=3&&o.ks.every(f);
 const SUM_RULES=[
-  ["🌱 試單","buy","底","綠柱縮小＋測試 60 月線（收盤在 60 月線上下 5% 內）","20 以下金叉","20 以下金叉＋帶量（量是前 5 天平均 1.5 倍以上）",
+  ["🌱 試單","buy","長線落底","綠柱縮小＋測試 60 月線（收盤在 60 月線上下 5% 內）","20 以下金叉","20 以下金叉＋帶量（量是前 5 天平均 1.5 倍以上）",
     M=>!M.red&&!M.grow&&M.m.ma60&&Math.abs(M.m.c/M.m.ma60-1)<=.05,W=>kdX(W).xu&&xK(W)<=20,D=>kdX(D).xu&&xK(D)<=20&&D.vr>=1.5],
-  ["🔥 重倉","buy","漲","翻紅（這個月或上個月由綠轉紅）＋站上 10 月線","20～50 金叉","20 以下或 50 附近（40～60）金叉",
+  ["🔥 重倉","buy","初升起漲","翻紅（這個月或上個月由綠轉紅）＋站上 10 月線","20～50 金叉","20 以下或 50 附近（40～60）金叉",
     M=>M.red&&(M.flip||M.m.pposc<=0)&&M.a10,W=>kdX(W).xu&&xK(W)>20&&xK(W)<=50,D=>kdX(D).xu&&(xK(D)<=20||kdIn(D,40,60))],
-  ["🚀 抱牢","buy","升","紅柱放大＋5、10 月線都往上","80 以上鈍化（連 3 週 K 在 80 以上）","回到 50 不跌破就金叉（金叉時 K 45～65）",
+  ["🚀 抱牢","buy","主升段","紅柱放大＋5、10 月線都往上","80 以上鈍化（連 3 週 K 在 80 以上）","回到 50 不跌破就金叉（金叉時 K 45～65）",
     M=>M.red&&M.grow&&M.m.pma5!=null&&M.m.ma5>M.m.pma5&&M.m.ma10>M.m.pma10,W=>kdAll(W,v=>v>=80),D=>kdX(D).xu&&kdIn(D,45,65)],
-  ["🎯 低接","low","回","紅柱縮小＋守住 10 月線","死叉後往 50 走（K 在 D 下面、50～80）","20 以下再金叉",
+  ["🎯 低接","low","多頭回檔","紅柱縮小＋守住 10 月線","死叉後往 50 走（K 在 D 下面、50～80）","20 以下再金叉",
     M=>M.red&&!M.grow&&M.a10,W=>W.k<W.d&&W.k>=50&&W.k<80,D=>kdX(D).xu&&xK(D)<=20],
-  ["⚠️ 減半","sell","警","創 12 個月新高但紅柱縮小","80 以上死叉","80 以上死叉＋爆量（1.5 倍以上）＋收跌",
+  ["⚠️ 減半","sell","末升警訊","創 12 個月新高但紅柱縮小","80 以上死叉","80 以上死叉＋爆量（1.5 倍以上）＋收跌",
     M=>M.red&&!M.grow&&M.m.hi!=null&&M.m.c>=M.m.hi,W=>kdX(W).xd&&xK(W)>=80,D=>kdX(D).xd&&xK(D)>=80&&D.vr>=1.5&&D.dn],
-  ["💰 清倉","sell","空","紅柱縮小＋跌破 5 月線","跌破 80（上週 80 以上、這週掉到 80 以下）","反彈到 50～80 死叉",
+  ["💰 清倉","sell","趨勢轉空","紅柱縮小＋跌破 5 月線","跌破 80（上週 80 以上、這週掉到 80 以下）","反彈到 50～80 死叉",
     M=>M.red&&!M.grow&&!M.a5,W=>W.pk>=80&&W.k<80&&W.k<W.d,D=>kdX(D).xd&&xK(D)>=55&&xK(D)<80],
-  ["🛑 觀望","high","跌","綠柱放大＋跌破 10 月線","20 以下鈍化（連 3 週 K 在 20 以下）","反彈到 50 就死叉（死叉時 K 40～55）",
+  ["🛑 觀望","high","主跌段","綠柱放大＋跌破 10 月線","20 以下鈍化（連 3 週 K 在 20 以下）","反彈到 50 就死叉（死叉時 K 40～55）",
     M=>!M.red&&M.grow&&!M.a10,W=>kdAll(W,v=>v<=20),D=>kdX(D).xd&&kdIn(D,40,55)],
-  ["⚡ 短搶","low","彈","綠柱放大＋比 10 月線低 15% 以上（乖離大）","20 以下勾頭往上","20 以下第二次金叉（最近 20 天內）",
+  ["⚡ 短搶","low","跌深反彈","綠柱放大＋比 10 月線低 15% 以上（乖離大）","20 以下勾頭往上","20 以下第二次金叉（最近 20 天內）",
     M=>!M.red&&M.grow&&M.m.c<=M.m.ma10*.85,W=>W.pk!=null&&W.pk<=20&&W.k>W.pk,D=>kdX(D).xu&&xK(D)<=20&&D.g20>=2]];
 // 三項都符合時，賣出的先看（警、空、跌），再看買進
 const SUM_ORDER=[4,5,6,0,1,2,3,7];
@@ -1853,12 +1849,12 @@ function sumOf(dy,wk,M){const ok=(f,x)=>{try{return!!(x&&f(x))}catch(_){return f
 function sumShow(key){const x=SUMINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
-  const ck=v=>v?'<b class="up">✓</b>':'<span class="muted">✗</span>',r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),f=v=>v==null?"—":(+v).toLocaleString("zh-TW",{maximumFractionDigits:4});
+  const ck=(v,t)=>v?`<b class="up">${t}</b>`:t,r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),f=v=>v==null?"—":(+v).toLocaleString("zh-TW",{maximumFractionDigits:4});
   const M=x.M,mm=M&&M.m;
   box.innerHTML=`<div class="sg-card" role="dialog" aria-label="${esc(x.name)} 總結論"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(x.name)}・總結論</h2><p class="sg-res">結果：<b>${esc(x.s.txt)}</b></p>
     <p class="sg-now">現在：月 MACD ${M?`${esc(M.label)}、收盤 ${f(mm.c)}（5 月線 ${f(mm.ma5)}、10 月線 ${f(mm.ma10)}、60 月線 ${f(mm.ma60)}）${mm.bd?"、有背離":""}`:"—"}；週 KD ${x.wk?`K ${r1(x.wk.k)}、D ${r1(x.wk.d)}`:"—"}；日 KD ${x.dy?`K ${r1(x.dy.k)}、D ${r1(x.dy.d)}`:"—"}</p>
-    <h3 class="sg-h">怎麼判斷（三項都符合才算；只差一項會寫「接近」）</h3>
-    <table class="sg-tbl sg-sumt"><thead><tr><th>月（MACD／月線）</th><th>週 KD</th><th>日 KD</th><th>策略</th></tr></thead><tbody>${SUM_RULES.map((r,i)=>`<tr${i===x.s.i||i===x.s.near?' class="on"':""}><td>${ck(x.s.m[i][0])} ${r[3]}</td><td>${ck(x.s.m[i][1])} ${r[4]}</td><td>${ck(x.s.m[i][2])} ${r[5]}</td><td><b>${r[2]}<br>${r[0]}</b></td></tr>`).join("")}</tbody></table>
+    <h3 class="sg-h">怎麼判斷（紅字＝現在符合；三項都紅才算，只差一項會寫「接近」）</h3>
+    <table class="sg-tbl sg-sumt"><thead><tr><th>月（MACD／月線）</th><th>週 KD</th><th>日 KD</th><th>策略</th></tr></thead><tbody>${SUM_RULES.map((r,i)=>`<tr${i===x.s.i||i===x.s.near?' class="on"':""}><td>${ck(x.s.m[i][0],r[3])}</td><td>${ck(x.s.m[i][1],r[4])}</td><td>${ck(x.s.m[i][2],r[5])}</td><td><b>${i+1}. ${r[2]}<br>${r[0]}</b></td></tr>`).join("")}</tbody></table>
     <h3 class="sg-h">另外三條</h3><table class="sg-tbl"><tbody>${SUM_NOTES.map((n,i)=>`<tr${x.s.note===i?' class="on"':""}><th>${n[0]}</th><td>${n[1]}</td></tr>`).join("")}</tbody></table>
     <p class="muted">月 MACD 用 12、26、9；KD 用 9、3、3；交叉後 3 根內都算。「收跌」是今天收盤比昨天低。盤中的訊號會跟著股價變，收盤後才確定。只是參考，不是保證。</p></div>`;box.hidden=false}
 document.addEventListener("click",e=>{const g=e.target.closest(".sg-sum[data-sum]");if(!g)return;e.preventDefault();e.stopPropagation();sumShow(g.dataset.sum)},true);

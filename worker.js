@@ -776,6 +776,14 @@ async function detail(code, us) {
 }
 
 // 自選股的短線／長線訊號：日 KD 和週 KD（9,3,3），回傳今天和前一根的 K、D（判斷交叉用）
+// 週 MACD(12,26,9)（Luna 2026-10-25：週 MACD 和月 MACD 一樣判斷）：bars 是 [高, 低, 收]
+function wkMacd(bars) {
+  if (bars.length < 30) return null;
+  let e12 = bars[0][2], e26 = e12, dea = 0, dif = 0; const osc = [];
+  bars.forEach((b, i) => { const c = b[2]; e12 += (c - e12) * 2 / 13; e26 += (c - e26) * 2 / 27; dif = e12 - e26; if (i) dea += (dif - dea) * 2 / 10; osc.push(dif - dea); });
+  const r = v => +v.toPrecision(5);
+  return { dif: r(dif), osc: r(osc.at(-1)), posc: r(osc.at(-2)) };
+}
 function kdLast2(bars, n = 9) {
   if (bars.length < n + 1) return null;
   let k = 50, dv = 50, prev = null;
@@ -859,7 +867,7 @@ async function kdList(list) {
         // 盤中今天的量還沒算完，不拿來比
         const reg = ((r.meta || {}).currentTradingPeriod || {}).regular, now = Date.now() / 1000;
         const open = reg && now >= reg.start && now < reg.end && ts[ts.length - 1] >= reg.start;
-        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol) }, week: kdLast2(wk) }];
+        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol) }, week: { ...kdLast2(wk), mac: wkMacd(wk) } }];
       } catch (_) {}
     }
     return [code, null];
@@ -1058,7 +1066,7 @@ async function indexKd(keys) {
         const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(1)); else { w[0] = Math.max(w[0], b[1]); w[1] = Math.min(w[1], b[2]); w[2] = b[3]; }
       }
       const vl = k.map(b => b[4]), hasV = vl[vl.length - 1] > 0;
-      return [key, { day: { ...kdLast2(k.map(b => b.slice(1, 4))), ...dayExtras(k.map(b => b[3]), hasV ? vl : null) }, week: kdLast2([...weeks.keys()].sort().map(x => weeks.get(x))) }];
+      return [key, { day: { ...kdLast2(k.map(b => b.slice(1, 4))), ...dayExtras(k.map(b => b[3]), hasV ? vl : null) }, week: (wb => ({ ...kdLast2(wb), mac: wkMacd(wb) }))([...weeks.keys()].sort().map(x => weeks.get(x))) }];
     } catch (_) { return [key, null]; }
   };
   return Object.fromEntries((await Promise.all(keys.map(one))).filter(x => x[1]));

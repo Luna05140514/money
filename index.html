@@ -324,6 +324,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .pg-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:4px 0 10px}
 .pg-tabs button{all:unset;cursor:pointer;text-align:center;padding:10px 2px;border-radius:12px;font-size:17px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pg-tabs button[aria-current="page"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
+.pg-tabs.pg4 button{font-size:15px;padding:10px 1px}
 .pg-tabs button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .wlist{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .wrow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:16px 14px;border-top:1px solid var(--line);width:100%;box-sizing:border-box;font:inherit;color:inherit;background:none;text-align:left}
@@ -930,10 +931,11 @@ function show(p){
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // 看盤這組頁面頂端的分頁列（全球大盤／大盤高低指標／自選股），不用回首頁就能切換
-const PG_GROUPS=[["idx","mkt","watch"]];
+const PG_SHORT={mkt:"高低指標",hold:"持股損益",divc:"除權息",stock:"報酬比較",pledge:"質押",debt:"負債比",fire:"財務自由",compound:"複利"};
+const PG_GROUPS=[["idx","mkt","watch"],["hold","divc"],["stock","nav","dca"],["pledge","debt","fire","compound"]];
 PG_GROUPS.forEach(g=>g.forEach(id=>{const sec=$(id),bar=sec&&sec.querySelector(".bar");if(!bar)return;
-  const nav=document.createElement("nav");nav.className="pg-tabs";nav.setAttribute("aria-label","切換頁面");
-  nav.innerHTML=g.map(x=>{const h=document.querySelector(`#home [data-go="${x}"] h2`);return `<button data-go="${x}"${x===id?' aria-current="page"':""}>${h?h.textContent:x}</button>`}).join("");
+  const nav=document.createElement("nav");nav.className="pg-tabs"+(g.length>3?" pg4":"");nav.setAttribute("aria-label","切換頁面");
+  nav.innerHTML=g.map(x=>{const h=document.querySelector(`#home [data-go="${x}"] h2`);return `<button data-go="${x}"${x===id?' aria-current="page"':""}>${PG_SHORT[x]||(h?h.textContent:x)}</button>`}).join("");
   bar.after(nav)}));
 // 重新整理：記住目前頁面再重新載入整頁（拿最新發布的資料）；若外框擋住重新載入，就原地重畫並提示資料時間
 /* 密碼鎖的畫面 */

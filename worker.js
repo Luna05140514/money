@@ -12,11 +12,11 @@ const FX = [["TWD=X", "美元", 1, null], ["JPYTWD=X", "日圓", 100, "JPY=X"], 
 // 黃金、白銀（Luna 2026-10-24）：國際期貨價（Yahoo，每盎司美元）放在「匯率」分頁；買入／賣出用 Swissquote 的國際現貨報價
 const METAL = [["GC=F", "黃金", "XAU"], ["SI=F", "白銀", "XAG"]];
 // 虛擬幣（Luna 2026-10-24）：幣安（Binance 公開行情 data-api.binance.vision）的 BTC/USDT、ETH/USDT，抓不到改用 OKX；日 K 以台灣時間換日
-const CRYPTO = [["BTC-USDT", "比特幣", "BTC-USD"], ["ETH-USDT", "以太幣", "ETH-USD"]];
+const CRYPTO = [["BTC-USDT", "比特幣", "BTC-USD"], ["ETH-USDT", "以太幣", "ETH-USD"], ["SOL-USDT", "索拉納", "SOL-USD"], ["BNB-USDT", "幣安幣", "BNB-USD"]]; // SOL、BNB：Luna 2026-10-25
 // 穩定幣（Luna 2026-10-24）：USDT、USDC 對台幣，用台灣交易所 MAX（max-api.maicoin.com 公開行情）
 const STABLE = [["USDT-TWD", "USDT"], ["USDC-TWD", "USDC"]];
 const ixSym = k => (CRYPTO.find(c => c[0] === k) || [0, 0, k])[2];
-const IXKEY = /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH)-USDT|(USDT|USDC)-TWD)$/;
+const IXKEY = /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH|SOL|BNB)-USDT|(USDT|USDC)-TWD)$/;
 const fxScale = s => (FX.find(f => f[0] === s) || [0, 0, 1])[2];
 const ixTz = s => /=X$/.test(s) ? "Asia/Taipei" : /-USD$/.test(s) ? "UTC" : s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
 const PICKS = [["TSM", "台積電ADR"], ["TSMX", "台積電ADR 2倍"]];

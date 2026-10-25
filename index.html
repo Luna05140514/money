@@ -576,6 +576,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .ibig .icard svg text{font-size:10px}
 .ibig .x{position:absolute;top:8px;right:8px;width:36px;height:36px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--ink);font-size:16px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.nw{display:inline-block;white-space:nowrap}
 </style>
 
 <div class="wrap">
@@ -2043,10 +2044,14 @@ function kdBoxes(dy,wk,name,mo,mode=""){
   if(M){const f=v=>(+v).toLocaleString("zh-TW",{maximumFractionDigits:4});
     // 月 MACD 只寫四種（Luna 2026-10-25）：柱子在 0 以上＝多頭、以下＝空頭；比上個月高＝向上、低＝向下
     // 改成多空看 DIF 在 0 軸上下（Luna 2026-10-25 同意），舊資料沒有 dif 就先看柱子
-    const bull=mo.dif!=null?+mo.dif>=0:M.red,up=+mo.osc>=+mo.posc,ml=`${bull?"多頭":"空頭"}${up?"向上":"向下"}`;
-    mBox=one("月MACD","",bull?(up?"buy":"low"):(up?"high":"sell"),ml,[
+    // Luna 2026-10-25 第三版：DIF 在 0 軸上＝多頭、下＝空頭；金叉（紅柱）柱子比上個月長＝趨勢向上、短＝趨勢放緩；死叉（綠柱）綠柱比上個月長＝趨勢向下、短＝趨勢減緩
+    const bull=mo.dif!=null?+mo.dif>=0:M.red,gx=+mo.osc>=0,o=Math.abs(+mo.osc),po=Math.abs(+mo.posc),longer=o>=po,
+      tr=gx?(longer?"趨勢向上":"趨勢放緩"):(longer?"趨勢向下":"趨勢減緩"),ml=`<span class="nw">${bull?"多頭":"空頭"}</span><span class="nw">${tr}</span>`,
+      cls={趨勢向上:"buy",趨勢放緩:"high",趨勢向下:"sell",趨勢減緩:"low"}[tr];
+    mBox=one("月MACD","",cls,ml,[
       ["DIF（快線）",mo.dif!=null?f(mo.dif):"—",bull?"多頭":"空頭",bull?"up":"down","DIF 在 0 軸以上＝多頭、在 0 軸以下＝空頭"],
-      ["MACD 柱",`這個月 ${f(mo.osc)}、上個月 ${f(mo.posc)}`,up?"向上":"向下",up?"up":"down","紅柱變長或綠柱變短＝向上；紅柱變短或綠柱變長＝向下"]],null,"月 MACD")}
+      ["金叉／死叉",gx?"紅柱（金叉後還沒死叉）":"綠柱（死叉後還沒金叉）",gx?"金叉":"死叉",gx?"up":"down","DIF 在 MACD 線上面＝金叉、下面＝死叉"],
+      ["柱子長短",`這個月 ${f(mo.osc)}、上個月 ${f(mo.posc)}`,tr,gx?(longer?"up":"down"):(longer?"down":"up"),"金叉：柱子比上個月長＝趨勢向上、短＝趨勢放緩；死叉：綠柱比上個月長＝趨勢向下、短＝趨勢減緩"]],null,"月 MACD")}
   const s=sumOf(dy,wk,M);let sum="";
   if(name){const k=name+"｜總結論";SUMINFO.set(k,{name,s,M,wk:wk&&wk.k!=null?wk:null,dy:dy&&dy.k!=null?dy:null});sum=`<i class="sg sg-sum ${s.cls}" data-sum="${esc(k)}" role="button" tabindex="0"><small>總結論</small>${esc(s.txt)}</i>`}
     const head=(xp,arrow)=>`<span class="vh"${xp?` data-xp="${esc(xp)}" role="button" tabindex="0"`:""}>技術分析${arrow?"":`<i class="qm" data-term="技術分析" role="button" tabindex="0" aria-label="技術分析是什麼">?</i>`}${arrow?`<b class="xa">${arrow}</b>`:""}</span>`;

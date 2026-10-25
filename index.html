@@ -1897,7 +1897,7 @@ function sumOf(dy,wk,M){const ok=(f,x)=>{try{return!!(x&&f(x))}catch(_){return f
    ① 定期定額　② 日 KD 低點買＋週 KD 加碼（不賣）　③ 價差：日 KD 金叉買、週 KD 高檔死叉賣
    用 5 年含息還原日線（worker /api/bt）在手機上算；Luna 說用到月線的方法拿掉 */
 const BT_FB=0.001425,btData={};let btCode=null,btYears=3;
-const BT_NM=["① 每個月固定買","② 固定買＋低點加碼","③ 日 KD 低點分批買、高點全賣","④ 日 KD 低點分批買、高點賣一半，剩下看鈍化再賣"];
+const BT_NM=["① 每個月固定買","② 固定買＋低點加碼","③ 日 KD 低點整筆買、高點全賣","④ 日 KD 低點整筆買、高點賣一半，剩下看鈍化再賣","⑤ 日 KD 低點分批買、高點全賣","⑥ 日 KD 低點分批買、高點賣一半，剩下看鈍化再賣"];
 const btWk=s=>{const x=new Date(s+"T00:00:00Z"),wd=(x.getUTCDay()+6)%7;return new Date(x-wd*864e5).toISOString().slice(0,10)};
 function btPrep(r){const B=r.d.map((d,i)=>({dt:d,o:r.o[i],h:r.h[i],l:r.l[i],c:r.c[i]}));
   // 日 KD(9)
@@ -1924,13 +1924,15 @@ function btRun(P,start,M,how,etf,Y=3){const {B,DK,DD,WK,WD}=P,FS=BT_FB+(etf?0.00
     if(how===3&&pot>0&&((DK[y]<30&&DK[y-1]>=30)||(WK[y]<30&&WK[y-1]>=30))){const c=buy(o,pot);cash-=c;pot=0}
     // ⑤⑥（Luna 2026-10-25）：日 K 跌到 30 以下把錢全部買；⑤ 日 K 到 80 以上全賣；⑥ 日 K 到 80 以上賣一半、週 K 到 80 以上賣剩下的
     // ③④ 買法（Luna 2026-10-25 改）：日 K 跌破 30 買 30%、跌破 20 再買 40%、之後金叉再買 30%（都是這一輪開始時手上的錢）
+    // how 4、5 整筆買（日 K 跌破 30 一次全買）；how 6、7 分批買（Luna 2026-10-25：兩種都放，共 6 種）
     if(how>=4){
-      if(bs===0&&DK[y]<=30&&DK[y-1]>30){bBase=cash;cash-=buy(o,bBase*0.3);bs=1}
+      if(how<6){if(DK[y]<=30&&DK[y-1]>30)cash-=buy(o,cash)}
+      else if(bs===0&&DK[y]<=30&&DK[y-1]>30){bBase=cash;cash-=buy(o,bBase*0.3);bs=1}
       else if(bs===1&&DK[y]<=20&&DK[y-1]>20){cash-=buy(o,Math.min(cash,bBase*0.4));bs=2}
       else if(bs>=1&&DK[y]>DD[y]&&DK[y-1]<=DD[y-1]){cash-=buy(o,Math.min(cash,bBase*0.3));bs=0}
-      if(how===4&&DK[y]>=80&&DK[y-1]<80)sell(o,sh);
+      if((how===4||how===6)&&DK[y]>=80&&DK[y-1]<80)sell(o,sh);
       // ⑥（Luna 2026-10-25 改）：日 K 到 80 以上先賣一半；剩下的，日 KD 鈍化（連 3 天 ≥80）就等週 K 到 80 以上再賣，沒鈍化就等日 KD 死叉賣
-      if(how===5){
+      if(how===5||how===7){
         if(!half&&sh>0&&DK[y]>=80&&DK[y-1]<80){sell(o,sh/2);half=true;dull=false}
         else if(half){if(DK[y]>=80&&DK[y-1]>=80&&DK[y-2]>=80)dull=true;
           if(dull?WK[y]>=80:(DK[y]<DD[y]&&DK[y-1]>=DD[y-1])){sell(o,sh);half=false;dull=false}}}}
@@ -1957,7 +1959,7 @@ function btOpen(){let box=$("bt-pop");
   let m=10000;try{m=+localStorage.getItem("facai-bt-m")||10000}catch(_){}
   box.innerHTML=`<div class="sg-card bt-card" role="dialog" aria-label="回測"><button class="sg-x" data-btx aria-label="關閉">✕</button>
     <h2>回測：存股和價差哪個好</h2>
-    <p class="bt-s">選一檔股票，看過去 1～3 年用 4 種方法買，現在會變多少。</p>
+    <p class="bt-s">選一檔股票，看過去 1～3 年用 6 種方法買，現在會變多少。</p>
     <div class="bt-chips">${list.map(c=>`<button data-btc="${c}">${esc(idxOf[c][1])}<small>${c}</small></button>`).join("")||"這一頁沒有股票"}</div>
     <div class="bt-row"><div class="watch-tabs bt-y">${[1,2,3].map(y=>`<button data-bty="${y}">${y} 年</button>`).join("")}</div>
       <label class="bt-m">每月投入<input id="bt-m" type="number" min="1000" step="1000" value="${m}" inputmode="numeric"><span id="bt-cur">元</span></label></div>
@@ -1966,10 +1968,11 @@ function btOpen(){let box=$("bt-pop");
       <li>每個月拿出同樣的錢，沒用完的錢留到下個月一起用。最後「變成」＝股票市值＋還沒用的錢。</li>
       <li>① 每個月固定買（定期定額）：每月第一個交易日開盤全部買。</li>
       <li>② 固定買＋低點加碼：每月的錢一半在第一個交易日開盤買，另一半存起來；日 KD 或週 KD 的 K 跌到 30 以下（相對低點），隔天開盤把存的錢全部買進。</li>
-      <li>③④ 價差不是每月存，而是每年一開始整筆放 12 個月的錢（每月 1 萬就是 12 萬），2 年、3 年的話每年再加一次。</li>
-      <li>③④ 買法：日 KD 的 K 跌破 30 買 30%，跌破 20 再買 40%，之後出現金叉再買 30%（都是用這一輪開始時手上的錢來算）。</li>
-      <li>③ 賣法：K 漲到 80 以上，全部賣掉。</li>
-      <li>④ 賣法：日 KD 的 K 漲到 80 以上先賣一半。剩下的：如果日 KD 鈍化（連 3 天 80 以上），等週 KD 的 K 到 80 以上再全部賣；沒有鈍化，就等日 KD 死叉全部賣。</li>
+      <li>③～⑥ 價差不是每月存，而是每年一開始整筆放 12 個月的錢（每月 1 萬就是 12 萬），2 年、3 年的話每年再加一次。</li>
+      <li>③④ 整筆買：日 KD 的 K 跌破 30，把手上的錢一次全部買進。</li>
+      <li>⑤⑥ 分批買：日 KD 的 K 跌破 30 買 30%，跌破 20 再買 40%，之後出現金叉再買 30%（都是用這一輪開始時手上的錢來算）。</li>
+      <li>③⑤ 賣法：K 漲到 80 以上，全部賣掉。</li>
+      <li>④⑥ 賣法：日 KD 的 K 漲到 80 以上先賣一半。剩下的：如果日 KD 鈍化（連 3 天 80 以上），等週 KD 的 K 到 80 以上再全部賣；沒有鈍化，就等日 KD 死叉全部賣。</li>
       <li>最多跌幾 %＝回測期間，手上股票的市值比買進的成本（平均每股買價）最多少掉幾 %。沒有比成本低過，就寫「沒有跌破買進成本」。</li>
       <li>用含息還原價，配息等於自動再買回去。買整數股（零股），手續費 0.1425%，賣出另外算證交稅（ETF 0.1%、股票 0.3%）。訊號在收盤出現，隔天開盤買賣。美股用美元算。</li>
       <li>過去的結果不代表未來，只是參考。</li></ul></details>
@@ -1990,7 +1993,7 @@ function btResult(){const out=$("bt-out"),P=btData[btCode];if(!out||!P)return;
   const r=idxOf[btCode],M=Math.max(100,+($("bt-m")||{}).value||10000),cur=r[4]?" 美元":" 元";
   const to=P.B[P.B.length-1].dt,s=new Date(to+"T00:00:00Z");s.setUTCFullYear(s.getUTCFullYear()-btYears);const start=s.toISOString().slice(0,10);
   if(P.B[30]&&P.B[30].dt>start){out.innerHTML=`<p class="bt-s">${esc(r[1])} 上市還不到 ${btYears} 年，換短一點的期間看看。</p>`;return}
-  const R=[0,3,4,5].map(h=>btRun(P,start,M,h,!!r[2],btYears)),best=Math.max(...R.map(x=>x.ret));
+  const R=[0,3,4,5,6,7].map(h=>btRun(P,start,M,h,!!r[2],btYears)),best=Math.max(...R.map(x=>x.ret));
   const w=n=>n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,"")+" 萬":Math.round(n).toLocaleString();
   out.innerHTML=`<p class="bt-s">${R[0].from.replace(/-/g,"/")} 到 ${to.replace(/-/g,"/")}，每月 ${M.toLocaleString()}${cur}</p>`+R.map((x,i)=>{const g=x.val-x.inv;
     return `<div class="bt-res${x.ret===best?" best":""}"><div class="bt-nm">${BT_NM[i]}${x.ret===best?' <em>最好</em>':""}</div>

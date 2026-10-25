@@ -1690,7 +1690,7 @@ const ON_CF=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|
 async function api(path){if(!ON_CF)return null;try{const r=await fetch(path,{cache:"no-store"});if(!r.ok)return null;const d=await r.json();return d&&!d.error?d:null}catch(_){return null}}
 /* 名詞小幫手（Luna 2026-10-23）：名詞旁邊的「？」，點了用白話解釋 */
 const GLOSS={
-  KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；20 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
+  KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；30 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
   本益比:["本益比","本益比 = 股價 ÷ 每股一年賺的錢（EPS）。意思是：用現在的價格買，大概要幾年才能靠公司賺的錢回本。數字越低越便宜。","「今年／明年本益比」是用法人（分析師）預估的 EPS 算的。便宜、合理、昂貴是跟這檔股票自己過去 5 年的本益比比較。","例：股價 100 元、一年每股賺 5 元，本益比 = 20 倍。"],
   股淨比:["股淨比（股價淨值比）","股淨比 = 股價 ÷ 每股淨值。淨值是公司把東西全賣掉、債還清以後，每一股可以分到的錢。1 倍表示股價剛好等於公司的家當。","金融股、賺錢不穩定的股票，常用股淨比看便宜或貴。","例：每股淨值 50 元、股價 75 元，股淨比 = 1.5 倍。"],
   EPS:["EPS（每股盈餘）","公司賺的錢，平均分到每一股是多少元。越高代表公司越會賺錢。","",""],
@@ -1810,11 +1810,11 @@ let watchKd={},watchKdAt={};
 // 大字的判斷順序（由上往下，先符合的就是）；點開格子時列出來，符合的那列標出來
 // 只顯示 KD 狀態，不給買賣建議（Luna 2026-10-23）
 const sgLogic=(u,p,t)=>[[`3 ${u}內金叉，${p}K 小於 30`,"buy","低檔金叉"],[`3 ${u}內死叉，${p}K 大於 70`,"sell","高檔死叉"],[`3 ${u}內金叉（K 在 30 以上）`,"low","金叉"],[`3 ${u}內死叉（K 在 70 以下）`,"high","死叉"],
-  [`${p}K 連 3 ${u} ≥80`,"high","高檔鈍化"],[`${p}K 連 3 ${u} ≤20`,"low","低檔鈍化"],[`${p}K ≥80`,"high","相對高點"],[`${p}K ≤20`,"low","相對低點"],[`${p}K 在 D 上面`,"low",t+"多"],[`${p}K 在 D 下面`,"high",t+"空"]];
+  [`${p}K 連 3 ${u} ≥80`,"high","高檔鈍化"],[`${p}K 連 3 ${u} ≤20`,"low","低檔鈍化"],[`${p}K ≥80`,"high","相對高點"],[`${p}K ≤30`,"low","相對低點"],[`${p}K 在 D 上面`,"low",t+"多"],[`${p}K 在 D 下面`,"high",t+"空"]];
 const SG_LOGIC={短線:sgLogic("天","","短"),長線:sgLogic("週","週 ","長")};
 // 判斷順序同上表，先符合的就是
 function sgHit(o){const X=kdX(o),ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
-  return X.up?0:X.dn?1:X.xu?2:X.xd?3:dh?4:dl?5:o.k>=80?6:o.k<=20?7:o.k>=o.d?8:9}
+  return X.up?0:X.dn?1:X.xu?2:X.xd?3:dh?4:dl?5:o.k>=80?6:o.k<=30?7:o.k>=o.d?8:9}
 // 交叉：worker 給 xc＝最近 3 根內的交叉（之後 K 一直在 D 同一邊），訊號連續顯示 3 天（週）；舊資料沒有 xc 就只看今天
 function kdX(o){if(o.xc)return{xu:o.xc[0]>0,xd:o.xc[0]<0,up:o.xc[0]>0&&o.xc[2]<30,dn:o.xc[0]<0&&o.xc[2]>70,age:o.xc[1]};
   const xu=o.pk!=null&&o.pk<=o.pd&&o.k>o.d,xd=o.pk!=null&&o.pk>=o.pd&&o.k<o.d;
@@ -1833,7 +1833,7 @@ function kdRows(o,isDay,tr){
   const X=kdX(o),gc=X.xu,dc=X.xd,ago=X.age?`（${X.age} ${isDay?"天":"週"}前）`:"（今天）";
   rows.push(["KD 交叉",gc?`K 往上穿過 D（金叉）${ago}`:dc?`K 往下穿過 D（死叉）${ago}`:"最近 3 根沒有交叉",X.up?"低檔金叉":X.dn?"高檔死叉":gc?"金叉":dc?"死叉":"",gc?"up":dc?"down":"","K 往上穿過 D → 金叉（K 小於 30 是低檔金叉）<br>K 往下穿過 D → 死叉（K 大於 70 是高檔死叉）<br>交叉後 3 根內都算"]);
   const ks=o.ks&&o.ks.length>=3?o.ks:null,dh=ks&&ks.every(v=>v>=80),dl=ks&&ks.every(v=>v<=20);
-  rows.push(["K 的位置",ks?`最近 3 根 ${ks.map(r1).join("、")}`:`K ${r1(o.k)}`,dl?"低檔鈍化":dh?"高檔鈍化":o.k<=20?"相對低點":o.k>=80?"相對高點":"中間",dl||o.k<=20?"down":dh||o.k>=80?"up":"","連續 3 天 ≥80 → 高檔鈍化<br>連續 3 天 ≤20 → 低檔鈍化<br>≥80 相對高點、≤20 相對低點"]);
+  rows.push(["K 的位置",ks?`最近 3 根 ${ks.map(r1).join("、")}`:`K ${r1(o.k)}`,dl?"低檔鈍化":dh?"高檔鈍化":o.k<=30?"相對低點":o.k>=80?"相對高點":"中間",dl||o.k<=30?"down":dh||o.k>=80?"up":"","連續 3 天 ≥80 → 高檔鈍化<br>連續 3 天 ≤20 → 低檔鈍化<br>≥80 相對高點、≤30 相對低點"]);
   rows.push(["K 和 D",o.k>o.d?"K 在 D 上面":o.k<o.d?"K 在 D 下面":"K 等於 D",(isDay?"短":"長")+(o.k>=o.d?"多":"空"),o.k>=o.d?"up":"down",`K 大於 D → ${isDay?"短":"長"}多<br>K 小於 D → ${isDay?"短":"長"}空`]);
   return rows}
 function sgShow(key){const x=SGINFO.get(key);if(!x)return;let box=$("sg-pop");
@@ -1917,8 +1917,8 @@ function btRun(P,start,M,how,etf){const {B,DK,DD,WK,WD}=P,FS=BT_FB+(etf?0.001:0.
   const sell=(px,n)=>{n=Math.min(sh,Math.floor(n));if(n<=0)return;const ac=cost/sh,got=n*px*(1-FS);if(got>ac*n)win++;else lose++;cost-=ac*n;sh-=n;cash+=got;ns++};
   for(let t=t0;t<B.length;t++){const o=B[t].o,c=B[t].c,y=t-1;
     if(t===t0||B[t].dt.slice(0,7)!==B[t-1].dt.slice(0,7)){units+=M/nav;inv+=M;cash+=M;if(how===0)cash-=buy(o,cash);if(how===3)cash-=buy(o,Math.max(0,cash-pot-M/2)),pot+=M/2}
-    // ② 固定買＋低點加碼（Luna 2026-10-25）：每月一半固定買，另一半存著，日 KD 的 K 跌到 30 以下就把存的錢全部買
-    if(how===3&&pot>0&&DK[y]<30&&DK[y-1]>=30){const c=buy(o,pot);cash-=c;pot=0}
+    // ② 固定買＋低點加碼（Luna 2026-10-25）：每月一半固定買，另一半存著，日 KD 或週 KD 的 K 跌到 30 以下就把存的錢全部買
+    if(how===3&&pot>0&&((DK[y]<30&&DK[y-1]>=30)||(WK[y]<30&&WK[y-1]>=30))){const c=buy(o,pot);cash-=c;pot=0}
     if(how===1){const dLow=DK[y]<=20&&DK[y-1]>20,dDull=DK[y]<=20&&DK[y-1]<=20&&DK[y-2]<=20;
       if(step<2&&dLow){cash-=buy(o,cash*0.5);step++}
       else if(step===2){if(dDull)wait=true;
@@ -1948,7 +1948,7 @@ function btOpen(){let box=$("bt-pop");
     <details class="bt-how"><summary>怎麼算的</summary><ul>
       <li>每個月拿出同樣的錢，沒用完的錢留到下個月一起用。最後「變成」＝股票市值＋還沒用的錢。</li>
       <li>① 每個月固定買（定期定額）：每月第一個交易日開盤全部買。</li>
-      <li>② 固定買＋低點加碼：每月的錢一半在第一個交易日開盤買，另一半存起來；日 KD 的 K 跌到 30 以下，隔天開盤把存的錢全部買進。</li>
+      <li>② 固定買＋低點加碼：每月的錢一半在第一個交易日開盤買，另一半存起來；日 KD 或週 KD 的 K 跌到 30 以下（相對低點），隔天開盤把存的錢全部買進。</li>
       <li>③ 跌到低點才買：日 KD 跌到 20 以下買第 1 筆（手上的錢一半），下一次再跌到 20 以下買第 2 筆（剩下的一半）。如果日 KD 連 3 天在 20 以下（鈍化），改等週 KD 到 20 以下再把錢全部買完；沒鈍化就等下一次日 KD 低點買完。然後重新開始。</li>
       <li>④ 賺價差：日 KD 黃金交叉就買，分 3 次（一半、再一半、全部）；週 KD 在 80 以上死叉就賣，分 3 次（25%、25%、50%）。賣的價格比平均成本高就算「賺」。</li>
       <li>最大跌幅＝中途帳戶從最高點最多往下掉幾 %（不算每月新存進去的錢）。</li>

@@ -683,6 +683,7 @@ async function detail(code, us) {
   const bars = ts.map((t, i) => [ymd(t, tz), rp(q.open[i]), rp(q.high[i]), rp(q.low[i]), rp(q.close[i]), q.volume[i] || 0]).filter(b => b.slice(1, 5).every(v => v != null));
   // 還原 K 線：開高低收都乘上「還原收盤 ÷ 收盤」（除權息、分割都還原）
   const fixed = ts.map((t, i) => { const c = q.close[i], a = adj[i]; if ([q.open[i], q.high[i], q.low[i], c, a].some(v => v == null) || !c) return null; const f = a / c;
+    if (!us && !(q.volume[i] > 0) && q.high[i] === q.low[i]) return null; // 台股休市日的假 K 棒（量 0、高低一樣）
     return [ymd(t, tz), rp(q.open[i] * f), rp(q.high[i] * f), rp(q.low[i] * f), rp(a), q.volume[i] || 0]; }).filter(Boolean);
   let divs = Object.values((d.events || {}).dividends || {}).sort((a, b) => a.date - b.date).map(v => [ymd(v.date, tz), rp(v.amount), ""]);
   // 發放日：台股用 FinMind 股利政策（除息日、發放日、金額）；美股用 Nasdaq 的配息紀錄對上除息日
@@ -838,6 +839,8 @@ async function kdList(list) {
         const rows = [], weeks = new Map();
         ts.forEach((t, i) => {
           const b = [q.high[i], q.low[i], q.close[i]]; if (b.some(v => v == null)) return;
+          // 台股休市日 Yahoo 會補一根量 0、高低收都一樣的假 K 棒（例如 10/23），不算進 KD
+          if (!us && !(q.volume[i] > 0) && b[0] === b[1]) return;
           rows.push([ymdOff(t, 8), ...b, q.volume[i] || 0]);
         });
         const lv = !us && live[code];
@@ -904,7 +907,10 @@ async function monthOne(sym) {
       const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=10y&interval=1mo`, { headers: { "User-Agent": UA } });
       if (!r.ok) continue;
       const res = (await r.json()).chart?.result?.[0]; if (!res) return null;
-      return monthMacd((res.indicators.quote[0].close || []).filter(v => v != null));
+      // Yahoo 月線最後常多一列「這個月到今天」（和這個月重複），用台灣時間的年月去重，留最後一筆；用還原收盤，和 K 線圖一樣
+      const cl = res.indicators.adjclose?.[0]?.adjclose || res.indicators.quote[0].close || [], m = new Map();
+      (res.timestamp || []).forEach((t, i) => { if (cl[i] != null) m.set(new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 7), cl[i]); });
+      return monthMacd([...m.keys()].sort().map(k => m.get(k)));
     } catch (_) {}
   }
   return null;

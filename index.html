@@ -1856,7 +1856,7 @@ const mkData={},mkAt={};
 async function mkLoad(tw,us,ks,after){if(!ON_CF)return;const fresh=c=>mkAt[c]>Date.now()-36e5;
   const T=tw.filter(c=>!fresh(c)),U=us.filter(c=>!fresh(c)),K=ks.filter(c=>!fresh(c));if(!T.length&&!U.length&&!K.length)return;
   [...T,...U,...K].forEach(c=>mkAt[c]=Date.now());
-  const d=await api(`/api/mk?c=${T.slice(0,20).join(",")}&us=${U.slice(0,20).join(",")}&k=${K.slice(0,20).map(encodeURIComponent).join(",")}&v=4`);
+  const d=await api(`/api/mk?c=${T.slice(0,20).join(",")}&us=${U.slice(0,20).join(",")}&k=${K.slice(0,20).map(encodeURIComponent).join(",")}&v=5`);
   if(!d){[...T,...U,...K].forEach(c=>delete mkAt[c]);return}Object.assign(mkData,d);if(after)after()}
 // 月 MACD 狀態：紅柱／綠柱、放大／縮小（剛翻紅、翻綠也算放大）、收盤在 5 月線、10 月線上面還是下面
 function moState(m){if(!m||m.osc==null||m.posc==null)return null;const red=m.osc>0,flip=Math.sign(m.osc)!==Math.sign(m.posc),grow=flip||Math.abs(m.osc)>Math.abs(m.posc);
@@ -2059,7 +2059,7 @@ function kdBoxes(dy,wk,name,mo,mode=""){
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
-  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=9`);
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=10`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
@@ -2252,7 +2252,7 @@ async function wdRender(c){
   let x=wdCache[c];
   for(let t=0;!x&&t<3;t++){
     if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
-    x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=10`);if(x&&x.error)x=null;
+    x=await api(`/api/detail?${us?"us":"c"}=${encodeURIComponent(c)}&v=11`);if(x&&x.error)x=null;
   }
   if(x){wdCache[c]=x;watchValFromDetail(c,x)}
   if(!x){delete wdCache[c];body.innerHTML=head+'<div class="wd-sec"><p>暫時抓不到這一檔的資料，請稍後按右上角「重新整理」。</p></div>';return}

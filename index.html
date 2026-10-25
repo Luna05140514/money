@@ -1912,7 +1912,7 @@ function btPrep(r){const B=r.d.map((d,i)=>({dt:d,o:r.o[i],h:r.h[i],l:r.l[i],c:r.
     const w=[...weeks.slice(-8),cur],H=Math.max(...w.map(x=>x.h)),L=Math.min(...w.map(x=>x.l)),v=H>L?(cur.c-L)/(H-L)*100:50;WK[i]=Kc*2/3+v/3;WD[i]=Dc*2/3+WK[i]/3});
   return {B,DK,DD,WK,WD}}
 function btRun(P,start,M,how,etf,Y=3){const {B,DK,DD,WK,WD}=P,FS=BT_FB+(etf?0.001:0.003),t0=Math.max(2,B.findIndex(b=>b.dt>=start));
-  let nDep=0,nextY="",half=false,dull=false,pot=0,cash=0,sh=0,inv=0,units=0,nav=1,pk=1,dd=0,cost=0,win=0,lose=0,nb=0,ns=0,step=0,wait=false,sb=0,ss=0,sS=0;
+  let ddc=0,nDep=0,nextY="",half=false,dull=false,pot=0,cash=0,sh=0,inv=0,units=0,nav=1,pk=1,dd=0,cost=0,win=0,lose=0,nb=0,ns=0,step=0,wait=false,sb=0,ss=0,sS=0;
   const buy=(px,amt)=>{const n=Math.floor(amt/(px*(1+BT_FB)));if(n<=0)return 0;const c=n*px*(1+BT_FB);sh+=n;cost+=c;nb++;return c};
   const sell=(px,n)=>{n=Math.min(sh,Math.floor(n));if(n<=0)return;const ac=cost/sh,got=n*px*(1-FS);if(got>ac*n)win++;else lose++;cost-=ac*n;sh-=n;cash+=got;ns++};
   for(let t=t0;t<B.length;t++){const o=B[t].o,c=B[t].c,y=t-1;
@@ -1938,8 +1938,10 @@ function btRun(P,start,M,how,etf,Y=3){const {B,DK,DD,WK,WD}=P,FS=BT_FB+(etf?0.00
       if(DK[y]>DD[y]&&DK[y-1]<=DD[y-1]){ss=0;cash-=buy(o,cash*[0.5,0.5,1][sb]);sb=(sb+1)%3}
       if(btWk(B[y].dt)!==btWk(B[t].dt)){let pw=y-1;while(pw>0&&btWk(B[pw].dt)===btWk(B[y].dt))pw--;
         if(WK[y]<WD[y]&&WK[pw]>=WD[pw]&&WK[pw]>=80){sb=0;if(ss===0)sS=sh;if(ss<3){sell(o,sS*[0.25,0.25,0.5][ss]);ss++}}}}
-    const v=cash+sh*c;nav=v/units;pk=Math.max(pk,nav);dd=Math.max(dd,1-nav/pk)}
-  const val=cash+sh*B[B.length-1].c;return {inv,val,idle:cash,ret:(val/inv-1)*100,dd:dd*100,win,lose,from:B[t0].dt,to:B[B.length-1].dt}}
+    const v=cash+sh*c;nav=v/units;pk=Math.max(pk,nav);dd=Math.max(dd,1-nav/pk);
+    // 最大跌幅改成跟買進成本比（Luna 2026-10-25）：手上股票的市值比當時的平均買進成本最多少幾 %
+    if(sh>0&&cost>0)ddc=Math.max(ddc,1-sh*c/cost)}
+  const val=cash+sh*B[B.length-1].c;return {inv,val,ddc:ddc*100,idle:cash,ret:(val/inv-1)*100,dd:dd*100,win,lose,from:B[t0].dt,to:B[B.length-1].dt}}
 function btOpen(){let box=$("bt-pop");
   if(!box){box=document.createElement("div");box.id="bt-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest("[data-btx]")){box.hidden=true;return}
@@ -1963,7 +1965,7 @@ function btOpen(){let box=$("bt-pop");
       <li>③④ 價差不是每月存，而是每年一開始整筆放 12 個月的錢（每月 1 萬就是 12 萬），2 年、3 年的話每年再加一次。</li>
       <li>③ 日 KD 的 K 跌到 30 以下，把手上的錢全部買進；K 漲到 80 以上，全部賣掉。</li>
       <li>④ 日 KD 的 K 跌到 30 以下，把手上的錢全部買進；日 KD 的 K 漲到 80 以上先賣一半。剩下的：如果日 KD 鈍化（連 3 天 80 以上），等週 KD 的 K 到 80 以上再全部賣；沒有鈍化，就等日 KD 死叉全部賣。</li>
-      <li>最大跌幅＝中途帳戶從最高點最多往下掉幾 %（不算每月新存進去的錢）。</li>
+      <li>最多跌幾 %＝回測期間，手上股票的市值比買進的成本（平均每股買價）最多少掉幾 %。沒有比成本低過，就寫「沒有跌破買進成本」。</li>
       <li>用含息還原價，配息等於自動再買回去。買整數股（零股），手續費 0.1425%，賣出另外算證交稅（ETF 0.1%、股票 0.3%）。訊號在收盤出現，隔天開盤買賣。美股用美元算。</li>
       <li>過去的結果不代表未來，只是參考。</li></ul></details>
     <p class="src">資料來源：Yahoo Finance（含息還原日線）。數字的版權屬於原提供者。</p></div>`;
@@ -1989,7 +1991,7 @@ function btResult(){const out=$("bt-out"),P=btData[btCode];if(!out||!P)return;
     return `<div class="bt-res${x.ret===best?" best":""}"><div class="bt-nm">${BT_NM[i]}${x.ret===best?' <em>最好</em>':""}</div>
       <div class="bt-big"><b class="${g>=0?"up":"dn"}">${x.ret>=0?"+":""}${x.ret.toFixed(1)}%</b><span class="${g>=0?"up":"dn"}">${g>=0?"賺":"賠"} ${Math.round(Math.abs(g)).toLocaleString()}${cur}</span></div>
       <div class="bt-d">投入 ${w(x.inv)} → 變成 ${w(x.val)}${x.idle>=M?`（其中 ${w(x.idle)} 還沒用）`:""}</div>
-      <div class="bt-d">最大跌幅 <b>−${x.dd.toFixed(0)}%</b>${i>=2?`　賣 ${x.win+x.lose} 次，賺 ${x.win} 次`:""}</div></div>`}).join("")}
+      <div class="bt-d">${x.ddc<0.5?"沒有跌破買進成本":`比買進成本最多跌 <b>−${x.ddc.toFixed(0)}%</b>`}${i>=2?`　賣 ${x.win+x.lose} 次，賺 ${x.win} 次`:""}</div></div>`}).join("")}
 
 function sumShow(key){const x=SUMINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);

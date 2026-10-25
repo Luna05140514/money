@@ -2044,14 +2044,17 @@ function kdBoxes(dy,wk,name,mo,mode=""){
   if(M){const f=v=>(+v).toLocaleString("zh-TW",{maximumFractionDigits:4});
     // 月 MACD 只寫四種（Luna 2026-10-25）：柱子在 0 以上＝多頭、以下＝空頭；比上個月高＝向上、低＝向下
     // 改成多空看 DIF 在 0 軸上下（Luna 2026-10-25 同意），舊資料沒有 dif 就先看柱子
-    // Luna 2026-10-25 第四版：三個結論。① DIF 在 0 軸上＝多頭、下＝空頭 ② 金叉（DIF 在 MACD 線上，OSC 正）＝趨勢向上、死叉＝趨勢向下 ③ 柱子比上個月短＝放緩
-    const bull=mo.dif!=null?+mo.dif>=0:M.red,gx=+mo.osc>=0,slow=Math.abs(+mo.osc)<Math.abs(+mo.posc),
-      ml=`<span class="nw">${bull?"多頭":"空頭"}</span> <span class="nw">${gx?"趨勢向上":"趨勢向下"}</span> <span class="nw">${slow?"放緩":"未放緩"}</span>`,
-      cls=gx?(slow?"high":"buy"):(slow?"low":"sell");
+    // Luna 2026-10-25 第七版（8 種）：DIF 在 0 軸上＝多頭、下＝空頭；OSC 正（金叉）＝向上、負（死叉）＝向下；
+    // 減緩：金叉時 OSC 比上個月少、死叉時 OSC 比上個月多（綠柱變短），多頭空頭一樣
+    const bull=mo.dif!=null?+mo.dif>=0:M.red,gx=+mo.osc>=0,o=+mo.osc,po=+mo.posc,
+      slow=gx?o<po:o>po,
+      ml=`<span class="nw">${bull?"多頭":"空頭"}</span> <span class="nw">${gx?"向上":"向下"}</span>${slow?' <span class="nw">減緩</span>':""}`,
+      cls=gx?(slow?"high":"buy"):(slow?"low":"sell"),
+      rule="金叉（向上）：OSC 比上個月少＝減緩；死叉（向下）：OSC 比上個月多（綠柱變短）＝減緩";
     mBox=one("月MACD","",cls,ml,[
       ["DIF（快線）",mo.dif!=null?f(mo.dif):"—",bull?"多頭":"空頭",bull?"up":"down","DIF 在 0 軸以上＝多頭、在 0 軸以下＝空頭"],
-      ["OSC（柱子）",f(mo.osc),gx?"趨勢向上":"趨勢向下",gx?"up":"down","OSC＝DIF－MACD 線；正的（紅柱，金叉）＝趨勢向上、負的（綠柱，死叉）＝趨勢向下"],
-      ["柱子長短",`這個月 ${f(mo.osc)}、上個月 ${f(mo.posc)}`,slow?"放緩":"未放緩",slow?"down":"up","柱子比上個月短＝放緩、一樣長或更長＝未放緩"]],null,"月 MACD")}
+      ["OSC（柱子）",f(mo.osc),gx?"向上":"向下",gx?"up":"down","OSC＝DIF－MACD 線；正的（紅柱，金叉）＝向上、負的（綠柱，死叉）＝向下"],
+      ["OSC 跟上個月比",`這個月 ${f(mo.osc)}、上個月 ${f(mo.posc)}`,slow?"減緩":"沒有減緩",slow?"down":"up",rule]],null,"月 MACD")}
   const s=sumOf(dy,wk,M);let sum="";
   if(name){const k=name+"｜總結論";SUMINFO.set(k,{name,s,M,wk:wk&&wk.k!=null?wk:null,dy:dy&&dy.k!=null?dy:null});sum=`<i class="sg sg-sum ${s.cls}" data-sum="${esc(k)}" role="button" tabindex="0"><small>總結論</small>${esc(s.txt)}</i>`}
     const head=(xp,arrow)=>`<span class="vh"${xp?` data-xp="${esc(xp)}" role="button" tabindex="0"`:""}>技術分析${arrow?"":`<i class="qm" data-term="技術分析" role="button" tabindex="0" aria-label="技術分析是什麼">?</i>`}${arrow?`<b class="xa">${arrow}</b>`:""}</span>`;

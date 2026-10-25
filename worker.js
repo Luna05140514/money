@@ -438,6 +438,22 @@ async function twLive(codes) {
 }
 
 // 定期定額（Luna 2026-10-24）：最近 3 個月每天的收盤價（沒有還原），網頁用扣款日（遇假日用下一個交易日）的收盤價算買幾股
+// 自選股「回測」（Luna 2026-10-25）：5 年含息還原日線 OHLC，給頁面自己算 1～3 年的存股／價差回測
+async function btBars(code, us) {
+  for (const sym of us ? [code] : [code + ".TW", code + ".TWO"]) {
+    const d = await chart(sym);
+    if (!d || !(d.timestamp || []).length) continue;
+    const q = d.indicators.quote[0], adj = (d.indicators.adjclose || [{}])[0].adjclose || q.close, out = { d: [], o: [], h: [], l: [], c: [] };
+    d.timestamp.forEach((t, i) => {
+      const c = q.close[i], a = adj[i];
+      if (c == null || a == null || q.open[i] == null || q.high[i] == null || q.low[i] == null || (!us && !(q.volume[i] > 0))) return;
+      const f = a / c;
+      out.d.push(ymdOff(t, us ? -4 : 8)); out.o.push(rp(q.open[i] * f)); out.h.push(rp(q.high[i] * f)); out.l.push(rp(q.low[i] * f)); out.c.push(rp(a));
+    });
+    if (out.d.length > 60) return out;
+  }
+  return null;
+}
 async function closes(code, us) {
   const tz = us ? "America/New_York" : "Asia/Taipei";
   let out = null;
@@ -1179,6 +1195,13 @@ export default {
       case "/api/nav": return cached(request, ctx, CACHE_SEC, navTable);
       case "/api/divcal": return cached(request, ctx, 6 * 3600, divCal);
       case "/api/mkt": return cached(request, ctx, 1800, market);
+      case "/api/bt": {
+        // ?c=0050 或 ?us=VOO → 5 年含息還原日線（開高低收），6 小時內共用
+        const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 21600, () => btBars(c, false));
+        if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 21600, () => btBars(u, true));
+        return new Response("{}", { status: 400 });
+      }
       case "/api/px": {
         // ?c=0050 或 ?us=VOO → 最近 3 個月每天的收盤價，30 分鐘內共用
         const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";

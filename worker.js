@@ -867,8 +867,8 @@ async function kdList(list) {
 // 月 MACD（Luna 2026-10-24）：月線 MACD(12,26,9) 柱子、5 月線、10 月線，給「日KD／週KD／月MACD」三格和總結論用
 function monthMacd(cl) {
   const n = cl.length; if (n < 12) return null;
-  let e12 = cl[0], e26 = cl[0], dea = 0; const osc = [];
-  cl.forEach((c, i) => { e12 += (c - e12) * 2 / 13; e26 += (c - e26) * 2 / 27; if (i) dea += (e12 - e26 - dea) * 2 / 10; osc.push(e12 - e26 - dea); });
+  let e12 = cl[0], e26 = cl[0], dea = 0; const osc = []; let dif = 0;
+  cl.forEach((c, i) => { e12 += (c - e12) * 2 / 13; e26 += (c - e26) * 2 / 27; if (i) dea += (e12 - e26 - dea) * 2 / 10; osc.push(e12 - e26 - dea); dif = e12 - e26; });
   const ma = (k, e = 0) => n - e < k ? null : cl.slice(n - e - k, n - e).reduce((a, b) => a + b, 0) / k, r = v => v == null ? null : +v.toPrecision(5);
   // 8 階段表（Luna 2026-10-24）另外要：60 月線、上個月的 5／10 月線（看均線往上）、前 11 個月最高收盤（創高）、
   // 上上個月柱子（翻紅）、背離 bd：近 3 個月內收盤創 12 個月新高，但那個月的 MACD 柱比前 12 個月最高的柱子低
@@ -877,7 +877,8 @@ function monthMacd(cl) {
     const pc = cl.slice(j - 12, j), po = osc.slice(j - 12, j);
     if (cl[j] >= Math.max(...pc) && osc[j] < Math.max(...po)) { bd = 1; break; }
   }
-  return { osc: r(osc[n - 1]), posc: r(osc[n - 2]), pposc: r(osc[n - 3]), c: r(cl[n - 1]), ma5: r(ma(5)), ma10: r(ma(10)), ma60: r(ma(60)),
+  // dif：DIF 快線，月 MACD 多空用 0 軸分（Luna 2026-10-25）
+  return { dif: r(dif), osc: r(osc[n - 1]), posc: r(osc[n - 2]), pposc: r(osc[n - 3]), c: r(cl[n - 1]), ma5: r(ma(5)), ma10: r(ma(10)), ma60: r(ma(60)),
     pma5: r(ma(5, 1)), pma10: r(ma(10, 1)), hi: r(Math.max(...cl.slice(Math.max(0, n - 12), n - 1))), bd };
 }
 async function monthOne(sym) {

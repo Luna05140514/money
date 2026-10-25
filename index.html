@@ -1856,7 +1856,7 @@ const mkData={},mkAt={};
 async function mkLoad(tw,us,ks,after){if(!ON_CF)return;const fresh=c=>mkAt[c]>Date.now()-36e5;
   const T=tw.filter(c=>!fresh(c)),U=us.filter(c=>!fresh(c)),K=ks.filter(c=>!fresh(c));if(!T.length&&!U.length&&!K.length)return;
   [...T,...U,...K].forEach(c=>mkAt[c]=Date.now());
-  const d=await api(`/api/mk?c=${T.slice(0,20).join(",")}&us=${U.slice(0,20).join(",")}&k=${K.slice(0,20).map(encodeURIComponent).join(",")}&v=3`);
+  const d=await api(`/api/mk?c=${T.slice(0,20).join(",")}&us=${U.slice(0,20).join(",")}&k=${K.slice(0,20).map(encodeURIComponent).join(",")}&v=4`);
   if(!d){[...T,...U,...K].forEach(c=>delete mkAt[c]);return}Object.assign(mkData,d);if(after)after()}
 // 月 MACD 狀態：紅柱／綠柱、放大／縮小（剛翻紅、翻綠也算放大）、收盤在 5 月線、10 月線上面還是下面
 function moState(m){if(!m||m.osc==null||m.posc==null)return null;const red=m.osc>0,flip=Math.sign(m.osc)!==Math.sign(m.posc),grow=flip||Math.abs(m.osc)>Math.abs(m.posc);
@@ -2041,10 +2041,12 @@ function kdBoxes(dy,wk,name,mo,mode=""){
   if(wk&&wk.k!=null){const hit=sgHit(wk),m=SG_LOGIC.長線[hit];wBox=one("週KD","長線",m[1],m[2],kdRows(wk,false),hit,"週 KD")}
   const M=moState(mo);let mBox=one("月MACD","","na","—");
   if(M){const f=v=>(+v).toLocaleString("zh-TW",{maximumFractionDigits:4});
-    mBox=one("月MACD","",M.red?(M.grow?"buy":"low"):(M.grow?"sell":"high"),M.label,[
-      ["月 MACD 柱",`這個月 ${f(mo.osc)}、上個月 ${f(mo.posc)}`,M.label,M.red?"up":"down","柱子在 0 以上是紅柱、以下是綠柱<br>比上個月長是放大、短是縮小"],
-      ["5 月線",`收盤 ${f(mo.c)}、5 月線 ${f(mo.ma5)}`,M.a5?"站上":"跌破",M.a5?"up":"down","收盤在最近 5 個月平均價上面是站上"],
-      ["10 月線",`10 月線 ${f(mo.ma10)}`,M.a10?"站上":"跌破",M.a10?"up":"down","收盤在最近 10 個月平均價上面是站上"]],null,"月 MACD")}
+    // 月 MACD 只寫四種（Luna 2026-10-25）：柱子在 0 以上＝多頭、以下＝空頭；比上個月高＝向上、低＝向下
+    // 改成多空看 DIF 在 0 軸上下（Luna 2026-10-25 同意），舊資料沒有 dif 就先看柱子
+    const bull=mo.dif!=null?+mo.dif>=0:M.red,up=+mo.osc>=+mo.posc,ml=`${bull?"多頭":"空頭"}${up?"向上":"向下"}`;
+    mBox=one("月MACD","",bull?(up?"buy":"low"):(up?"high":"sell"),ml,[
+      ["DIF（快線）",mo.dif!=null?f(mo.dif):"—",bull?"多頭":"空頭",bull?"up":"down","DIF 在 0 軸以上＝多頭、在 0 軸以下＝空頭"],
+      ["MACD 柱",`這個月 ${f(mo.osc)}、上個月 ${f(mo.posc)}`,up?"向上":"向下",up?"up":"down","紅柱變長或綠柱變短＝向上；紅柱變短或綠柱變長＝向下"]],null,"月 MACD")}
   const s=sumOf(dy,wk,M);let sum="";
   if(name){const k=name+"｜總結論";SUMINFO.set(k,{name,s,M,wk:wk&&wk.k!=null?wk:null,dy:dy&&dy.k!=null?dy:null});sum=`<i class="sg sg-sum ${s.cls}" data-sum="${esc(k)}" role="button" tabindex="0"><small>總結論</small>${esc(s.txt)}</i>`}
     const head=(xp,arrow)=>`<span class="vh"${xp?` data-xp="${esc(xp)}" role="button" tabindex="0"`:""}>技術分析${arrow?"":`<i class="qm" data-term="技術分析" role="button" tabindex="0" aria-label="技術分析是什麼">?</i>`}${arrow?`<b class="xa">${arrow}</b>`:""}</span>`;
@@ -2053,7 +2055,7 @@ function kdBoxes(dy,wk,name,mo,mode=""){
     return `<span class="vchip${watchSel[c]==="t"?" on":""}" data-xp="t:${esc(c)}" role="button" tabindex="0"><small>技術分析</small><b class="sg ${cls}">${main}</b></span>`}
   const xp=mode.startsWith("xp:")?"t:"+mode.slice(3):"";
   // Luna 2026-10-25：技術分析只顯示日 KD、週 KD（月 MACD 和總結論拿掉）
-  return `<span class="sigs tbox${xp?" xpd":""}">${name&&mode!=="nohead"?head(xp,xp?"▴":""):""}${dBox}${wBox}</span>`}
+  return `<span class="sigs sigs3 tbox${xp?" xpd":""}">${name&&mode!=="nohead"?head(xp,xp?"▴":""):""}${dBox}${wBox}${mBox}</span>`}
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;

@@ -1737,7 +1737,10 @@ async function liveHits(){
   const n=v=>Number(v).toLocaleString("zh-TW");
   $("hits").innerHTML=`<span>今天使用 ${n(d.today)} 人</span><span>總使用 ${n(d.total)} 人</span>`;$("hits").hidden=false}
 async function liveIdx(){
-  const d=await api("/api/idx");if(!d||!d.items||!d.items.length)return;
+  // 抓到的即時報價存在手機裡；下次抓不到（資料來源忙）就先用這份，不要退回網頁內建的舊價格（Luna 2026-10-26）
+  let d=await api("/api/idx");
+  if(d&&d.items&&d.items.length){try{localStorage.setItem("facai-idx-live",JSON.stringify(d))}catch(_){}}
+  else{try{d=JSON.parse(localStorage.getItem("facai-idx-live"))}catch(_){d=null}if(!d||!d.items||!d.items.length||!(d.updated>(IDX.updated||"")))return}
   const by=Object.fromEntries(d.items.map(x=>[x.key,x]));
   IDX.items=[...d.items,...IDX.items.filter(y=>!by[y.key])];
   IDX.updated=d.updated+LIVE;if(d.adr)IDX.adr=d.adr;

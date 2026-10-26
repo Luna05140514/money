@@ -158,11 +158,12 @@ async function maxDaily(key) {
   return (await maxK(key, 1440, 1000)).map(x => [ymd(x[0], "Asia/Taipei"), +x[1], +x[2], +x[3], +x[4], Math.round(+x[5])]);
 }
 async function spark(list, asia) {
-  const url = "https://query1.finance.yahoo.com/v8/finance/spark?range=1d&interval=5m&symbols=" +
-    list.map(([s]) => encodeURIComponent(s)).join(",");
-  const r = await (await get(url)).json();
+  const q = "/v8/finance/spark?range=1d&interval=5m&symbols=" + list.map(([s]) => encodeURIComponent(s)).join(",");
+  // Yahoo 偶爾擋 Cloudflare（429）：query1 不行換 query2
+  let r;
+  for (const host of ["query1", "query2"]) { try { r = await (await get(`https://${host}.finance.yahoo.com${q}`)).json(); break; } catch (e) { if (host === "query2") throw e; } }
   return list.map(([s, name]) => {
-    const v = r[s], ts = v.timestamp || [], cl = v.close || [];
+    const v = r[s] || {}, ts = v.timestamp || [], cl = v.close || [];
     const tz = asia ? "Asia/Taipei" : "America/New_York";
     const pts = ts.map((t, k) => [t, cl[k]]).filter(p => p[1] != null).map(([t, c]) => [hm(t, tz), r2(c)]);
     return { key: s, name, ...(asia ? { as: 1 } : { us: 1 }), date: ts.length ? ymd(ts[ts.length - 1], ixTz(s)) : "",
@@ -179,6 +180,19 @@ async function build() {
   jobs.txf = w.then(txfDay).catch(() => txf());
   jobs.txfn = w.then(txfNight); // Luna：台股加夜指期，放在台指期下面
   const got = Object.fromEntries(await Promise.all(Object.entries(jobs).map(([k, p]) => p.then(v => [k, v], () => [k, null]))));
+  // 某一組抓不到時，用這一組上一次抓到的（存 2 天），不要整組消失讓網頁退回內建的舊價格（Luna 2026-10-26：重新整理後價格變上一次的）
+  const keep = caches.default;
+  await Promise.all(Object.keys(got).map(async k => {
+    const key = new Request(`https://idx.keep/${k}`), has = x => x && x.pts && x.pts.length && x.prev;
+    let v = got[k];
+    const full = v && (Array.isArray(v) ? v.every(has) : has(v));
+    if (!full) { // 整組失敗，或其中幾檔是空的：用上一次存的補
+      const old = await keep.match(key).then(r => r && r.json()).catch(() => null);
+      if (old) v = Array.isArray(old) ? (Array.isArray(v) ? old.map(o => { const n = v.find(x => x.key === o.key); return has(n) ? n : o; }) : old) : (has(v) ? v : old);
+      got[k] = v;
+    }
+    if (v && (Array.isArray(v) ? v.some(has) : has(v))) await keep.put(key, new Response(JSON.stringify(v), { headers: { "Cache-Control": "max-age=172800" } })).catch(() => {});
+  }));
   const items = [];
   for (const k of ["twii", "txf", "txfn", "otc"]) if (got[k]) items.push({ key: k, ...got[k] });
   if (got.tw2330) items.push({ key: "2330", pick: 1, ...got.tw2330 }); // Luna：大盤台股最下面放台積電

@@ -609,7 +609,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/26 23:59</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/27 00:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1796,7 +1796,11 @@ const WATCH_KEY="facai-watch3",WATCH_DEFAULT=[
   {name:"美股",list:["NVDA","GOOG","SPCX","SOXX","VOO","QQQ","TSM","TSMX"]},
   {name:"觀察股",list:[],obs:1}];
 const clone=x=>JSON.parse(JSON.stringify(x));
-let watchGroups=clone(WATCH_DEFAULT),watchLive={},watchEdit=false,watchTab=0;
+let watchGroups=clone(WATCH_DEFAULT),watchLive={},watchEdit=false,watchTab=0,watchLiveAt=0;
+// 即時報價存在手機裡（比網頁內建資料新才用），重新整理時先用它，不要先出現舊價格（Luna 2026-10-26）
+const twNow=()=>{const t=new Date(Date.now()+8*3600e3).toISOString();return t.slice(0,10)+" "+t.slice(11,16)};
+try{const x=JSON.parse(localStorage.getItem("facai-watch-live"));if(x&&x.d&&x.u>(STOCK&&STOCK.updated||""))watchLive=x.d}catch(_){}
+function watchLiveSave(d){Object.assign(watchLive,d);watchLiveAt=Date.now();try{localStorage.setItem("facai-watch-live",JSON.stringify({u:twNow(),d:watchLive}))}catch(_){}}
 const watchAll=()=>watchGroups.flatMap(g=>g.list);
 function watchSave(){try{localStorage.setItem(WATCH_KEY,JSON.stringify(watchGroups))}catch(_){}}
 function watchLoadSaved(){
@@ -2136,7 +2140,7 @@ async function watchLoad(){
   const need=codes;if(!need.length)return;
   const d=await api(`/api/quote?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}`);
   if(!d)return;
-  Object.assign(watchLive,d);
+  watchLiveSave(d);
   if(curPage()==="wdetail"&&!wdK.ix&&d[wdK.code]){wdLivePatch();if($("wd-k"))wdKDraw()}
   const now=new Date(Date.now()+8*3600e3).toISOString();
   $("watch-time").textContent=`資料更新於 ${now.slice(0,10)} ${now.slice(11,19)}${LIVE}，每分鐘自動更新`;
@@ -2250,6 +2254,8 @@ async function wdRender(c){
   wdBack("watch","‹ 自選股");wdK.ix=null;wdK.volUnit=null;
   const r=idxOf[c],body=$("wd-body");if(!r){show("watch");return}
   if(!stkData[c])await loadShard(r[3]).catch(()=>null);
+  // 重新整理後先抓這一檔的即時報價再畫，不然標題的價格會是網頁內建的舊價格（Luna 2026-10-26）
+  if(ON_CF&&Date.now()-watchLiveAt>20000){const q=await api(`/api/quote?${r[4]?"us":"c"}=${encodeURIComponent(c)}`).catch(()=>null);if(q&&q[c])watchLiveSave(q);if(wdCode!==c||curPage()!=="wdetail")return}
   const it=watchItem(c)||{},us=!!r[4],etf=r[2]===1;
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";

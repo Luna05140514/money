@@ -532,6 +532,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-seg button{all:unset;cursor:pointer;padding:8px 16px;border-radius:999px;border:1px solid var(--line);font-size:17px;font-weight:700;color:var(--ink)}
 .wd-seg button{text-align:center}
 .wd-seg.r1{margin-bottom:6px}
+.wd-seg.r2.n4 button{font-size:15px}
+.wd-kpi.k3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.wd-kpi.k3 div{padding:10px 4px}.wd-kpi.k3 b{font-size:23px}
 .wd-seg.r1 button{padding:8px 0!important;font-size:17px}
 .wd-seg button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
 .wd-pbch{width:100%;height:auto;margin-top:12px}
@@ -609,7 +611,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/30 12:00</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/30 12:20</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1704,6 +1706,7 @@ const GLOSS={
   BT7:["⑦ 日 KD 低點分批買、高點賣一半", "<ol class=\"bt-steps\"><li>每年一開始放 12 個月的錢（每月 1 萬就是 12 萬）。</li><li>日 KD 的 K 跌破 30，隔天開盤買 30%。</li><li>再跌破 20，再買 40%。</li><li>之後出現金叉（K 往上穿過 D），買最後 30%。</li><li>日 KD 的 K 漲到 80 以上，先賣一半。</li><li>剩下的一半：如果日 KD 連 3 天都在 80 以上（鈍化），等週 KD 的 K 到 80 以上再全部賣。</li><li>沒有鈍化：等日 KD 死叉（K 往下穿過 D）就全部賣。</li></ol>", "", "", "操作流程：日 KD 低點分批買、高點賣一半"],
 
   KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；30 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
+  本益成長比:["本益成長比（PEG）","本益成長比 = 本益比 ÷ EPS 成長率（%）。把公司賺錢成長的速度也算進來：本益比高，但賺錢成長更快，其實不一定貴。","1 以下算便宜，1～2 合理，2 以上算昂貴。EPS 衰退的股票算不出來。這裡用法人（分析師）預估的 EPS。","例：本益比 20 倍、EPS 一年成長 25%，本益成長比 = 20 ÷ 25 = 0.8，算便宜。"],
   本益比:["本益比","本益比 = 股價 ÷ 每股一年賺的錢（EPS）。意思是：用現在的價格買，大概要幾年才能靠公司賺的錢回本。數字越低越便宜。","「今年／明年本益比」是用法人（分析師）預估的 EPS 算的。便宜、合理、昂貴是跟這檔股票自己過去 5 年的本益比比較。","例：股價 100 元、一年每股賺 5 元，本益比 = 20 倍。"],
   股淨比:["股淨比（股價淨值比）","股淨比 = 股價 ÷ 每股淨值。淨值是公司把東西全賣掉、債還清以後，每一股可以分到的錢。1 倍表示股價剛好等於公司的家當。","金融股、賺錢不穩定的股票，常用股淨比看便宜或貴。","例：每股淨值 50 元、股價 75 元，股淨比 = 1.5 倍。"],
   EPS:["EPS（每股盈餘）","公司賺的錢，平均分到每一股是多少元。越高代表公司越會賺錢。","",""],
@@ -2065,8 +2068,8 @@ function btLog(i,pg){const z=btLast;btLogI=i;if(!z)return;const r=idxOf[z.code],
     sg=v=>v>=0?"+":"−",cl=v=>v>=0?"up":"down";
   const G=[];let g0=null;
   L.forEach(a=>{if(!g0){g0={it:[]};G.push(g0)}g0.it.push(a);g0.sh=a.sh;if(a.s&&a.sh===0)g0=null});
-  // 價差（④～⑦）一次只看一輪，用左右箭頭換（Luna 2026-10-30：不要上下滑太多）；預設最新的一輪
-  const paged=i>=3&&G.length>1;if(pg==null||pg<0||pg>=G.length)pg=G.length-1;
+  // 價差（④～⑦）一次只看一輪，用左右箭頭換（Luna 2026-10-30：不要上下滑太多）；預設第一輪（Luna 2026-10-30：從第一筆開始看）
+  const paged=i>=3&&G.length>1;if(pg==null||pg<0||pg>=G.length)pg=0;
   const nav=paged?`<div class="lg-pg"><button data-lgp="${pg-1}"${pg?"":" disabled"} aria-label="上一輪">◀ 上一輪</button><b>第 ${pg+1}／${G.length} 輪</b><button data-lgp="${pg+1}"${pg<G.length-1?"":" disabled"} aria-label="下一輪">下一輪 ▶</button></div>`:"";
   const nb=L.filter(a=>!a.s).length,ns=L.length-nb,real=L.reduce((a,b)=>a+(b.s?b.pl:0),0),mv=x.sh*x.last,un=mv-x.cost;
   box.innerHTML=`<div class="sg-card bt-card" role="dialog" aria-label="詳細買賣紀錄"><button class="sg-x" aria-label="關閉">✕ 關閉</button>
@@ -2075,8 +2078,8 @@ function btLog(i,pg){const z=btLast;btLogI=i;if(!z)return;const r=idxOf[z.code],
       投入 <b>${m(x.inv)}</b>${cur} → 變成 <b>${m(x.val)}</b>${cur}（<b class="${cl(x.ret)}">${sg(x.ret)}${Math.abs(x.ret).toFixed(1)}%</b>）<br>
       買 <b>${nb}</b> 次${ns?`，賣 <b>${ns}</b> 次（賺 ${x.win} 次、賠 ${x.lose} 次），賣出共${real>=0?"賺":"賠"} <b class="${cl(real)}">${m(Math.abs(real))}</b>${cur}`:"，沒有賣過"}<br>
       現在手上 <b>${x.sh.toLocaleString()}</b> 股${x.sh?`，平均成本 <b>${px(x.cost/x.sh)}</b>，現價 <b>${px(x.last)}</b>，帳面${un>=0?"賺":"賠"} <b class="${cl(un)}">${m(Math.abs(un))}</b>${cur}（${sg(un)}${Math.abs(un/x.cost*100).toFixed(1)}%）`:""}${x.idle>=1?`<br>還沒用的錢 <b>${m(x.idle)}</b>${cur}`:""}</div>
-    <p class="muted">價格是含息還原價（配息算進去），會比當時實際的股價低一點。訊號在收盤出現，隔天開盤買賣。每一輪（從買進到全部賣光）框成一塊，${paged?"按左右箭頭換上一輪、下一輪。":"最新的一輪在最上面。"}日、週的 KD 和 MACD 判斷跟自選股的框一樣，看的是出現訊號那天收盤時的樣子。</p>
-    ${nav}${G.length?(paged?[G[pg]]:G.slice().reverse()).map(g=>{const n=G.indexOf(g)+1,open=g.sh>0,sb=g.it.filter(a=>a.s),pl=sb.reduce((a,b)=>a+b.pl,0),bc=sb.reduce((a,b)=>a+b.amt-b.pl,0),
+    <p class="muted">價格是含息還原價（配息算進去），會比當時實際的股價低一點。訊號在收盤出現，隔天開盤買賣。每一輪（從買進到全部賣光）框成一塊，${paged?"按左右箭頭換上一輪、下一輪。":"從最早的一筆開始排。"}日、週的 KD 和 MACD 判斷跟自選股的框一樣，看的是出現訊號那天收盤時的樣子。</p>
+    ${nav}${G.length?(paged?[G[pg]]:G).map(g=>{const n=G.indexOf(g)+1,open=g.sh>0,sb=g.it.filter(a=>a.s),pl=sb.reduce((a,b)=>a+b.pl,0),bc=sb.reduce((a,b)=>a+b.amt-b.pl,0),
         buyAmt=g.it.filter(a=>!a.s).reduce((a,b)=>a+b.amt,0),last=g.it[g.it.length-1],u=open?last.sh*x.last-last.sh*last.ac:0,tp=pl+u,tb=bc+(open?last.sh*last.ac:0);
       return `<div class="lg-g${open?" open":""}"><div class="lg-gh"><b>第 ${n} 輪</b>${open?"<span>還沒賣完（持有中）</span>":""}<span class="lg-gr">${dt(g.it[0].d)} → ${open?"現在":dt(last.d)}</span></div>
       <div class="lg-gs">買 ${g.it.length-sb.length} 次共 ${m(buyAmt)}${cur}${sb.length?`，賣 ${sb.length} 次`:""}　${open&&!sb.length?"帳面":"這輪"}${tp>=0?"賺":"賠"} <b class="${cl(tp)}">${m(Math.abs(tp))}</b>${cur}（<b class="${cl(tp)}">${sg(tp)}${tb?Math.abs(tp/tb*100).toFixed(1):"0.0"}%</b>）${open&&sb.length?"，含還沒賣的帳面損益":""}</div>
@@ -2086,7 +2089,7 @@ function btLog(i,pg){const z=btLast;btLogI=i;if(!z)return;const r=idxOf[z.code],
         <tr><th>MACD</th><td class="${q.dm[0]}">${q.dm[1]}</td><td class="${q.wm[0]}">${q.wm[1]}</td></tr></table>`})()}
       ${a.s?`<div>平均成本 ${px(a.ac)}，這次${a.pl>=0?"賺":"賠"} <b class="${cl(a.pl)}">${m(Math.abs(a.pl))}</b>${cur}（<b class="${cl(a.pr)}">${sg(a.pr)}${Math.abs(a.pr).toFixed(1)}%</b>）　剩 ${a.sh.toLocaleString()} 股</div>`
         :`<div class="lg-r">買完共 ${a.sh.toLocaleString()} 股，平均成本 ${px(a.ac)}</div>`}</div>`).join("")}</div>`}).join(""):`<p class="bt-s">這段期間沒有買賣。</p>`}${nav}</div>`;
-  box.hidden=false;if(pg===G.length-1||!paged){box.scrollTop=0;const c=box.querySelector(".sg-card");if(c&&box.dataset.i!==String(i))c.scrollTop=0}box.dataset.i=i}
+  box.hidden=false;if(pg===0||!paged){box.scrollTop=0;const c=box.querySelector(".sg-card");if(c&&box.dataset.i!==String(i))c.scrollTop=0}box.dataset.i=i}
 function sumShow(key){const x=SUMINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
@@ -2385,7 +2388,7 @@ async function wdRender(c){
       ${ch?`${ch}<p class="muted">黑線是每個月的股淨比，金色帶是「合理」範圍，虛線是平均。</p>`:""}
       <p class="muted">股淨比 = 股價 ÷ 每股淨值（公司資產扣掉負債後，每一股分到多少）。數字越低越便宜，比較適合拿來看金融股、傳產股。${p.avg?"":"美股只有現在的數字，沒有 5 年資料可以比較。"}</p>`}
   // 今年／明年本益比：用法人（分析師）預估 EPS 算
-  wdK.peY=null;
+  wdK.peY=null;wdK.peg="";
   if(!etf&&x.est){
     const b5=x.pe5,lvT=v=>v<=b5.lo?"便宜":v>=b5.hi?"昂貴":"合理",lvC=v=>v<=b5.lo?"lo":v>=b5.hi?"hi":"mid";
     const cur=us?"美元":"元",pg=(k,nm)=>{const e=x.est[k];if(!e)return"";
@@ -2396,10 +2399,19 @@ async function wdRender(c){
       ${e.avg<=0?"<p>法人預估會虧損，所以沒有本益比。</p>":""}${gr!=null?`<p>${k==="y0"?"去年":"今年預估"} EPS ${f2(e.prev)} ${cur}，預估${gr>=0?"成長":"衰退"} <b>${Math.abs(gr)}%</b>。</p>`:""}
       <p class="muted">本益比 = 現在股價 ${f2(x.est.price)} ÷ 法人預估 EPS ${f2(e.avg)}，數字越低越便宜。預估的年度到 ${end} 為止，是${us?"Yahoo Finance":"鉅亨網（FactSet）"}整理的法人平均預估，會隨時調整。</p>`};
     const y0=pg("y0","今年本益比"),y1=pg("y1","明年本益比");
+    // 本益成長比 PEG = 預估本益比 ÷ EPS 成長率（%）（Luna 2026-10-30）
+    const pgc=k=>{const e=x.est[k];if(!e||!(e.pe>0)||!(e.prev>0)||!(e.avg>0))return null;const g=(e.avg/e.prev-1)*100;
+      return{k,pe:e.pe,g:Math.round(g*10)/10,prev:e.prev,avg:e.avg,peg:g>0?Math.round(e.pe/g*100)/100:null}};
+    const pgs=["y0","y1"].map(pgc).filter(Boolean);
+    wdK.peg=pgs.length?pgs.map(o=>{const nm=o.k==="y0"?"今年":"明年",lv=o.peg==null?null:o.peg<=1?["lo","便宜"]:o.peg>=2?["hi","昂貴"]:["mid","合理"];
+      return `<h3 class="wd-h3">${nm}本益成長比</h3><div class="wd-kpi k3"><div><b>${o.peg??"—"}</b><span>本益成長比</span></div><div><b>${o.pe}</b><span>本益比（倍）</span></div><div><b class="${o.g<0?"down":"up"}">${o.g>0?"+":""}${o.g}%</b><span>EPS 成長率</span></div></div>
+      ${lv?`<div class="wd-verdict ${lv[0]}">${nm}本益成長比 ${o.peg}：<b>${lv[1]}</b></div><p>算法：${nm}本益比 ${o.pe} ÷ EPS 成長 ${o.g} = <b>${o.peg}</b>。</p>`:`<p>EPS 預估${o.g<0?"衰退":"沒有成長"}，所以算不出本益成長比。</p>`}
+      <p class="muted">EPS 成長：${o.k==="y0"?"去年實際":"今年預估"} ${f2(o.prev)} → ${nm}預估 ${f2(o.avg)} ${cur}。</p>`}).join("")
+      +`<p class="muted">本益成長比 = 本益比 ÷ EPS 成長率（%）。1 以下算便宜，1～2 合理，2 以上算昂貴。適合拿來看會成長的股票；賺賠不定的股票參考就好。</p>`:"";
     if(y0||y1)wdK.peY={y0,y1,band:b5?`<div class="wd-band"><div class="lo"><b>便宜</b><span>${b5.lo} 倍</span><small>以下</small></div><div class="mid"><b>合理</b><span>${b5.avg} 倍</span><small>5 年平均</small></div><div class="hi"><b>昂貴</b><span>${b5.hi} 倍</span><small>以上</small></div></div><p class="muted">近 5 年平均本益比 ${b5.avg} 倍（每月收盤 ÷ 當時近四季 EPS）。比平均低一段算便宜，高一段算昂貴。</p>`:""};
   }
   body.innerHTML=html;
-  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;wdK.etf=etf;if(wdK.period==="hold"&&!etf)wdK.period="d";if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdLivePatch();wdKDraw();
+  wdK.daily=x.kline;wdK.us=us;wdK.sel=null;wdK.code=c;wdK.etf=etf;if(wdK.period==="hold"&&!etf)wdK.period="d";if(wdK.period==="prem"&&!(STOCK.nav&&STOCK.nav[c]))wdK.period="d";wdK.divs=x.divs||[];wdK.last=last;wdK.pe=wdK.peY||(etf?"":'<div class="wd-none">無</div><p class="muted">這一檔沒有法人預估 EPS，所以沒有預估本益比。</p>');wdK.rv=rvH;if((wdK.period==="pb"&&!wdK.pb)||(wdK.period==="eps"&&!wdK.eps)||(wdK.period==="pe"&&!wdK.pe)||(wdK.period==="peg"&&!wdK.peg)||(wdK.period==="rv"&&!rvH))wdK.period="d";wdLivePatch();wdKDraw();
 }
 // 自選股詳細頁：用即時報價更新今天那根 K 棒和上面的價格（台股有開高低量，美股只更新價格）
 function wdLivePatch(){
@@ -2445,7 +2457,7 @@ async function wdRenderIx(c){
   if(key!=="txfn"&&it.date&&k.length&&it.date>k[k.length-1][0])k.push([it.date,ps[0],Math.max(...ps),Math.min(...ps),ps[ps.length-1],0]);
   else if(key!=="txfn"&&it.date&&k.length&&it.date===k[k.length-1][0]){const lb=k[k.length-1];k[k.length-1]=[lb[0],lb[1],Math.max(lb[2],...ps),Math.min(lb[3],...ps),ps[ps.length-1],lb[5]]} // 同一天：收盤換成最新價
   body.innerHTML=head+`<section class="wd-sec" id="wd-k"></section>`;
-  Object.assign(wdK,{daily:k,us:!!it.us,sel:null,code:c,ix:key,volUnit:x.volUnit,divs:[],last,pe:"",rv:"",pb:"",eps:"",peY:null});
+  Object.assign(wdK,{daily:k,us:!!it.us,sel:null,code:c,ix:key,volUnit:x.volUnit,divs:[],last,pe:"",peg:"",rv:"",pb:"",eps:"",peY:null});
   if(!["d","w","m"].includes(wdK.period))wdK.period="d";
   wdKDraw();
 }
@@ -2476,8 +2488,8 @@ function wdKDraw(){
   // 第一排：日 週 月 配息 EPS（ETF 是折溢價）；第二排：預估本益比 河流圖 股淨比
   const btns=a=>a.map(([v,t])=>`<button data-per="${v}" aria-pressed="${v===wdK.period}">${t}</button>`).join("");
   const segR1=[["d","日"],["w","週"],["m","月"],...(wdK.ix?[]:[["div","配息"]]),...(wdK.eps?[["eps","EPS"]]:[]),...(nv?[["prem","折溢價"]]:[])];
-  const segR2=[...(wdK.etf&&!wdK.ix&&ON_CF?[["hold","成分股"]]:[]),...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[]),...(wdK.pb?[["pb","股淨比"]]:[])];
-  const seg=`<div class="wd-seg r1" style="grid-template-columns:repeat(${Math.max(4,segR1.length)},1fr)">${btns(segR1)}</div>${segR2.length?`<div class="wd-seg r2" style="grid-template-columns:${segR2.length===3?"1.4fr 1fr 1fr":`repeat(${segR2.length},1fr)`}">${btns(segR2)}</div>`:""}`;
+  const segR2=[...(wdK.etf&&!wdK.ix&&ON_CF?[["hold","成分股"]]:[]),...(wdK.pe?[["pe","預估本益比"]]:[]),...(wdK.peg?[["peg","本益成長比"]]:[]),...(wdK.rv?[["rv","河流圖"]]:[]),...(wdK.pb?[["pb","股淨比"]]:[])];
+  const seg=`<div class="wd-seg r1" style="grid-template-columns:repeat(${Math.max(4,segR1.length)},1fr)">${btns(segR1)}</div>${segR2.length?`<div class="wd-seg r2${segR2.length===4?" n4":""}" style="grid-template-columns:${segR2.length===3?"1.4fr 1fr 1fr":segR2.length===4?"1.3fr 1.3fr 1fr 1fr":`repeat(${segR2.length},1fr)`}">${btns(segR2)}</div>`:""}`;
   if(wdK.period==="pe"&&wdK.pe){
     if(typeof wdK.pe==="string"){box.innerHTML=`<h2>預估本益比${qm("本益比")}</h2>${seg}${wdK.pe}`;wdKBind();return}
     const ks=["y0","y1"].filter(k=>wdK.pe[k]);if(!ks.includes(wdK.pey))wdK.pey=ks[0];
@@ -2493,6 +2505,7 @@ function wdKDraw(){
       <p class="muted">前十大合計佔 <b>${sum.toFixed(1)}%</b>。${h.date?`資料日期 ${h.date.replace(/-/g,"/")}，`:""}來源：${us?"Yahoo Finance":"Yahoo 奇摩股市（投信每月公布）"}。</p>`
       :`<p class="wempty">${h.err?"暫時抓不到成分股，等一下再點一次。":"這一檔查不到成分股（期貨、槓桿或反向型 ETF 通常沒有公布）。"}</p>`);
     wdKBind();return}
+  if(wdK.period==="peg"&&wdK.peg){box.innerHTML=`<h2>本益成長比${qm("本益成長比")}</h2>${seg}${wdK.peg}`;wdKBind();return}
   if(wdK.period==="pb"&&wdK.pb){box.innerHTML=`<h2>股價淨值比${qm("股淨比")}</h2>${seg}${wdK.pb}`;wdKBind();return}
   if(wdK.period==="eps"&&wdK.eps){box.innerHTML=`<h2>EPS（每股盈餘）${qm("EPS")}</h2>${seg}${wdK.eps}`;wdKBind();return}
   if(wdK.period==="rv"&&wdK.rv){box.innerHTML=`<h2>本益比河流圖${qm("河流圖")}</h2>${seg}${wdK.rv}`;wdKBind();return}

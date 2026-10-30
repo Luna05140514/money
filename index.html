@@ -491,7 +491,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-eps .t b{font-size:30px;margin:4px 0}
 .wd-eps .t small{font-size:15px;color:var(--muted)}
 .wd-eps .down{color:var(--down,#0a8a3a)}
-.wd-eps em.gr{display:block;font-style:normal;font-size:15px;font-weight:700;text-align:right}.wd-eps .t em.gr{text-align:center;font-size:20px}.wd-eps .t small.gy{margin-top:6px}
+.wd-eps em.gr{display:inline;font-style:normal;font-size:15px;font-weight:700;margin-left:6px;white-space:nowrap}.wd-eps .t em.gr{font-size:17px;margin-left:4px}.wd-eps .q b{white-space:nowrap}
 .wd-none{text-align:center;font-size:40px;font-weight:700;color:var(--muted);padding:24px 0 8px}
 .wd-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:0 0 6px}
 .wd-nav button{all:unset;cursor:pointer;padding:10px 12px;border-radius:12px;border:2px solid var(--gold);background:var(--gold-soft);font-size:19px;font-weight:700;color:var(--ink);text-align:center;line-height:1.25}
@@ -612,7 +612,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/30 14:10</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/30 14:40</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2377,8 +2377,8 @@ async function wdRender(c){
       if(o.full&&p.full)o.g=grP(o.tot,p.tot);else if(!o.full&&o.q.length&&o.q.every(([k])=>pq[k]!=null))o.g=grP(o.tot,r2(o.q.reduce((a,[k])=>a+pq[k],0)))});
     if(yrs.length){
       const cur=us?"美元":"元";
-      wdK.eps=yrs.slice(-5).reverse().map(o=>`<div class="wd-eps"><div class="q">${o.q.length?o.q.map(([k,v,g])=>`<div><span>${k}</span><b class="${v<0?"down":""}">${f2(v)}${grH(g)}</b></div>`).join(""):'<p class="muted">沒有各季資料</p>'}</div><div class="t"><span>${o.y}</span><b class="${o.tot<0?"down":""}">${f2(o.tot)}</b><small>${o.full?"全年合計":"今年累計"}</small>${o.g!=null?`<small class="gy">比去年${o.full?"":"同期"}</small>${grH(o.g)}`:""}</div></div>`).join("")
-        +`<p class="muted">左邊是全年加起來，右邊是每一季的 EPS（單位：${cur}）。紅色、綠色的 % 是成長多少：每一季跟去年同一季比，全年跟去年全年比。${us?"美股用公司的會計年度，像輝達的財年到隔年 1 月。":"今年還沒過完的，左邊是到目前為止的累計。"}</p>`;
+      wdK.eps=yrs.slice(-5).reverse().map(o=>`<div class="wd-eps"><div class="q">${o.q.length?o.q.map(([k,v,g])=>`<div><span>${k}</span><b class="${v<0?"down":""}">${f2(v)}${grH(g)}</b></div>`).join(""):'<p class="muted">沒有各季資料</p>'}</div><div class="t"><span>${o.y}</span><b class="${o.tot<0?"down":""}">${f2(o.tot)}${o.g!=null?grH(o.g):""}</b><small>${o.full?"全年合計":"今年累計"}</small></div></div>`).join("")
+        +`<p class="muted">左邊是全年加起來，右邊是每一季的 EPS（單位：${cur}）。紅色、綠色的 % 是成長多少：每一季跟去年同一季比，全年跟去年全年比，今年累計跟去年同樣幾季比。${us?"美股用公司的會計年度，像輝達的財年到隔年 1 月。":"今年還沒過完的，左邊是到目前為止的累計。"}</p>`;
     }
   }
   // 股淨比：現在的倍數，和近 5 年平均比便宜／合理／昂貴

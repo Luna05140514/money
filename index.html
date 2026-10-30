@@ -331,7 +331,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .bt-m.bt-dl input{width:150px;font-size:16px}.bt-res{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}.bt-res.best{border:3px solid var(--gold)}.bt-res.second{border:3px solid var(--red)}.bt-nm em.sec{background:var(--red);color:#fff}
 .bt-nm{font-size:18px;font-weight:700}.bt-nm em{font-style:normal;font-size:14px;background:var(--gold);color:#3a2a00;border-radius:999px;padding:1px 8px;margin-left:4px}
 .bt-big{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:4px 0}.bt-big b{font-size:30px;font-variant-numeric:tabular-nums}.bt-big span{font-size:19px;font-weight:700}
-.bt-d{font-size:16px;margin-top:2px}.bt-nm{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bt-nm .bt-q{margin-left:auto}.bt-steps{margin:0;padding-left:22px}.bt-steps li{margin:6px 0}.bt-how{margin-top:12px;font-size:16px}.bt-how summary{font-weight:700;cursor:pointer}.bt-how li{margin:6px 0}
+.bt-d{font-size:16px;margin-top:2px}.bt-nm{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bt-nm .bt-q{margin-left:auto}.bt-res .bt-nm{flex-wrap:nowrap}.bt-res .bt-nm em{white-space:nowrap}.bt-qs{margin-left:auto;flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}.bt-qs .bt-q{margin:0}.bt-lgb{font:inherit;font-size:14px;font-weight:700;border:1.5px solid var(--gold);background:var(--gold-soft);color:var(--ink);border-radius:8px;padding:3px 8px;cursor:pointer;white-space:nowrap}#bt-lg{z-index:65}.bt-card .dn{color:var(--down)}.lg-sum{font-size:17px;line-height:1.6;margin:6px 0 10px}.lg-sum b{font-variant-numeric:tabular-nums}.lg-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:17px;line-height:1.55;font-variant-numeric:tabular-nums}.lg-it .lg-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}.lg-t{border-radius:8px;padding:1px 8px;color:#fff;font-size:16px}.lg-t.b{background:var(--up)}.lg-t.s{background:var(--down)}.lg-it .lg-r{color:var(--muted);font-size:15px;font-weight:400}.lg-k{display:flex;gap:14px;flex-wrap:wrap}.bt-steps{margin:0;padding-left:22px}.bt-steps li{margin:6px 0}.bt-how{margin-top:12px;font-size:16px}.bt-how summary{font-weight:700;cursor:pointer}.bt-how li{margin:6px 0}
 .watch-tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .pg-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:4px 0 10px}
 .pg-tabs button{all:unset;cursor:pointer;text-align:center;padding:10px 2px;border-radius:12px;font-size:17px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -609,7 +609,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/27 00:10</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/30 11:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1932,32 +1932,34 @@ function btPrep(r){const B=r.d.map((d,i)=>({dt:d,o:r.o[i],h:r.h[i],l:r.l[i],c:r.
     else{cur.h=Math.max(cur.h,b.h);cur.l=Math.min(cur.l,b.l);cur.c=b.c}
     const w=[...weeks.slice(-8),cur],H=Math.max(...w.map(x=>x.h)),L=Math.min(...w.map(x=>x.l)),v=H>L?(cur.c-L)/(H-L)*100:50;WK[i]=Kc*2/3+v/3;WD[i]=Dc*2/3+WK[i]/3});
   return {B,DK,DD,WK,WD}}
-function btRun(P,start,M,how,etf,Y=3){const {B,DK,DD,WK,WD}=P,FS=BT_FB+(etf?0.001:0.003),t0=Math.max(2,B.findIndex(b=>b.dt>=start));
+function btRun(P,start,M,how,etf,Y=3,L=null){const {B,DK,DD,WK,WD}=P,FS=BT_FB+(etf?0.001:0.003),t0=Math.max(2,B.findIndex(b=>b.dt>=start));
   let lumpM=0,bs=0,bBase=0,ddc=0,nDep=0,nextY="",half=false,dull=false,pot=0,cash=0,sh=0,inv=0,units=0,nav=1,pk=1,dd=0,cost=0,win=0,lose=0,nb=0,ns=0,step=0,wait=false,sb=0,ss=0,sS=0;
-  const buy=(px,amt)=>{const n=Math.floor(amt/(px*(1+BT_FB)));if(n<=0)return 0;const c=n*px*(1+BT_FB);sh+=n;cost+=c;nb++;return c};
-  const sell=(px,n)=>{n=Math.min(sh,Math.floor(n));if(n<=0)return;const ac=cost/sh,got=n*px*(1-FS);if(got>ac*n)win++;else lose++;cost-=ac*n;sh-=n;cash+=got;ns++};
-  for(let t=t0;t<B.length;t++){const o=B[t].o,c=B[t].c,y=t-1;
+  // 詳細買賣紀錄（Luna 2026-10-30）：有傳 L 就把每筆買賣記下來；日 K、週 K 是訊號那天（前一天收盤）的數字
+  let T=t0;const lg=(x,why)=>{if(L)L.push(Object.assign(x,{d:B[T].dt,why,dk:DK[T-1],dd:DD[T-1],wk:WK[T-1],wd:WD[T-1]}))};
+  const buy=(px,amt,why="買進")=>{const n=Math.floor(amt/(px*(1+BT_FB)));if(n<=0)return 0;const c=n*px*(1+BT_FB);sh+=n;cost+=c;nb++;lg({s:0,px,n,amt:c,sh,ac:cost/sh},why);return c};
+  const sell=(px,n,why="賣出")=>{n=Math.min(sh,Math.floor(n));if(n<=0)return;const ac=cost/sh,got=n*px*(1-FS);if(got>ac*n)win++;else lose++;cost-=ac*n;sh-=n;cash+=got;ns++;lg({s:1,px,n,amt:got,sh,ac,pl:got-ac*n,pr:(got/(ac*n)-1)*100},why)};
+  for(let t=t0;t<B.length;t++){const o=B[t].o,c=B[t].c,y=t-1;T=t;
     // ③④ 價差（Luna 2026-10-25）：不每月存，每年一開始整筆放 12 個月的錢（1 萬 → 12 萬）
     if(how>=4){if(t===t0||(B[t].dt>=nextY&&B.length-1-t>20)){const mm=Math.min(12,Math.round(Y*12)-lumpM);lumpM+=Math.max(0,mm);const L=M*Math.max(0,mm);units+=L/nav;inv+=L;cash+=L;const d=new Date((t===t0?B[t0].dt:nextY)+"T00:00:00Z");d.setUTCFullYear(d.getUTCFullYear()+1);nextY=d.toISOString().slice(0,10)}}
     // 每月存錢只存剛好 Y×12 個月（Luna 2026-10-25：1 年不要多一個月）
-    else if((t===t0||B[t].dt.slice(0,7)!==B[t-1].dt.slice(0,7))&&nDep++<Y*12){units+=M/nav;inv+=M;cash+=M;if(how===0)cash-=buy(o,cash);if(how===3)cash-=buy(o,Math.max(0,cash-pot-M/2)),pot+=M/2}
+    else if((t===t0||B[t].dt.slice(0,7)!==B[t-1].dt.slice(0,7))&&nDep++<Y*12){units+=M/nav;inv+=M;cash+=M;if(how===0)cash-=buy(o,cash,"每月固定買");if(how===3)cash-=buy(o,Math.max(0,cash-pot-M/2),"每月固定買一半"),pot+=M/2}
     // ② 固定買＋低點加碼（Luna 2026-10-25）：每月一半固定買，另一半存著，日 KD 或週 KD 的 K 跌到 30 以下就把存的錢全部買
-    if(how===3&&pot>0&&((DK[y]<30&&DK[y-1]>=30)||(WK[y]<30&&WK[y-1]>=30))){const c=buy(o,pot);cash-=c;pot=0}
+    if(how===3&&pot>0&&((DK[y]<30&&DK[y-1]>=30)||(WK[y]<30&&WK[y-1]>=30))){const c=buy(o,pot,(DK[y]<30&&DK[y-1]>=30?"日":"週")+" K 跌到 30 以下，存的錢全部加碼");cash-=c;pot=0}
     // ⑤⑥（Luna 2026-10-25）：日 K 跌到 30 以下把錢全部買；⑤ 日 K 到 80 以上全賣；⑥ 日 K 到 80 以上賣一半、週 K 到 80 以上賣剩下的
     // ③④ 買法（Luna 2026-10-25 改）：日 K 跌破 30 買 30%、跌破 20 再買 40%、之後金叉再買 30%（都是這一輪開始時手上的錢）
     // how 4、5 整筆買（日 K 跌破 30 一次全買）；how 6、7 分批買（Luna 2026-10-25：兩種都放，共 6 種）
-    if(how===8&&cash>0)cash-=buy(o,cash);
+    if(how===8&&cash>0)cash-=buy(o,cash,"每年一開始整筆買");
     if(how>=4&&how<8){
-      if(how<6){if(DK[y]<=30&&DK[y-1]>30)cash-=buy(o,cash)}
-      else if(bs===0&&DK[y]<=30&&DK[y-1]>30){bBase=cash;cash-=buy(o,bBase*0.3);bs=1}
-      else if(bs===1&&DK[y]<=20&&DK[y-1]>20){cash-=buy(o,Math.min(cash,bBase*0.4));bs=2}
-      else if(bs>=1&&DK[y]>DD[y]&&DK[y-1]<=DD[y-1]){cash-=buy(o,Math.min(cash,bBase*0.3));bs=0}
-      if((how===4||how===6)&&DK[y]>=80&&DK[y-1]<80)sell(o,sh);
+      if(how<6){if(DK[y]<=30&&DK[y-1]>30)cash-=buy(o,cash,"日 K 跌破 30，整筆買")}
+      else if(bs===0&&DK[y]<=30&&DK[y-1]>30){bBase=cash;cash-=buy(o,bBase*0.3,"日 K 跌破 30，買 30%");bs=1}
+      else if(bs===1&&DK[y]<=20&&DK[y-1]>20){cash-=buy(o,Math.min(cash,bBase*0.4),"日 K 跌破 20，再買 40%");bs=2}
+      else if(bs>=1&&DK[y]>DD[y]&&DK[y-1]<=DD[y-1]){cash-=buy(o,Math.min(cash,bBase*0.3),"日 KD 金叉，再買 30%");bs=0}
+      if((how===4||how===6)&&DK[y]>=80&&DK[y-1]<80)sell(o,sh,"日 K 漲到 80 以上，全賣");
       // ⑥（Luna 2026-10-25 改）：日 K 到 80 以上先賣一半；剩下的，日 KD 鈍化（連 3 天 ≥80）就等週 K 到 80 以上再賣，沒鈍化就等日 KD 死叉賣
       if(how===5||how===7){
-        if(!half&&sh>0&&DK[y]>=80&&DK[y-1]<80){sell(o,sh/2);half=true;dull=false}
+        if(!half&&sh>0&&DK[y]>=80&&DK[y-1]<80){sell(o,sh/2,"日 K 漲到 80 以上，賣一半");half=true;dull=false}
         else if(half){if(DK[y]>=80&&DK[y-1]>=80&&DK[y-2]>=80)dull=true;
-          if(dull?WK[y]>=80:(DK[y]<DD[y]&&DK[y-1]>=DD[y-1])){sell(o,sh);half=false;dull=false}}}}
+          if(dull?WK[y]>=80:(DK[y]<DD[y]&&DK[y-1]>=DD[y-1])){sell(o,sh,dull?"日 KD 鈍化後週 K 到 80 以上，賣剩下的":"日 KD 死叉，賣剩下的");half=false;dull=false}}}}
     if(how===1){const dLow=DK[y]<=20&&DK[y-1]>20,dDull=DK[y]<=20&&DK[y-1]<=20&&DK[y-2]<=20;
       if(step<2&&dLow){cash-=buy(o,cash*0.5);step++}
       else if(step===2){if(dDull)wait=true;
@@ -1969,10 +1971,11 @@ function btRun(P,start,M,how,etf,Y=3){const {B,DK,DD,WK,WD}=P,FS=BT_FB+(etf?0.00
     const v=cash+sh*c;nav=v/units;pk=Math.max(pk,nav);dd=Math.max(dd,1-nav/pk);
     // 最大跌幅改成跟買進成本比（Luna 2026-10-25）：手上股票的市值比當時的平均買進成本最多少幾 %
     if(sh>0&&cost>0)ddc=Math.max(ddc,1-sh*c/cost)}
-  const val=cash+sh*B[B.length-1].c;return {inv,val,ddc:ddc*100,idle:cash,ret:(val/inv-1)*100,dd:dd*100,win,lose,from:B[t0].dt,to:B[B.length-1].dt}}
+  const val=cash+sh*B[B.length-1].c;return {inv,val,ddc:ddc*100,idle:cash,ret:(val/inv-1)*100,dd:dd*100,win,lose,sh,cost,last:B[B.length-1].c,from:B[t0].dt,to:B[B.length-1].dt}}
 function btOpen(){let box=$("bt-pop");
   if(!box){box=document.createElement("div");box.id="bt-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest("[data-btx]")){box.hidden=true;return}
+      const lb=e.target.closest("[data-btlog]");if(lb){btLog(+lb.dataset.btlog);return}
       const s=e.target.closest("[data-btc]");if(s){btCode=s.dataset.btc;btShow();return}
       const y=e.target.closest("[data-bty]");if(y){btYears=+y.dataset.bty;btDate="";const d=$("bt-dt");if(d)d.value="";btShow();return}
       if(e.target.closest("[data-btdx]")){btDate="";$("bt-dt").value="";btShow()}});
@@ -2025,14 +2028,36 @@ function btResult(){const out=$("bt-out"),P=btData[btCode];if(!out||!P)return;
     if(mo<1){out.innerHTML=`<p class="bt-s">指定的日期太近了，請選一個月以前的日子。</p>`;return}
     start=btDate;Y=mo/12}
   else if(P.B[30]&&P.B[30].dt>start){out.innerHTML=`<p class="bt-s">${esc(r[1])} 上市還不到 ${btYears} 年，換短一點的期間看看。</p>`;return}
-  const R=[8,0,3,4,6,5,7].map(h=>btRun(P,start,M,h,!!r[2],Y)),srt=[...new Set(R.map(x=>x.ret))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
+  const HOW=[8,0,3,4,6,5,7];btLast={P,start,M,Y,etf:!!r[2],code:btCode};const R=HOW.map(h=>btRun(P,start,M,h,!!r[2],Y)),srt=[...new Set(R.map(x=>x.ret))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
   const w=n=>n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,"")+" 萬":Math.round(n).toLocaleString();
   out.innerHTML=`<p class="bt-s">${R[0].from.replace(/-/g,"/")} 到 ${to.replace(/-/g,"/")}，每月 ${M.toLocaleString()}${cur}</p>`+R.map((x,i)=>{const g=x.val-x.inv;
-    return `<div class="bt-res${x.ret===best?" best":x.ret===second?" second":""}"><div class="bt-nm">${BT_NM[i]}${x.ret===best?' <em>最高</em>':x.ret===second?' <em class="sec">次高</em>':""}<i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></div>
+    return `<div class="bt-res${x.ret===best?" best":x.ret===second?" second":""}"><div class="bt-nm">${BT_NM[i]}${x.ret===best?' <em>最高</em>':x.ret===second?' <em class="sec">次高</em>':""}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i><button class="bt-lgb" data-btlog="${i}">詳細資料</button></span></div>
       <div class="bt-big"><b class="${g>=0?"up":"dn"}">${x.ret>=0?"+":""}${x.ret.toFixed(1)}%</b><span class="${g>=0?"up":"dn"}">${g>=0?"賺":"賠"} ${Math.round(Math.abs(g)).toLocaleString()}${cur}</span></div>
       <div class="bt-d">投入 ${w(x.inv)} → 變成 ${w(x.val)}${x.idle>=M?`（其中 ${w(x.idle)} 還沒用）`:""}</div>
       <div class="bt-d">${x.ddc<0.5?"沒有跌破買進成本":`比買進成本最多跌 <b>−${x.ddc.toFixed(0)}%</b>`}${i>=3?`　賣 ${x.win+x.lose} 次，賺 ${x.win} 次`:""}</div></div>`}).join("")}
 
+// 詳細買賣紀錄（Luna 2026-10-30）：每一種方法的每筆買賣、當時日 K／週 K、價格、獲利和報酬率
+let btLast=null;
+function btLog(i){const z=btLast;if(!z)return;const r=idxOf[z.code],L=[],x=btRun(z.P,z.start,z.M,[8,0,3,4,6,5,7][i],z.etf,z.Y,L),us=!!r[4],cur=us?" 美元":" 元";
+  let box=$("bt-lg");
+  if(!box){box=document.createElement("div");box.id="bt-lg";box.className="sg-pop";document.body.appendChild(box);
+    box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
+  const m=v=>Math.round(v).toLocaleString(),px=v=>(+v).toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),k=v=>v==null?"—":v.toFixed(1),dt=s=>s.replace(/-/g,"/"),
+    sg=v=>v>=0?"+":"−",cl=v=>v>=0?"up":"down";
+  const nb=L.filter(a=>!a.s).length,ns=L.length-nb,real=L.reduce((a,b)=>a+(b.s?b.pl:0),0),mv=x.sh*x.last,un=mv-x.cost;
+  box.innerHTML=`<div class="sg-card bt-card" role="dialog" aria-label="詳細買賣紀錄"><button class="sg-x" aria-label="關閉">✕ 關閉</button>
+    <h2>${esc(r[1])}・詳細資料</h2><p class="bt-nm" style="margin:0 0 4px">${BT_NM[i]}</p>
+    <div class="lg-sum">${dt(x.from)} 到 ${dt(x.to)}，每月 ${z.M.toLocaleString()}${cur}<br>
+      投入 <b>${m(x.inv)}</b>${cur} → 變成 <b>${m(x.val)}</b>${cur}（<b class="${cl(x.ret)}">${sg(x.ret)}${Math.abs(x.ret).toFixed(1)}%</b>）<br>
+      買 <b>${nb}</b> 次${ns?`，賣 <b>${ns}</b> 次（賺 ${x.win} 次、賠 ${x.lose} 次），賣出共${real>=0?"賺":"賠"} <b class="${cl(real)}">${m(Math.abs(real))}</b>${cur}`:"，沒有賣過"}<br>
+      現在手上 <b>${x.sh.toLocaleString()}</b> 股${x.sh?`，平均成本 <b>${px(x.cost/x.sh)}</b>，現價 <b>${px(x.last)}</b>，帳面${un>=0?"賺":"賠"} <b class="${cl(un)}">${m(Math.abs(un))}</b>${cur}（${sg(un)}${Math.abs(un/x.cost*100).toFixed(1)}%）`:""}${x.idle>=1?`<br>還沒用的錢 <b>${m(x.idle)}</b>${cur}`:""}</div>
+    <p class="muted">價格是含息還原價（配息算進去），會比當時實際的股價低一點。日 K、週 K 是出現訊號那天收盤的數字，隔天開盤買賣。最新的在最上面。</p>
+    ${L.length?L.slice().reverse().map(a=>`<div class="lg-it"><div class="lg-h"><span class="lg-t ${a.s?"s":"b"}">${a.s?"賣":"買"}</span>${dt(a.d)}<span class="lg-r">${esc(a.why)}</span></div>
+      <div>價格 <b>${px(a.px)}</b>　${a.n.toLocaleString()} 股　${a.s?"拿回":"花"} <b>${m(a.amt)}</b>${cur}</div>
+      <div class="lg-k"><span>日K <b>${k(a.dk)}</b>（D ${k(a.dd)}）</span><span>週K <b>${k(a.wk)}</b>（D ${k(a.wd)}）</span></div>
+      ${a.s?`<div>平均成本 ${px(a.ac)}，這次${a.pl>=0?"賺":"賠"} <b class="${cl(a.pl)}">${m(Math.abs(a.pl))}</b>${cur}（<b class="${cl(a.pr)}">${sg(a.pr)}${Math.abs(a.pr).toFixed(1)}%</b>）　剩 ${a.sh.toLocaleString()} 股</div>`
+        :`<div class="lg-r">買完共 ${a.sh.toLocaleString()} 股，平均成本 ${px(a.ac)}</div>`}</div>`).join(""):`<p class="bt-s">這段期間沒有買賣。</p>`}</div>`;
+  box.hidden=false;box.scrollTop=0;const c=box.querySelector(".sg-card");if(c)c.scrollTop=0}
 function sumShow(key){const x=SUMINFO.get(key);if(!x)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}

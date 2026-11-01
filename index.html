@@ -612,7 +612,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/10/30 14:40</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 08:30</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1708,6 +1708,7 @@ const GLOSS={
 
   KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；30 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
   本益成長比:["本益成長比（PEG）","本益成長比 = 本益比 ÷ EPS 成長率（%）。把公司賺錢成長的速度也算進來：本益比高，但賺錢成長更快，其實不一定貴。","1 以下算便宜，1～2 合理，2 以上算昂貴。EPS 衰退的股票算不出來。這裡用法人（分析師）預估的 EPS。","例：本益比 20 倍、EPS 一年成長 25%，本益成長比 = 20 ÷ 25 = 0.8，算便宜。"],
+  天龍地虎:["天龍地虎","藍色「龍」線是上面的壓力，橘色「虎」線是下面的支撐。龍＝最近一次比現在價格高的轉折高點，虎＝最近一次比現在價格低的轉折低點（前後各 5 根 K 棒都沒有更高或更低）。","創新高時上面沒有壓力，只剩虎線。跌破虎線，就往下找下一個轉折低點當新的虎線。","K 線是還原價，所以除息前的數字會比一般看盤軟體小一點。"],
   本益比:["本益比","本益比 = 股價 ÷ 每股一年賺的錢（EPS）。意思是：用現在的價格買，大概要幾年才能靠公司賺的錢回本。數字越低越便宜。","「今年／明年本益比」是用法人（分析師）預估的 EPS 算的。便宜、合理、昂貴是跟這檔股票自己過去 5 年的本益比比較。","例：股價 100 元、一年每股賺 5 元，本益比 = 20 倍。"],
   股淨比:["股淨比（股價淨值比）","股淨比 = 股價 ÷ 每股淨值。淨值是公司把東西全賣掉、債還清以後，每一股可以分到的錢。1 倍表示股價剛好等於公司的家當。","金融股、賺錢不穩定的股票，常用股淨比看便宜或貴。","例：每股淨值 50 元、股價 75 元，股淨比 = 1.5 倍。"],
   EPS:["EPS（每股盈餘）","公司賺的錢，平均分到每一股是多少元。越高代表公司越會賺錢。","",""],
@@ -2493,6 +2494,12 @@ function wdCalc(k){
   const pb=cl.map((c,i)=>{if(i<19)return null;const w=cl.slice(i-19,i+1),m=w.reduce((a,v)=>a+v,0)/20,sd=Math.sqrt(w.reduce((a,v)=>a+(v-m)**2,0)/20);return sd?(c-(m-2*sd))/(4*sd)*100:50});
   return{ma:WD_MA.map(([n])=>ma(n)),kk,dd,jj,dif,dea,osc,pb};
 }
+// 天龍地虎（Luna 2026-10-31）：轉折高低點＝前後 n 根都沒有更高（低）。龍＝最近一個比現價高的轉折高點（壓力），虎＝最近一個比現價低的轉折低點（支撐）；創新高時沒有龍，跌破虎就往下找下一個支撐
+function wdTL(a,n){const c=a.length?a[a.length-1][4]:null;let dr=null,tg=null;
+  for(let i=a.length-1-n;i>=n&&(!dr||!tg);i--){let ph=1,pl=1;
+    for(let j=i-n;j<=i+n;j++){if(j===i)continue;if(a[j][2]>a[i][2]||(j>i&&a[j][2]===a[i][2]))ph=0;if(a[j][3]<a[i][3]||(j>i&&a[j][3]===a[i][3]))pl=0}
+    if(!dr&&ph&&a[i][2]>c)dr=[a[i][0],a[i][2]];if(!tg&&pl&&a[i][3]<c)tg=[a[i][0],a[i][3]]}
+  return {dr,tg}}
 function wdKDraw(){
   const box=$("wd-k");if(!box||!wdK.daily.length)return;
   const nv=STOCK&&STOCK.nav&&STOCK.nav[wdK.code];
@@ -2544,13 +2551,16 @@ function wdKDraw(){
   const d=pv?b[4]-pv[4]:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
   const W=360,R=44,L=4,X=i=>L+(i+.5)*(W-R-L)/N,bw=Math.max(1,(W-R-L)/N*.66);
   // 主圖
-  const H=230,ma=c.ma.map(T),vals=[...k.flatMap(x=>[x[2],x[3]]),...ma.flat().filter(v=>v!=null)],hi=Math.max(...vals),lo=Math.min(...vals),sp=hi-lo||1,Y=v=>8+(hi-v)/sp*(H-16);
+  const tl=wdTL(all,wdK.period==="d"?5:wdK.period==="w"?3:2);
+  const H=230,ma=c.ma.map(T),vals=[...k.flatMap(x=>[x[2],x[3]]),...ma.flat().filter(v=>v!=null),...[tl.dr,tl.tg].filter(Boolean).map(x=>x[1])],hi=Math.max(...vals),lo=Math.min(...vals),sp=hi-lo||1,Y=v=>8+(hi-v)/sp*(H-16);
   let g="";
   for(let t=0;t<=4;t++){const v=lo+sp*t/4;g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${W-2}" y="${Y(v)+4}" text-anchor="end">${v>=1000?Math.round(v):r2(v)}</text>`}
   k.forEach((x,i)=>{const up=x[4]>=x[1],col=`var(${up?"--up":"--down"})`,y1=Y(Math.max(x[1],x[4])),y2=Y(Math.min(x[1],x[4]));
     g+=`<line x1="${X(i)}" x2="${X(i)}" y1="${Y(x[2])}" y2="${Y(x[3])}" stroke="${col}"/><rect x="${X(i)-bw/2}" y="${y1}" width="${bw}" height="${Math.max(1,y2-y1)}" fill="${col}"/>`});
   const line=(a,col,y)=>{let p="";a.forEach((v,i)=>{if(v==null)return;p+=`${p?"L":"M"}${X(i).toFixed(1)},${y(v).toFixed(1)}`});return p?`<path d="${p}" fill="none" stroke="${col}" stroke-width="1.4"/>`:""};
   ma.forEach((a,j)=>g+=line(a,WD_MA[j][1],Y));
+  [[tl.dr,"龍","#2f7de1"],[tl.tg,"虎","#e08a00"]].forEach(([x,t,col])=>{if(!x)return;const y=Y(x[1]).toFixed(1);
+    g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="1.6"/><circle cx="${L+9}" cy="${y}" r="9" fill="${col}"/><text x="${L+9}" y="${+y+4}" text-anchor="middle" fill="#fff" style="font-weight:700">${t}</text><rect x="${W-R+1}" y="${y-8}" width="${R-1}" height="16" rx="3" fill="${col}"/><text x="${W-2}" y="${+y+4}" text-anchor="end" fill="#fff" style="font-weight:700">${x[1]>=1000?Math.round(x[1]):r2(x[1])}</text>`});
   const cross=`<line x1="${X(sel)}" x2="${X(sel)}" y1="0" y2="${H}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
   const dl=[0,Math.floor(N/2),N-1].map((i,j)=>`<text x="${j===0?L:j===2?W-R:X(i)}" y="${H+14}" text-anchor="${j===0?"start":j===2?"end":"middle"}">${k[i][0].slice(2).replace(/-/g,"/")}</text>`).join("");
   const main=`<svg class="wd-chart" viewBox="0 0 ${W} ${H+18}" data-n="${N}">${g}${cross}${dl}</svg>`;
@@ -2575,6 +2585,7 @@ function wdKDraw(){
   box.innerHTML=`<h2>K 線圖 ${wdK.ix?"":`<small class="muted">還原</small>`}</h2>
   ${seg}
   <div class="wd-info"><b>${b[0].replace(/-/g,"/")}</b>　開 <b>${f2(b[1])}</b>　高 <b>${f2(b[2])}</b>　低 <b>${f2(b[3])}</b>　收 <b class="${cls}">${f2(b[4])}</b>${d==null?"":`　<b class="${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</b>`}</div>
+  ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b style="color:#2f7de1">龍 ${f2(tl.dr[1])}</b> 壓力（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高，沒有龍線</b></span>　'}${tl.tg?`<span class="nw"><b style="color:#e08a00">虎 ${f2(tl.tg[1])}</b> 支撐（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
   <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
   ${main}

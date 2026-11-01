@@ -466,7 +466,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .sg em{display:block;font-style:normal;font-size:14px;font-weight:600;margin-top:2px;opacity:.9}
 .wrow .sg.low{background:#fdf0f1;color:#a10d26;font-weight:600}
 .wrow .sg.high{background:#eef8f1;color:#11683a;font-weight:600}
-.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:16px;font-weight:600;color:var(--muted);margin:-6px 0 -2px}.wrow .tlr b{font-size:17px}.tlr .tlD{color:#1a56b8}.tlr .tlT{color:#a84a00}.tlr small{font-size:13px;font-weight:400;margin-left:3px}.tlr .mgV{color:var(--ink)}.tlr .mgW{color:var(--up)}
+.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:nowrap;gap:clamp(4px,1.6vw,8px);font-size:clamp(12px,3.75vw,15px);font-weight:600;color:var(--muted);margin:-6px 0 -2px;white-space:nowrap;letter-spacing:-.2px}.wrow .tlr b{font-size:clamp(13px,4vw,16px)}.tlr .tlD{color:#1a56b8}.tlr .tlT{color:#a84a00}.tlr small{font-size:12px;font-weight:400;margin-left:2px}.tlr .mgV{color:var(--ink)}.tlr .mgW{color:var(--up)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tlr .tlD{color:#8ab4ff}:root:not([data-theme="light"]) .tlr .tlT{color:#ffad66}}:root[data-theme="dark"] .tlr .tlD{color:#8ab4ff}:root[data-theme="dark"] .tlr .tlT{color:#ffad66}
 .wrow .vals.mtl{flex-direction:column;align-items:flex-end;margin:-4px 0 0}.wrow .vals.mtl b{color:var(--ink);font-size:17px}
 .src{font-size:14px;color:var(--muted);margin:10px 0 0;line-height:1.6}
@@ -615,7 +615,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 13:20</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 13:30</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2178,7 +2178,7 @@ function kdBoxes(dy,wk,name,mo,mode=""){
 // 個股融資維持率（估算，Luna 2026-11-01）：後台給融資餘額和估算借款，這裡用即時股價算；融資資料每天晚上公布，手機裡存 3 小時
 const MGR_KEY="facai-mgr";let watchMgr=null;
 function mgrSpan(c,last){const m=watchMgr&&watchMgr[c]&&watchMgr[c].d;if(!m||!m.b||!m.loan)return "";const r=(last||m.c)*m.b/m.loan*100;
-  return `<span class="nw">融資維持 <b class="mgV${r<140?" mgW":""}">${r.toFixed(0)}%</b><small>${r<140?"小心追繳":"估"}</small></span>`}
+  return `<span class="nw">維持率 <b class="mgV${r<140?" mgW":""}">${r.toFixed(0)}%</b><small>估</small></span>`}
 async function watchMgrLoad(){
   if(!ON_CF)return;if(!watchMgr){try{watchMgr=JSON.parse(localStorage.getItem(MGR_KEY))||{}}catch(_){watchMgr={}}}
   const g=watchGroups[watchTab];if(!g)return;const now=Date.now();

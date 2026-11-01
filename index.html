@@ -618,7 +618,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/02 00:50</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/02 01:00</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2125,7 +2125,7 @@ function btOpen(keep){let box=$("bt-pop");if(keep!==true)btGroup=watchTab;
       <li>價差 ② K 跌破 20 買 1 單位；隔天 K 又更低，再買 1 單位；第 3 單位和 ① 一樣（金叉，或鈍化後週 K 到 20 以下）。</li>
       <li>價差 ③ 股價跌到接近虎線（虎線往上 2% 以內）買 1 單位，跌破後碰到更低的虎線再買 1 單位，第 3 單位和 ① 一樣。</li>
       <li>價差 ④ 接近虎線買 1 單位，隔天收盤又更低再買 1 單位，第 3 單位和 ① 一樣。</li>
-      <li>價差每一種買法一張卡，下面三格是三種賣法：上面「賺 10% 全賣」「賺 20% 全賣」是收盤比買進平均成本賺 10%（20%）以上，隔天全部賣掉；下面「賣一半＋死叉賣完」在高點（①② 是日 K 漲到 80 以上，③④ 是碰到龍線）先賣一半，等日 KD 死叉再賣剩下的。</li>
+      <li>價差每一種買法一張卡，下面兩格是兩種賣法：左邊「賺 10% 全賣」是收盤比買進平均成本賺 10% 以上，隔天全部賣掉；右邊「賣一半＋死叉賣完」在高點（①② 是日 K 漲到 80 以上，③④ 是碰到龍線）先賣一半，等日 KD 死叉再賣剩下的。</li>
       <li>最多跌幾 %＝回測期間，手上股票的市值比買進的成本（平均每股買價）最多少掉幾 %。沒有比成本低過，就寫「沒有跌破買進成本」。</li>
       <li>用含息還原價，配息等於自動再買回去。買整數股（零股），手續費 0.1425%，賣出另外算證交稅（ETF 0.1%、股票 0.3%）。訊號在收盤出現，隔天開盤買賣。美股用美元算。</li>
       <li>過去的結果不代表未來，只是參考。</li></ul></details>
@@ -2158,7 +2158,7 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
   else if(P.B[30]&&P.B[30].dt>start){out.innerHTML=`<p class="bt-s">${esc(r[1])} ${btKind?"那一年還沒有資料，換近一點的年份看看。":`上市還不到 ${btYears} 年，換短一點的期間看看。`}</p>`;return}
   const HOW=[8,0,3,21,22,24,25];btLast={P,start,M,Y,etf:!!r[2],code:btCode};
   // 價差（Luna 2026-11-01）：每種買法一張卡，下面左右兩格是兩種賣法（週 KD 死叉分兩次賣／賣一半＋死叉賣完）
-  const SM=[[5,"賺 10% 全賣"],[6,"賺 20% 全賣"],[1,"賣一半＋死叉賣完"]] /* 週KD死叉移除（Luna 2026-11-02） */,h0=btHalfV,run=(h,m)=>{btHalfV=m;return btRun(P,start,M,h,!!r[2],Y)};
+  const SM=[[5,"賺 10% 全賣"],[1,"賣一半＋死叉賣完"]] /* 週KD死叉、賺 20% 移除（Luna 2026-11-02） */,h0=btHalfV,run=(h,m)=>{btHalfV=m;return btRun(P,start,M,h,!!r[2],Y)};
   const R=HOW.map(h=>h<20?btRun(P,start,M,h,!!r[2],Y):null),RS=HOW.map(h=>h<20?null:SM.map(([m])=>run(h,m)));btHalfV=h0;
   const all=btKind?RS.slice(3).flat():R.slice(0,3),srt=[...new Set(all.map(x=>x.ret))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
   const w=n=>n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,"")+" 萬":Math.round(n).toLocaleString();
@@ -2166,7 +2166,7 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
   const head=`<p class="bt-s">${(R[0]||RS[3][0]).from.replace(/-/g,"/")} 到 ${to.replace(/-/g,"/")}，${btKind?`本金 ${btCapV.toLocaleString()}${cur}，每次買 ${btUnitV.toLocaleString()}${btUtV?" 股":cur}`:`每月 ${M.toLocaleString()}${cur}`}</p>`;
   if(btKind){out.innerHTML=head+HOW.map((h,i)=>{if(i<3)return "";
     return `<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div>
-      <div class="bt-2">${RS[i].map((x,k)=>{const g=x.val-x.inv;return `<div class="bt-cell${cls(x)}${k===2?" bt-wide":""}"><div class="bt-cl">${SM[k][1]}${tag(x)}</div>
+      <div class="bt-2">${RS[i].map((x,k)=>{const g=x.val-x.inv;return `<div class="bt-cell${cls(x)}"><div class="bt-cl">${SM[k][1]}${tag(x)}</div>
         <b class="bt-pct ${g>=0?"up":"dn"}">${x.ret>=0?"+":""}${x.ret.toFixed(1)}%</b><div class="bt-cg ${g>=0?"up":"dn"}">${g>=0?"賺":"賠"} ${Math.round(Math.abs(g)).toLocaleString()}${cur}</div>
         <div class="bt-cd">${w(x.inv)} → ${w(x.val)}</div><div class="bt-cd">${x.ddc<0.5?"沒跌破成本":`最多跌 −${x.ddc.toFixed(0)}%`}</div><div class="bt-cd">賣 ${x.win+x.lose} 次，賺 ${x.win} 次</div>
         <button class="bt-lgb" data-btlog="${i}" data-bthm="${SM[k][0]}">詳細資料</button></div>`}).join("")}</div></div>`}).join("");return}

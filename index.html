@@ -466,7 +466,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .sg em{display:block;font-style:normal;font-size:14px;font-weight:600;margin-top:2px;opacity:.9}
 .wrow .sg.low{background:#fdf0f1;color:#a10d26;font-weight:600}
 .wrow .sg.high{background:#eef8f1;color:#11683a;font-weight:600}
-.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:16px;font-weight:600;color:var(--muted);margin:-6px 0 -2px}.wrow .tlr b{font-size:17px}.tlr .tlD{color:#1a56b8}.tlr .tlT{color:#a84a00}
+.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:16px;font-weight:600;color:var(--muted);margin:-6px 0 -2px}.wrow .tlr b{font-size:17px}.tlr .tlD{color:#1a56b8}.tlr .tlT{color:#a84a00}.tlr small{font-size:13px;font-weight:400;margin-left:3px}.tlr .mgV{color:var(--ink)}.tlr .mgW{color:var(--up)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tlr .tlD{color:#8ab4ff}:root:not([data-theme="light"]) .tlr .tlT{color:#ffad66}}:root[data-theme="dark"] .tlr .tlD{color:#8ab4ff}:root[data-theme="dark"] .tlr .tlT{color:#ffad66}
 .wrow .vals.mtl{flex-direction:column;align-items:flex-end;margin:-4px 0 0}.wrow .vals.mtl b{color:var(--ink);font-size:17px}
 .src{font-size:14px;color:var(--muted);margin:10px 0 0;line-height:1.6}
@@ -615,7 +615,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 13:10</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 13:20</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1656,8 +1656,8 @@ function ixExtra(it){const fx=ixUsd(),f0=v=>Math.round(v).toLocaleString("zh-TW"
   if(it.cr&&!it.tw&&fx){const last=it.pts[it.pts.length-1][1];return `<span class="vals"><span>約合台幣 <b>${f0(last*fx)}</b> 元</span></span>`}
   return ""}
 // 列表上的天龍地虎（Luna 2026-11-01）：只看日 K，worker /api/kd、/api/ixkd 的 day.tl = [龍, 虎]
-function tlRow(tl){if(!tl||(tl[0]==null&&tl[1]==null))return "";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
-  return `<span class="tlr"><span class="nw">${tl[0]!=null?`龍 <b class="tlD">${f(tl[0])}</b> 壓力`:"創新高"}</span>${tl[1]!=null?`<span class="nw">虎 <b class="tlT">${f(tl[1])}</b> 支撐</span>`:""}</span>`}
+function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
+  return `<span class="tlr"><span class="nw">${tl[0]!=null?`龍 <b class="tlD">${f(tl[0])}</b> 壓力`:"創新高"}</span>${tl[1]!=null?`<span class="nw">虎 <b class="tlT">${f(tl[1])}</b> 支撐</span>`:""}${ex}</span>`}
 function ixRow(it,attr){const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",dg=ixDg(it),n=it.name.replace(/（.*）/,""),pct=(d/it.prev*100).toFixed(2);
   return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br>${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</span>${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
 const idxList=()=>(IDX&&IDX.items||[]).filter(idxShow).sort((a,b)=>idxRg(a)-idxRg(b)||(idxRg(a)?0:idxOi(a)-idxOi(b)));
@@ -2175,8 +2175,21 @@ function kdBoxes(dy,wk,name,mo,mode=""){
   const xp=mode.startsWith("xp:")?"t:"+mode.slice(3):"";
   // Luna 2026-10-25：技術分析只顯示日 KD、週 KD（月 MACD 和總結論拿掉）
   return `<span class="sigs sigs4 tbox${xp?" xpd":""}">${name&&mode!=="nohead"?head(xp,xp?"▴":""):""}${dBox}${wBox}${wmBox}${mBox}</span>`}
+// 個股融資維持率（估算，Luna 2026-11-01）：後台給融資餘額和估算借款，這裡用即時股價算；融資資料每天晚上公布，手機裡存 3 小時
+const MGR_KEY="facai-mgr";let watchMgr=null;
+function mgrSpan(c,last){const m=watchMgr&&watchMgr[c]&&watchMgr[c].d;if(!m||!m.b||!m.loan)return "";const r=(last||m.c)*m.b/m.loan*100;
+  return `<span class="nw">融資維持 <b class="mgV${r<140?" mgW":""}">${r.toFixed(0)}%</b><small>${r<140?"小心追繳":"估"}</small></span>`}
+async function watchMgrLoad(){
+  if(!ON_CF)return;if(!watchMgr){try{watchMgr=JSON.parse(localStorage.getItem(MGR_KEY))||{}}catch(_){watchMgr={}}}
+  const g=watchGroups[watchTab];if(!g)return;const now=Date.now();
+  const need=g.list.filter(c=>idxOf[c]&&!idxOf[c][4]&&!(watchMgr[c]&&now-watchMgr[c].t<108e5));if(!need.length)return;
+  need.forEach(c=>{watchMgr[c]=Object.assign(watchMgr[c]||{},{t:now-108e5+3e5})});
+  for(let i=0;i<need.length;i+=3)await Promise.all(need.slice(i,i+3).map(async c=>{const d=await api(`/api/mgr?c=${c}&v=1`);if(d&&d.b!=null)watchMgr[c]={t:now,d}}));
+  for(const k in watchMgr)if(now-watchMgr[k].t>7*864e5)delete watchMgr[k];
+  try{localStorage.setItem(MGR_KEY,JSON.stringify(watchMgr))}catch(_){}
+  if(curPage()==="watch")watchRender()}
 async function watchKdLoad(){
-  if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();
+  if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();watchMgrLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
   const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=12`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
@@ -2230,7 +2243,7 @@ function watchRender(){
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br>${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%`;
-    return `<button class="wrow" data-c="${esc(c)}" aria-label="${watchEdit?"移除":"查看"} ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
+    return `<button class="wrow" data-c="${esc(c)}" aria-label="${watchEdit?"移除":"查看"} ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows||'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
 }
 async function watchLoad(){

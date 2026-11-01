@@ -1221,6 +1221,28 @@ async function etfHold(code, us) {
   return { list: list.slice(0, 10) };
 }
 
+// 個股融資維持率（估算，Luna 2026-11-01）：官方只公布每檔融資張數，沒有借款金額
+// 用近 2 年每天融資買進張數 × 當天收盤累積成本，賣出、現金償還照平均成本扣掉；借款 = 成本 × 6 成（上櫃 5 成）
+// 回傳 b 融資餘額（張）、loan 借款（張×元），網頁用即時股價 × b ÷ loan 算維持率
+async function marginEst(code) {
+  const st = new Date(Date.now() - 730 * 864e5).toISOString().slice(0, 10), fm = ds => get(`https://api.finmindtrade.com/api/v4/data?dataset=${ds}&data_id=${code}&start_date=${st}`).then(r => r.json());
+  const [m, p, inf] = await Promise.all([fm("TaiwanStockMarginPurchaseShortSale"), fm("TaiwanStockPrice"), get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&data_id=${code}`).then(r => r.json()).catch(() => ({}))]);
+  const px = {}; for (const x of p.data || []) if (x.close > 0) px[x.date] = x.close;
+  const md = m.data || []; if (!md.length || !Object.keys(px).length) return { __partial: 1 };
+  const it = (inf.data || []).slice(-1)[0], rate = it && it.type === "tpex" ? 0.5 : 0.6;
+  let B = 0, C = 0, d = null, c = null, r = null;
+  for (const x of md) {
+    const k = px[x.date]; if (!k) continue;
+    if (!B && !C) { B = x.MarginPurchaseTodayBalance; C = B * k; continue; }
+    const red = x.MarginPurchaseSell + x.MarginPurchaseCashRepayment;
+    if (B > 0) C -= C / B * Math.min(red, B);
+    C += x.MarginPurchaseBuy * k; B = x.MarginPurchaseTodayBalance; if (B <= 0) C = 0;
+    d = x.date; c = k;
+  }
+  if (!(B > 0 && C > 0)) return { b: 0 };
+  return { b: B, loan: Math.round(C * rate * 100) / 100, d, c, r: Math.round(B * c / (C * rate) * 1000) / 10, rate };
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -1295,6 +1317,12 @@ export default {
         const c = url.searchParams.get("c") || "", u = url.searchParams.get("us") || "";
         if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 86400, () => divYear(c, false));
         if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 86400, () => divYear(u, true));
+        return new Response("{}", { status: 400 });
+      }
+      case "/api/mgr": {
+        // ?c=2330 → 融資維持率（估算）；融資資料每天晚上才公布，3 小時內共用
+        const c = url.searchParams.get("c") || "";
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 10800, () => marginEst(c));
         return new Response("{}", { status: 400 });
       }
       case "/api/etfh": {

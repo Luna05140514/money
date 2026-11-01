@@ -337,7 +337,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .pg-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:4px 0 10px}
 .pg-tabs button{all:unset;cursor:pointer;text-align:center;padding:10px 2px;border-radius:12px;font-size:17px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pg-tabs button[aria-current="page"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
-.pg-tabs.pg4 button{font-size:15px;padding:10px 1px}.pg-tabs.pg5{gap:4px}#bt-pop [hidden]{display:none!important}.bt-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.bt-cell{border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:1px}.bt-cell.best{border:3px solid var(--gold)}.bt-cell.second{border:3px solid var(--red)}.bt-cl{font-size:14px;font-weight:700;color:var(--muted);line-height:1.35}.bt-cl em{font-style:normal;font-size:12px;background:var(--gold);color:#3a2a00;border-radius:999px;padding:0 6px;margin-left:2px;white-space:nowrap}.bt-cl em.sec{background:var(--red);color:#fff}.bt-pct{font-size:26px;font-variant-numeric:tabular-nums}.bt-cg{font-size:16px;font-weight:700}.bt-cd{font-size:14px}.bt-cell .bt-lgb{margin-top:6px;align-self:flex-start}.bt-cell.bt-wide{grid-column:1/-1}#bt-ut{font-size:18px;padding:6px 4px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}.bt-hf{margin-top:6px}.bt-hf button{font-size:14px;padding-left:2px;padding-right:2px}.pg-tabs.pg5 button{font-size:14px;padding:10px 0}
+.pg-tabs.pg4 button{font-size:15px;padding:10px 1px}.pg-tabs.pg5{gap:4px}#bt-pop [hidden]{display:none!important}.bt-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.bt-cell{border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:1px}.bt-cell.best{border:3px solid var(--gold)}.bt-cell.second{border:3px solid var(--red)}.bt-cl{font-size:14px;font-weight:700;color:var(--muted);line-height:1.35}.bt-cl em{font-style:normal;font-size:12px;background:var(--gold);color:#3a2a00;border-radius:999px;padding:0 6px;margin-left:2px;white-space:nowrap}.bt-cl em.sec{background:var(--red);color:#fff}.bt-pct{font-size:26px;font-variant-numeric:tabular-nums}.bt-cg{font-size:16px;font-weight:700}.bt-cd{font-size:14px}.bt-cell .bt-lgb{margin-top:6px;align-self:flex-start}.bt-cell.bt-wide{grid-column:1/-1}.bt-cn{font-size:16px;font-weight:800;line-height:1.35;margin-bottom:2px}.bt-cn .bt-q{margin-left:4px;vertical-align:1px}#bt-ut{font-size:18px;padding:6px 4px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}.bt-hf{margin-top:6px}.bt-hf button{font-size:14px;padding-left:2px;padding-right:2px}.pg-tabs.pg5 button{font-size:14px;padding:10px 0}
 .pg-tabs button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .wlist{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .wrow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:16px 14px;border-top:1px solid var(--line);width:100%;box-sizing:border-box;font:inherit;color:inherit;background:none;text-align:left}
@@ -618,7 +618,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/02 02:00</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/02 02:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1735,12 +1735,12 @@ const GLOSS={
   BT1:["① 每年一開始整筆買、不賣", "<ol class=\"bt-steps\"><li>每年一開始，把一整年的錢（每月 1 萬就是 12 萬）一次全部買進。</li><li>一直抱著，不賣。</li><li>2 年、3 年的話，每年一開始再整筆買一次。</li></ol>", "", "", "操作流程：每年一開始整筆買、不賣"],
   BT2:["② 每個月固定買", "<ol class=\"bt-steps\"><li>每個月第一個交易日開盤，把這個月的錢全部買進。</li><li>一直抱著，不賣。</li></ol>", "", "", "操作流程：每個月固定買"],
   BT3:["③ 固定買＋低點加碼", "<ol class=\"bt-steps\"><li>每個月的錢分兩半：一半在第一個交易日開盤買進。</li><li>另一半先存起來。</li><li>日 KD 或週 KD 的 K 跌破 30，隔天開盤把存的錢全部買進。</li><li>一直抱著，不賣。</li></ol>", "", "", "操作流程：固定買＋低點加碼"],
-  BT4:["① 日 KD 30、20、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>日 KD 的 K 跌破 30，買 1 單位。</li><li>再跌破 20，再買 1 單位。</li><li>之後日 KD 金叉，買第 3 單位；如果中間鈍化（連 3 天 20 以下），等週 K 到 20 以下或日 KD 金叉再買。</li><li>賣法看下面兩格：「賺 10% 全賣」，或日 K 漲到 80 以上先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 KD 30、20、金叉分 3 次買"],
-  BT5:["② 日 KD 20、隔天再低、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>日 KD 的 K 跌破 20，買 1 單位。</li><li>隔天 K 又更低，再買 1 單位（沒有更低就跳過）。</li><li>之後日 KD 金叉，買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或日 K 漲到 80 以上先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 KD 20、隔天再低、金叉分 3 次買"],
-  BT6:["③ 虎線、更低虎線、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>接近虎線買 1 單位。</li><li>跌破之後碰到更低的虎線，再買 1 單位。</li><li>之後日 KD 金叉買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或碰到龍線先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線、更低虎線、金叉分 3 次買"],
-  BT7:["④ 虎線、隔天再低、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>接近虎線買 1 單位。</li><li>買進隔天收盤又更低，再買 1 單位（沒有更低就跳過）。</li><li>之後日 KD 金叉買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或碰到龍線先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線、隔天再低、金叉分 3 次買"],
-  BT8:["⑤ 虎線買、龍線賣", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>股價跌到接近虎線（虎線往上 2% 以內）買 1 單位；之後每碰到一條新的虎線再買 1 單位，錢用完就不買。</li><li>股價碰到龍線就全部賣掉。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線買、龍線賣"],
-  BT9:["⑥ 日 K 20 以下買、80 以上賣", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>日 K 跌破 20 買 1 單位；之後每再跌破 20 一次再買 1 單位，錢用完就不買。</li><li>日 K 漲到 80 以上就全部賣掉。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 K 20 以下買、80 以上賣"],
+  BT4:["③ 日 KD 30、20、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>日 KD 的 K 跌破 30，買 1 單位。</li><li>再跌破 20，再買 1 單位。</li><li>之後日 KD 金叉，買第 3 單位；如果中間鈍化（連 3 天 20 以下），等週 K 到 20 以下或日 KD 金叉再買。</li><li>賣法看下面兩格：「賺 10% 全賣」，或日 K 漲到 80 以上先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 KD 30、20、金叉分 3 次買"],
+  BT5:["④ 日 KD 20、隔天再低、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>日 KD 的 K 跌破 20，買 1 單位。</li><li>隔天 K 又更低，再買 1 單位（沒有更低就跳過）。</li><li>之後日 KD 金叉，買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或日 K 漲到 80 以上先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 KD 20、隔天再低、金叉分 3 次買"],
+  BT6:["⑤ 虎線、更低虎線、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>接近虎線買 1 單位。</li><li>跌破之後碰到更低的虎線，再買 1 單位。</li><li>之後日 KD 金叉買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或碰到龍線先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線、更低虎線、金叉分 3 次買"],
+  BT7:["⑥ 虎線、隔天再低、金叉分 3 次買", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>接近虎線買 1 單位。</li><li>買進隔天收盤又更低，再買 1 單位（沒有更低就跳過）。</li><li>之後日 KD 金叉買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或碰到龍線先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線、隔天再低、金叉分 3 次買"],
+  BT8:["① 虎線買、龍線賣", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>股價跌到接近虎線（虎線往上 2% 以內）買 1 單位；之後每碰到一條新的虎線再買 1 單位，錢用完就不買。</li><li>股價碰到龍線就全部賣掉。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線買、龍線賣"],
+  BT9:["② 日 K 20 以下買、80 以上賣", "<ol class=\"bt-steps\"><li>一開始放一筆本金，每次買 1 單位（預設 5 萬元，可以自己改）。</li><li>日 K 跌破 20 買 1 單位；之後每再跌破 20 一次再買 1 單位，錢用完就不買。</li><li>日 K 漲到 80 以上就全部賣掉。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 K 20 以下買、80 以上賣"],
 
   KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；30 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
   本益成長比:["本益成長比（PEG）","本益成長比 = 本益比 ÷ EPS 成長率（%）。把公司賺錢成長的速度也算進來：本益比高，但賺錢成長更快，其實不一定貴。","1 以下算便宜，1～2 合理，2 以上算昂貴。EPS 衰退的股票算不出來。這裡用法人（分析師）預估的 EPS。","例：本益比 20 倍、EPS 一年成長 25%，本益成長比 = 20 ÷ 25 = 0.8，算便宜。"],
@@ -1961,7 +1961,7 @@ function sumOf(dy,wk,M){const ok=(f,x)=>{try{return!!(x&&f(x))}catch(_){return f
 const BT_FB=0.001425,btData={};let btCode=null,btYears=3,btDate="",btCal=0; // btCal：價差看今年(0)／去年(1)／前年(2)，每次算 1 年（Luna 2026-11-02）
 // 把資料切到某一天為止（價差算整年用）
 function btCut(P,end){const n=P.B.findIndex(b=>b.dt>end);if(n<0)return P;const o={};for(const k in P)o[k]=Array.isArray(P[k])?P[k].slice(0,n):P[k];return o}
-const BT_NM=["① 每年一開始整筆買、不賣","② 每個月固定買","③ 固定買＋低點加碼","① 日 KD 30、20、金叉分 3 次買","② 日 KD 20、隔天再低、金叉分 3 次買","③ 虎線、更低虎線、金叉分 3 次買","④ 虎線、隔天再低、金叉分 3 次買","⑤ 虎線買、龍線賣","⑥ 日 K 20 以下買、80 以上賣"];
+const BT_NM=["① 每年一開始整筆買、不賣","② 每個月固定買","③ 固定買＋低點加碼","③ 日 KD 30、20、金叉分 3 次買","④ 日 KD 20、隔天再低、金叉分 3 次買","⑤ 虎線、更低虎線、金叉分 3 次買","⑥ 虎線、隔天再低、金叉分 3 次買","① 虎線買、龍線賣","② 日 K 20 以下買、80 以上賣"];
 const btWk=s=>{const x=new Date(s+"T00:00:00Z"),wd=(x.getUTCDay()+6)%7;return new Date(x-wd*864e5).toISOString().slice(0,10)};
 function btPrep(r){const B=r.d.map((d,i)=>({dt:d,o:r.o[i],h:r.h[i],l:r.l[i],c:r.c[i]}));
   // 日 KD(9)
@@ -2123,12 +2123,12 @@ function btOpen(keep){let box=$("bt-pop");if(keep!==true)btGroup=watchTab;
       <li>② 每個月固定買（定期定額）：每月第一個交易日開盤全部買。</li>
       <li>③ 固定買＋低點加碼：每月的錢一半在第一個交易日開盤買，另一半存起來；日 KD 或週 KD 的 K 跌到 30 以下（相對低點），隔天開盤把存的錢全部買進。</li>
       <li>價差 ①～⑥：一開始放一筆「本金」，每次買 1 單位（「每單位」自己填，預設 5 萬元），錢不夠一單位就用剩下的買。一輪最多買 3 單位，全部賣光才開始下一輪。</li>
-      <li>價差 ① K 跌破 30 買 1 單位，再跌破 20 再買 1 單位；之後出現金叉再買 1 單位，如果中間鈍化（連 3 天 20 以下），等週 K 到 20 以下或日 KD 金叉再買。</li>
-      <li>價差 ② K 跌破 20 買 1 單位；隔天 K 又更低，再買 1 單位；第 3 單位和 ① 一樣（金叉，或鈍化後週 K 到 20 以下）。</li>
-      <li>價差 ③ 股價跌到接近虎線（虎線往上 2% 以內）買 1 單位，跌破後碰到更低的虎線再買 1 單位，第 3 單位和 ① 一樣。</li>
-      <li>價差 ④ 接近虎線買 1 單位，隔天收盤又更低再買 1 單位，第 3 單位和 ① 一樣。</li>
-      <li>價差 ⑤ 接近虎線買 1 單位，碰到新的虎線再買，碰到龍線全部賣掉（只有這一種賣法）。</li>
-      <li>價差 ⑥ 日 K 跌破 20 買 1 單位，每再跌破 20 再買，日 K 漲到 80 以上全部賣掉（只有這一種賣法）。</li>
+      <li>價差 ① 接近虎線買 1 單位，碰到新的虎線再買，碰到龍線全部賣掉（只有這一種賣法）。</li>
+      <li>價差 ② 日 K 跌破 20 買 1 單位，每再跌破 20 再買，日 K 漲到 80 以上全部賣掉（只有這一種賣法）。</li>
+      <li>價差 ③ K 跌破 30 買 1 單位，再跌破 20 再買 1 單位；之後出現金叉再買 1 單位，如果中間鈍化（連 3 天 20 以下），等週 K 到 20 以下或日 KD 金叉再買。</li>
+      <li>價差 ④ K 跌破 20 買 1 單位；隔天 K 又更低，再買 1 單位；第 3 單位和 ③ 一樣（金叉，或鈍化後週 K 到 20 以下）。</li>
+      <li>價差 ⑤ 股價跌到接近虎線（虎線往上 2% 以內）買 1 單位，跌破後碰到更低的虎線再買 1 單位，第 3 單位和 ③ 一樣。</li>
+      <li>價差 ⑥ 接近虎線買 1 單位，隔天收盤又更低再買 1 單位，第 3 單位和 ③ 一樣。</li>
       <li>價差每一種買法一張卡，下面兩格是兩種賣法：左邊「賺 10% 全賣」是收盤比買進平均成本賺 10% 以上，隔天全部賣掉；右邊「賣一半＋死叉賣完」在高點（①② 是日 K 漲到 80 以上，③④ 是碰到龍線）先賣一半，等日 KD 死叉再賣剩下的。</li>
       <li>最多跌幾 %＝回測期間，手上股票的市值比買進的成本（平均每股買價）最多少掉幾 %。沒有比成本低過，就寫「沒有跌破買進成本」。</li>
       <li>用含息還原價，配息等於自動再買回去。買整數股（零股），手續費 0.1425%，賣出另外算證交稅（ETF 0.1%、股票 0.3%）。訊號在收盤出現，隔天開盤買賣。美股用美元算。</li>
@@ -2168,12 +2168,13 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
   const w=n=>n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,"")+" 萬":Math.round(n).toLocaleString();
   const tag=x=>x.ret===best?' <em>最高</em>':x.ret===second?' <em class="sec">次高</em>':"",cls=x=>x.ret===best?" best":x.ret===second?" second":"";
   const head=`<p class="bt-s">${(R[0]||RS[3][0]).from.replace(/-/g,"/")} 到 ${to.replace(/-/g,"/")}，${btKind?`本金 ${btCapV.toLocaleString()}${cur}，每次買 ${btUnitV.toLocaleString()}${btUtV?" 股":cur}`:`每月 ${M.toLocaleString()}${cur}`}</p>`;
-  if(btKind){out.innerHTML=head+HOW.map((h,i)=>{if(i<3)return "";
-    return `<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div>
-      <div class="bt-2">${RS[i].map((x,k)=>{const g=x.val-x.inv;return `<div class="bt-cell${cls(x)}${HOW[i]===23||HOW[i]===20?" bt-wide":""}"><div class="bt-cl">${HOW[i]===23?"碰到龍線全賣":HOW[i]===20?"日 K 80 以上全賣":SM[k][1]}${tag(x)}</div>
+  // ①② 虎線買龍線賣、日 K 20 買 80 賣並排在最上面（Luna 2026-11-02）；③～⑥ 每種買法一張卡、下面兩種賣法
+  const cell=(i,x,lab,m,q)=>{const g=x.val-x.inv;return `<div class="bt-cell${cls(x)}">${q?`<div class="bt-cn">${BT_NM[i]}<i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></div>`:""}<div class="bt-cl">${lab}${tag(x)}</div>
         <b class="bt-pct ${g>=0?"up":"dn"}">${x.ret>=0?"+":""}${x.ret.toFixed(1)}%</b><div class="bt-cg ${g>=0?"up":"dn"}">${g>=0?"賺":"賠"} ${Math.round(Math.abs(g)).toLocaleString()}${cur}</div>
         <div class="bt-cd">${w(x.inv)} → ${w(x.val)}</div><div class="bt-cd">${x.ddc<0.5?"沒跌破成本":`最多跌 −${x.ddc.toFixed(0)}%`}</div><div class="bt-cd">賣 ${x.win+x.lose} 次，賺 ${x.win} 次</div>
-        <button class="bt-lgb" data-btlog="${i}" data-bthm="${HOW[i]===23||HOW[i]===20?0:SM[k][0]}">詳細資料</button></div>`}).join("")}</div></div>`}).join("");return}
+        <button class="bt-lgb" data-btlog="${i}" data-bthm="${m}">詳細資料</button></div>`};
+  if(btKind){out.innerHTML=head+`<div class="bt-res bt-pc"><div class="bt-2">${cell(7,RS[7][0],"碰到龍線全賣",0,1)}${cell(8,RS[8][0],"日 K 80 以上全賣",0,1)}</div></div>`+[3,4,5,6].map(i=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div>
+      <div class="bt-2">${RS[i].map((x,k)=>cell(i,x,SM[k][1],SM[k][0],0)).join("")}</div></div>`).join("");return}
   out.innerHTML=head+R.map((x,i)=>{if(!x||i>=3)return "";const g=x.val-x.inv;
     return `<div class="bt-res${x.ret===best?" best":x.ret===second?" second":""}"><div class="bt-nm">${BT_NM[i]}${x.ret===best?' <em>最高</em>':x.ret===second?' <em class="sec">次高</em>':""}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i><button class="bt-lgb" data-btlog="${i}">詳細資料</button></span></div>
       <div class="bt-big"><b class="${g>=0?"up":"dn"}">${x.ret>=0?"+":""}${x.ret.toFixed(1)}%</b><span class="${g>=0?"up":"dn"}">${g>=0?"賺":"賠"} ${Math.round(Math.abs(g)).toLocaleString()}${cur}</span></div>

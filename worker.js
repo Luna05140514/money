@@ -839,6 +839,24 @@ function kdLast2(bars, n = 9) {
   const dvx = div(1) || div(-1); if (dvx) out.dv = dvx;
   return out;
 }
+// 天龍地虎（Luna 2026-11-01，和頁面 wdTL 同一套）：bars = [高, 低, 收]（Yahoo 日線是實際成交價）→ [龍, 虎]，沒有就是 null
+// 龍＝最近一段 KD 黃金交叉（K>D，至少 2 根，正在進行的也算）的最高價且比現價高；那個高點是近 250 根最高（創新高）→ 沒有龍，虎＝這波前面那段死叉的最低點
+// 其他情況虎＝最近一個比現價低、前後 3 根都沒有更低的轉折低點
+function tlDay(bars) {
+  const n = bars.length; if (n < 20) return null;
+  const K = [], D = []; let k = 50, d = 50;
+  bars.forEach((b, i) => { let H = -Infinity, L = Infinity; for (let j = Math.max(0, i - 8); j <= i; j++) { H = Math.max(H, bars[j][0]); L = Math.min(L, bars[j][1]); }
+    const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100; k = k * 2 / 3 + rsv / 3; d = d * 2 / 3 + k / 3; K.push(k); D.push(d); });
+  const c = bars[n - 1][2]; let dr = null, tg = null, ws = -1;
+  for (let e = n - 1; e >= 0 && dr == null;) { const up = K[e] > D[e]; let s = e; while (s > 0 && (K[s - 1] > D[s - 1]) === up) s--;
+    if (up && (e > s || e === n - 1)) { let b = s; for (let i = s; i <= e; i++) if (bars[i][0] > bars[b][0]) b = i; if (bars[b][0] > c) { dr = bars[b][0]; ws = s; } }
+    e = s - 1; }
+  if (dr != null) { let hi = 0; for (let i = Math.max(0, n - 250); i < n; i++) hi = Math.max(hi, bars[i][0]);
+    if (dr >= hi) { dr = null; if (ws > 0) { const e = ws - 1; let s = e; while (s > 0 && !(K[s - 1] > D[s - 1])) s--; let lo = Infinity; for (let i = s; i <= e; i++) lo = Math.min(lo, bars[i][1]); if (lo < c) tg = lo; } } }
+  for (let i = n - 4; i >= 3 && tg == null; i--) { const l = bars[i][1]; if (l >= c) continue; let ok = 1; for (let j = i - 3; j <= i + 3 && ok; j++) { if (j === i) continue; const x = bars[j][1]; if (x < l || (j > i && x === l)) ok = 0; } if (ok) tg = l; }
+  const r = v => v == null ? null : Math.round(v * 100) / 100;
+  return [r(dr), r(tg)];
+}
 // 短線過濾用：收盤在 20 日均線上／下、MACD 柱（正＝趨勢偏多）、最後一天量 ÷ 前 5 天平均量
 function dayExtras(cl, vol) {
   const n = cl.length; if (n < 35) return {};
@@ -881,7 +899,7 @@ async function kdList(list) {
         // 盤中今天的量還沒算完，不拿來比
         const reg = ((r.meta || {}).currentTradingPeriod || {}).regular, now = Date.now() / 1000;
         const open = reg && now >= reg.start && now < reg.end && ts[ts.length - 1] >= reg.start;
-        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol) }, week: { ...kdLast2(wk), mac: wkMacd(wk) } }];
+        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol), tl: tlDay(day) }, week: { ...kdLast2(wk), mac: wkMacd(wk) } }];
       } catch (_) {}
     }
     return [code, null];
@@ -1080,7 +1098,7 @@ async function indexKd(keys) {
         const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(1)); else { w[0] = Math.max(w[0], b[1]); w[1] = Math.min(w[1], b[2]); w[2] = b[3]; }
       }
       const vl = k.map(b => b[4]), hasV = vl[vl.length - 1] > 0;
-      return [key, { day: { ...kdLast2(k.map(b => b.slice(1, 4))), ...dayExtras(k.map(b => b[3]), hasV ? vl : null) }, week: (wb => ({ ...kdLast2(wb), mac: wkMacd(wb) }))([...weeks.keys()].sort().map(x => weeks.get(x))) }];
+      return [key, { day: { ...kdLast2(k.map(b => b.slice(1, 4))), ...dayExtras(k.map(b => b[3]), hasV ? vl : null), tl: tlDay(k.map(b => b.slice(1, 4))) }, week: (wb => ({ ...kdLast2(wb), mac: wkMacd(wb) }))([...weeks.keys()].sort().map(x => weeks.get(x))) }];
     } catch (_) { return [key, null]; }
   };
   return Object.fromEntries((await Promise.all(keys.map(one))).filter(x => x[1]));

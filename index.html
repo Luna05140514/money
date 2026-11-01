@@ -337,7 +337,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .pg-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:4px 0 10px}
 .pg-tabs button{all:unset;cursor:pointer;text-align:center;padding:10px 2px;border-radius:12px;font-size:17px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pg-tabs button[aria-current="page"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
-.pg-tabs.pg4 button{font-size:15px;padding:10px 1px}
+.pg-tabs.pg4 button{font-size:15px;padding:10px 1px}.pg-tabs.pg5{gap:4px}.pg-tabs.pg5 button{font-size:14px;padding:10px 0}
 .pg-tabs button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .wlist{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .wrow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:16px 14px;border-top:1px solid var(--line);width:100%;box-sizing:border-box;font:inherit;color:inherit;background:none;text-align:left}
@@ -618,7 +618,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 19:30</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 19:40</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -968,10 +968,15 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b
 // 看盤這組頁面頂端的分頁列（全球大盤／大盤高低指標／自選股），不用回首頁就能切換
 const PG_SHORT={mkt:"高低指標",corp:"公司買賣",hold:"持股損益",divc:"除權息",stock:"報酬比較",pledge:"質押",debt:"負債比",fire:"財務自由",compound:"複利"};
 const PG_GROUPS=[["idx","mkt","watch","corp"],["hold","divc"],["stock","nav","dca"],["pledge","debt","fire","compound"]];
-PG_GROUPS.forEach(g=>g.forEach(id=>{const sec=$(id),bar=sec&&sec.querySelector(".bar");if(!bar)return;
-  const nav=document.createElement("nav");nav.className="pg-tabs"+(g.length>3?" pg4":"");nav.setAttribute("aria-label","切換頁面");
+// 簡易版（Luna 2026-11-01）：頁面上面的分頁也跟著換成簡易版的兩組
+const PG_SIMPLE=[["idx","mkt","watch","hold","divc"],["corp","stock","nav","dca"]];
+function pgBuild(simple){document.querySelectorAll("nav.pg-tabs").forEach(n=>n.remove());
+const G=simple?[...PG_SIMPLE,...PG_GROUPS.filter(g=>!g.some(x=>PG_SIMPLE.flat().includes(x)))]:PG_GROUPS;
+G.forEach(g=>g.forEach(id=>{const sec=$(id),bar=sec&&sec.querySelector(".bar");if(!bar)return;
+  const nav=document.createElement("nav");nav.className="pg-tabs"+(g.length>4?" pg5":g.length>3?" pg4":"");nav.setAttribute("aria-label","切換頁面");
   nav.innerHTML=g.map(x=>{const h=document.querySelector(`#home [data-go="${x}"] h2`);return `<button data-go="${x}"${x===id?' aria-current="page"':""}>${PG_SHORT[x]||(h?h.textContent:x)}</button>`}).join("");
-  bar.after(nav)}));
+  bar.after(nav)}))}
+pgBuild(false);
 // 重新整理：記住目前頁面再重新載入整頁（拿最新發布的資料）；若外框擋住重新載入，就原地重畫並提示資料時間
 /* 密碼鎖的畫面 */
 function lockIcons(){const c=lockCfg(),lk=c&&lockMode==="locked";
@@ -1054,7 +1059,7 @@ $("home-sub").addEventListener("click",e=>{const b=e.target.closest("[data-hs]")
 const SIMPLE_STK=["idx","mkt","watch","hold","divc"];
 function homeMode(){let m="full",t="1";try{m=localStorage.getItem("facai-home-mode")||"full";t=localStorage.getItem("facai-home-stab")||"1"}catch(_){}
   const sm=m==="simple";document.querySelectorAll("#home-mode [data-hm]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.hm===m));
-  $("home-stabs").hidden=!sm;$("home-tabs").hidden=sm;
+  $("home-stabs").hidden=!sm;$("home-tabs").hidden=sm;pgBuild(sm);
   if(!sm){let k="stk";try{k=localStorage.getItem("facai-home-tab")||"stk"}catch(_){}homeTab(k);return}
   ["home-sub","home-csub","hc-rows","hc-hold"].forEach(id=>$(id).hidden=true);
   document.querySelectorAll("#home-stabs [data-hst]").forEach(b=>b.setAttribute("aria-selected",b.dataset.hst===t));

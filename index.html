@@ -612,7 +612,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 09:40</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 10:05</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1708,7 +1708,7 @@ const GLOSS={
 
   KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；30 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
   本益成長比:["本益成長比（PEG）","本益成長比 = 本益比 ÷ EPS 成長率（%）。把公司賺錢成長的速度也算進來：本益比高，但賺錢成長更快，其實不一定貴。","1 以下算便宜，1～2 合理，2 以上算昂貴。EPS 衰退的股票算不出來。這裡用法人（分析師）預估的 EPS。","例：本益比 20 倍、EPS 一年成長 25%，本益成長比 = 20 ÷ 25 = 0.8，算便宜。"],
-  天龍地虎:["天龍地虎","藍色「龍」線是上面的壓力，橘色「虎」線是下面的支撐。龍＝最近一段 KD 黃金交叉（K 在 D 上面）那幾天的最高價；虎＝最近一個比現在價格低的轉折低點（前後 3 天都沒有更低）。","創新高時上面沒有壓力，只剩虎線。跌破虎線，就往下找下一個轉折低點當新的虎線。","龍、虎的數字是當時實際成交價；K 線是還原價，所以除息前的線位置會比數字低一點點。"],
+  天龍地虎:["天龍地虎","藍色「龍」線是上面的壓力，橘色「虎」線是下面的支撐。龍＝最近一段 KD 黃金交叉（K 在 D 上面）那幾天的最高價；虎＝最近一個比現在價格低的轉折低點（前後 3 天都沒有更低）。","創新高（近一年最高）時上面沒有壓力，只剩虎線，虎線是這波上漲前拉回的最低點。跌破虎線，就往下找下一個轉折低點當新的虎線。","龍、虎的數字是當時實際成交價；K 線是還原價，所以除息前的線位置會比數字低一點點。"],
   本益比:["本益比","本益比 = 股價 ÷ 每股一年賺的錢（EPS）。意思是：用現在的價格買，大概要幾年才能靠公司賺的錢回本。數字越低越便宜。","「今年／明年本益比」是用法人（分析師）預估的 EPS 算的。便宜、合理、昂貴是跟這檔股票自己過去 5 年的本益比比較。","例：股價 100 元、一年每股賺 5 元，本益比 = 20 倍。"],
   股淨比:["股淨比（股價淨值比）","股淨比 = 股價 ÷ 每股淨值。淨值是公司把東西全賣掉、債還清以後，每一股可以分到的錢。1 倍表示股價剛好等於公司的家當。","金融股、賺錢不穩定的股票，常用股淨比看便宜或貴。","例：每股淨值 50 元、股價 75 元，股淨比 = 1.5 倍。"],
   EPS:["EPS（每股盈餘）","公司賺的錢，平均分到每一股是多少元。越高代表公司越會賺錢。","",""],
@@ -2502,9 +2502,13 @@ function wdRawM(d,divs){const m={};let f=1,j;const dv=[...divs].filter(v=>v[1]>0
     if(i>0){while(j>=0&&dv[j][0]>d[i-1][0]){const pc=d[i-1][4]*f;if(dv[j][1]<pc)f*=pc/(pc-dv[j][1]);j--}}}
   return m}
 function wdTL(a,K,D,m){const n=a.length;if(n<10)return {};const M=i=>m[a[i][0]]||1,c=a[n-1][4]*M(n-1);let dr=null,tg=null;
+  let ws=-1;
   for(let e=n-1;e>=0&&!dr;){const up=K[e]>D[e];let s=e;while(s>0&&(K[s-1]>D[s-1])===up)s--;
-    if(up&&(e>s||e===n-1)){let b=s;for(let i=s;i<=e;i++)if(a[i][2]*M(i)>a[b][2]*M(b))b=i;if(a[b][2]*M(b)>c)dr=[a[b][0],a[b][2],a[b][2]*M(b)]}
+    if(up&&(e>s||e===n-1)){let b=s;for(let i=s;i<=e;i++)if(a[i][2]*M(i)>a[b][2]*M(b))b=i;if(a[b][2]*M(b)>c){dr=[a[b][0],a[b][2],a[b][2]*M(b)];ws=s}}
     e=s-1}
+  // 龍是近一年最高價（創新高）→ 只有虎；虎＝這波上漲前那段 KD 死叉（拉回）的最低點（Luna 2026-11-01，中信金）
+  if(dr){let hi=0;for(let i=Math.max(0,n-250);i<n;i++)hi=Math.max(hi,a[i][2]*M(i));
+    if(dr[2]>=hi){dr=null;if(ws>0){let e=ws-1,s=e;while(s>0&&!(K[s-1]>D[s-1]))s--;let b=s;for(let i=s;i<=e;i++)if(a[i][3]*M(i)<a[b][3]*M(b))b=i;if(a[b][3]*M(b)<c)tg=[a[b][0],a[b][3],a[b][3]*M(b)]}}}
   for(let i=n-4;i>=3&&!tg;i--){const l=a[i][3]*M(i);if(l>=c)continue;let ok=1;for(let j=i-3;j<=i+3&&ok;j++){if(j===i)continue;const x=a[j][3]*M(j);if(x<l||(j>i&&x===l))ok=0}if(ok)tg=[a[i][0],a[i][3],l]}
   return {dr,tg}}
 function wdKDraw(){
@@ -2566,7 +2570,7 @@ function wdKDraw(){
     g+=`<line x1="${X(i)}" x2="${X(i)}" y1="${Y(x[2])}" y2="${Y(x[3])}" stroke="${col}"/><rect x="${X(i)-bw/2}" y="${y1}" width="${bw}" height="${Math.max(1,y2-y1)}" fill="${col}"/>`});
   const line=(a,col,y)=>{let p="";a.forEach((v,i)=>{if(v==null)return;p+=`${p?"L":"M"}${X(i).toFixed(1)},${y(v).toFixed(1)}`});return p?`<path d="${p}" fill="none" stroke="${col}" stroke-width="1.4"/>`:""};
   ma.forEach((a,j)=>g+=line(a,WD_MA[j][1],Y));
-  [[tl.dr,"龍","#2f7de1"],[tl.tg,"虎","#e08a00"]].forEach(([x,t,col])=>{if(!x)return;const y=Y(x[1]).toFixed(1);
+  [[tl.dr,"龍","#2f7de1"],[tl.tg,"虎","#c25e00"]].forEach(([x,t,col])=>{if(!x)return;const y=Y(x[1]).toFixed(1);
     g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="1.6"/><circle cx="${L+9}" cy="${y}" r="9" fill="${col}"/><text x="${L+9}" y="${+y+4}" text-anchor="middle" fill="#fff" style="font-weight:700">${t}</text><rect x="${W-R+1}" y="${y-8}" width="${R-1}" height="16" rx="3" fill="${col}"/><text x="${W-2}" y="${+y+4}" text-anchor="end" fill="#fff" style="font-weight:700">${x[2]>=1000?Math.round(x[2]):r2(x[2])}</text>`});
   const cross=`<line x1="${X(sel)}" x2="${X(sel)}" y1="0" y2="${H}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
   const dl=[0,Math.floor(N/2),N-1].map((i,j)=>`<text x="${j===0?L:j===2?W-R:X(i)}" y="${H+14}" text-anchor="${j===0?"start":j===2?"end":"middle"}">${k[i][0].slice(2).replace(/-/g,"/")}</text>`).join("");
@@ -2592,7 +2596,7 @@ function wdKDraw(){
   box.innerHTML=`<h2>K 線圖 ${wdK.ix?"":`<small class="muted">還原</small>`}</h2>
   ${seg}
   <div class="wd-info"><b>${b[0].replace(/-/g,"/")}</b>　開 <b>${f2(b[1])}</b>　高 <b>${f2(b[2])}</b>　低 <b>${f2(b[3])}</b>　收 <b class="${cls}">${f2(b[4])}</b>${d==null?"":`　<b class="${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</b>`}</div>
-  ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b style="color:#2f7de1">龍 ${f2(tl.dr[2])}</b> 壓力（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高，沒有龍線</b></span>　'}${tl.tg?`<span class="nw"><b style="color:#e08a00">虎 ${f2(tl.tg[2])}</b> 支撐（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
+  ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b style="color:#1a56b8">龍 ${f2(tl.dr[2])}</b> 壓力（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高，沒有龍線</b></span>　'}${tl.tg?`<span class="nw"><b style="color:#a84a00">虎 ${f2(tl.tg[2])}</b> 支撐（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
   <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
   ${main}

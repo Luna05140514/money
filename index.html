@@ -41,7 +41,7 @@ button,input,select{font:inherit;color:inherit}
 /* 首頁 */
 .hero{background:var(--red);color:#fff7e6;border-radius:6px;padding:40px 28px 34px;position:relative;overflow:hidden}
 .hero::after{content:"發";position:absolute;right:-10px;bottom:-60px;font-family:var(--display);font-weight:900;font-size:220px;line-height:1;color:rgba(255,215,120,.16);pointer-events:none}
-.hero .eyebrow{font-size:13px;letter-spacing:.2em;color:#ffd98a}
+.hero .eyebrow{font-size:13px;letter-spacing:.2em;color:#ffd98a}.hmode{display:inline-flex;margin-top:14px;border:1.5px solid #ffd98a;border-radius:999px;overflow:hidden;position:relative;z-index:1}.hmode button{font:inherit;font-size:17px;font-weight:700;padding:7px 20px;border:0;background:transparent;color:#ffe3a3;cursor:pointer}.hmode button[aria-pressed="true"]{background:#ffd98a;color:#7a1010}
 .hero h1{font-family:var(--display);font-weight:900;font-size:clamp(40px,9vw,76px);line-height:1.1;margin:6px 0 10px;letter-spacing:.06em;text-wrap:balance;color:#ffe3a3}
 .hero p{margin:0;max-width:34em;color:#ffeccc}
 .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
@@ -593,7 +593,9 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <div class="eyebrow">理財工具箱</div>
       <h1>賺大錢發發發</h1>
       <p>常用的投資試算與查詢工具，輸入數字就能看到結果。</p>
+      <div class="hmode" id="home-mode" role="group" aria-label="切換版本"><button data-hm="simple">簡易版</button><button data-hm="full">完整版</button></div>
     </header>
+    <div class="watch-tabs" id="home-stabs" role="tablist" hidden><button role="tab" data-hst="1">股票</button><button role="tab" data-hst="2">工具</button></div>
     <div class="watch-tabs" id="home-tabs" role="tablist"><button role="tab" data-ht="stk" aria-selected="true">股市</button><button role="tab" data-ht="coin" aria-selected="false">虛擬幣</button><button role="tab" data-ht="calc" aria-selected="false">財務計算機</button></div>
     <div class="watch-tabs" id="home-sub" role="tablist"><button role="tab" data-hs="1" aria-selected="true">看盤</button><button role="tab" data-hs="2" aria-selected="false">持股</button><button role="tab" data-hs="3" aria-selected="false">工具</button></div>
     <div class="watch-tabs" id="home-csub" role="tablist" hidden><button role="tab" data-hc="1" aria-selected="true">虛擬幣</button><button role="tab" data-hc="3" aria-selected="false">穩定幣</button><button role="tab" data-hc="2" aria-selected="false">持有</button></div>
@@ -616,7 +618,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 14:10</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 19:30</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1048,7 +1050,18 @@ $("home-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-ht]"
 // 股市裡的小分頁（Luna 2026-10-24）：看盤／持股／工具
 $("home-csub").addEventListener("click",e=>{const b=e.target.closest("[data-hc]");if(!b)return;try{localStorage.setItem("facai-home-csub",b.dataset.hc)}catch(_){}homeTab("coin")});
 $("home-sub").addEventListener("click",e=>{const b=e.target.closest("[data-hs]");if(!b)return;try{localStorage.setItem("facai-home-sub",b.dataset.hs)}catch(_){}homeTab("stk")});
-try{homeTab(localStorage.getItem("facai-home-tab")||"stk")}catch(_){homeTab("stk")}
+// 簡易版（Luna 2026-11-01）：首頁只有「股票」「工具」兩個分頁，不放虛擬幣、財務計算機；記在 facai-home-mode
+const SIMPLE_STK=["idx","mkt","watch","hold","divc"];
+function homeMode(){let m="full",t="1";try{m=localStorage.getItem("facai-home-mode")||"full";t=localStorage.getItem("facai-home-stab")||"1"}catch(_){}
+  const sm=m==="simple";document.querySelectorAll("#home-mode [data-hm]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.hm===m));
+  $("home-stabs").hidden=!sm;$("home-tabs").hidden=sm;
+  if(!sm){let k="stk";try{k=localStorage.getItem("facai-home-tab")||"stk"}catch(_){}homeTab(k);return}
+  ["home-sub","home-csub","hc-rows","hc-hold"].forEach(id=>$(id).hidden=true);
+  document.querySelectorAll("#home-stabs [data-hst]").forEach(b=>b.setAttribute("aria-selected",b.dataset.hst===t));
+  document.querySelectorAll("#home-grid [data-go]").forEach(b=>{const st=SIMPLE_STK.includes(b.dataset.go);b.hidden=t==="1"?!st:(st||b.dataset.cat==="calc")})}
+$("home-mode").addEventListener("click",e=>{const b=e.target.closest("[data-hm]");if(!b)return;try{localStorage.setItem("facai-home-mode",b.dataset.hm)}catch(_){}homeMode()});
+$("home-stabs").addEventListener("click",e=>{const b=e.target.closest("[data-hst]");if(!b)return;try{localStorage.setItem("facai-home-stab",b.dataset.hst)}catch(_){}homeMode()});
+homeMode();
 const curPage=()=>pages.find(x=>!$(x).hidden)||"home";
 function toast(msg){let t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}
   t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}

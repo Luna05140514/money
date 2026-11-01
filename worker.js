@@ -1243,6 +1243,52 @@ async function marginEst(code) {
   return { b: B, loan: Math.round(C * rate * 100) / 100, d, c, r: Math.round(B * c / (C * rate) * 1000) / 10, rate };
 }
 
+// 公司買賣股票（Luna 2026-11-01，目前只看龍巖 5530、寶島科 5312）：Yahoo 奇摩股市「公告」裡的「取得／處分有價證券」重大訊息
+// Yahoo 只留最近約一年（35 則左右），抓到的存在快取 400 天，舊的不會不見
+const CORP_REQ = `{"requests":{"g0":{"resource":"ApacStreamService","operation":"read","params":{"ui":{"summary":true,"view":"mega"},"category":"CUSTOM:NEWS","cgParams":{"overrides":{"listAlias":"finance-TW-zh-Hant-TW-ticker-press-release","listId":"91953860-06f2-11eb-bfef-6f1d3995cd22","queryVariables":"{\\"tickerSymbol\\":[\\"5530.TW\\",\\"5530.TWO\\"]}"}},"releasesParams":{"limit":20,"offset":0},"ncpParams":{"query":{"adsSlotsEnabled":true,"id":"twfinance-partner-stream","namespace":"abu","version":"v1","listAlias":"finance-tw-zh-hant-tw-ticker-press-release","listId":"91953860-06f2-11eb-bfef-6f1d3995cd22","s":["5530.TW","5530.TWO"]}},"useNCP":true,"useCG":true,"useCGV2":true,"batches":{"pagination":true,"size":20,"timeout":1300,"total":170},"content_type":"qsp"}}},"context":{"feature":"useCG,useCGV2","intl":"tw","lang":"zh-Hant-TW","region":"TW","site":"finance","device":"desktop"}}`;
+async function corpOne(code) {
+  const ent = t => t.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/<[^>]+>/g, "");
+  // 第一頁：Yahoo 公告頁本身（最近 20 則）；第二頁起用頁面給的「下一頁」接著抓
+  const items = [], seen = new Set();
+  let sym = code + ".TWO", h = await (await get(`https://tw.stock.yahoo.com/quote/${sym}/announcement`)).text();
+  if (!/StretchedBox/.test(h)) { sym = code + ".TW"; h = await (await get(`https://tw.stock.yahoo.com/quote/${sym}/announcement`)).text(); }
+  const re = /<h3 class="Mt\(0\) Mb\(8px\)"><a href="([^"]+)"[^>]*><u class="StretchedBox"><\/u>([^<]*)<\/a><\/h3><p[^>]*>([^<]*)<\/p>/g;
+  let m; while ((m = re.exec(h))) { const title = ent(m[2]); if (seen.has(title + m[1])) continue; seen.add(title + m[1]); items.push({ id: m[1], title, summary: ent(m[3]), link: m[1] }); }
+  const pm = h.match(/"pagination":\{"nextParams":\{"after":"([^"]+)"/);
+  if (pm) {
+    try {
+      const b = JSON.parse(CORP_REQ.replaceAll("5530", code));
+      b.requests.g0.params.ncpParams.body = { gqlVariables: { lightyearList: { pagination: { nextParams: { after: pm[1], first: 20 } } } } };
+      const j = await (await get("https://tw.stock.yahoo.com/_td-stock/api/resource?intl=tw&lang=zh-Hant-TW&region=TW&site=finance&device=desktop", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) })).json();
+      for (const x of (j.g0 && j.g0.data && j.g0.data.stream_items) || []) if (x.title && x.summary) items.push({ id: x.link || x.id, title: x.title, summary: x.summary, link: x.link || x.url });
+    } catch (_) {}
+  }
+  const g = (t, re) => { const m = t.match(re); return m ? m[1].trim() : null; };
+  return items.filter(x => /(取得|處分)[^】]*有價證券/.test(x.title)).map(x => {
+    const t = x.summary.replace(/\s+/g, " "), dm = t.match(/日\s*期[:：]\s*(\d{4})年(\d{2})月(\d{2})日/);
+    return {
+      id: x.id, d: dm ? `${dm[1]}-${dm[2]}-${dm[3]}` : "", act: /處分/.test(x.title) ? "賣" : "買", sum: /累積/.test(x.title) ? 1 : 0,
+      name: g(t, /證券名稱[:：]\s*(.+?)\s*2\.\s*交易日期/), when: g(t, /交易日期[:：]\s*(.+?)\s*3\./),
+      qty: g(t, /交易數量[:：]\s*([\d,，.]+\s*(?:股|張|單位)?)/), px: g(t, /每單位價格(?:\(元\))?[:：]\s*(.+?)\s*交易總金額/),
+      amt: g(t, /交易總金額(?:\(元\))?[:：]\s*([^:：]+?)\s*6\./), pl: (g(t, /處分利益（或損失）（[^）]*）[:：]\s*(.+?)\s*7\./) || "").replace(/^處分(利益|損失)[:：]\s*/, "").replace(/[（(].*$/, "") || null,
+      hold: g(t, /持有數量[:：]\s*([\d,，.]+\s*(?:股|張|單位)?)/), link: x.link,
+    };
+  });
+}
+async function corpTrades(codes) {
+  const out = {}; let partial = false;
+  for (const c of codes) {
+    const key = new Request(`https://corp.cache/${c}`), cache = caches.default;
+    let old = []; try { const r = await cache.match(key); if (r) old = await r.json(); } catch (_) {}
+    let now = null; try { now = await corpOne(c); } catch (_) { partial = true; }
+    const m = new Map(old.map(x => [x.id, x])); (now || []).forEach(x => m.set(x.id, x));
+    const list = [...m.values()].sort((a, b) => a.d < b.d ? 1 : -1);
+    if (now) await cache.put(key, new Response(JSON.stringify(list), { headers: { "Cache-Control": "public, max-age=34560000" } }));
+    out[c] = list;
+  }
+  return partial ? { ...out, __partial: 1 } : out;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -1324,6 +1370,11 @@ export default {
         const c = url.searchParams.get("c") || "";
         if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 10800, () => marginEst(c));
         return new Response("{}", { status: 400 });
+      }
+      case "/api/corp": {
+        // ?c=5530,5312 → 公司自己買賣股票的公告，6 小時內共用
+        const cs = (url.searchParams.get("c") || "").split(",").filter(c => /^[0-9A-Z]{4,7}$/.test(c)).slice(0, 5);
+        return cached(request, ctx, 21600, () => corpTrades(cs));
       }
       case "/api/etfh": {
         // ?c=0050 或 ?us=SOXX → ETF 前十大成分股，1 天內共用

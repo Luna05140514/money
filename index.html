@@ -466,7 +466,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .sg em{display:block;font-style:normal;font-size:14px;font-weight:600;margin-top:2px;opacity:.9}
 .wrow .sg.low{background:#fdf0f1;color:#a10d26;font-weight:600}
 .wrow .sg.high{background:#eef8f1;color:#11683a;font-weight:600}
-.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:nowrap;gap:clamp(4px,1.6vw,8px);font-size:clamp(12px,3.75vw,15px);font-weight:600;color:var(--muted);margin:-6px 0 -2px;white-space:nowrap;letter-spacing:-.2px}.wrow .tlr b{font-size:clamp(13px,4vw,16px)}.tlr .tlD{color:#1a56b8}.tlr .tlT{color:#a84a00}.tlr small{font-size:12px;font-weight:400;margin-left:2px}.tlr .mgV{color:var(--ink)}.tlr .mgW{color:var(--up)}
+.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:nowrap;gap:clamp(4px,1.6vw,8px);font-size:clamp(12px,3.75vw,15px);font-weight:600;color:var(--muted);margin:-6px 0 -2px;white-space:nowrap;letter-spacing:-.2px}.wrow .tlr b{font-size:clamp(13px,4vw,16px)}.tlr .tlD{color:#1a56b8}.tlr .tlT{color:#a84a00}.corp-h{font-size:22px;margin:22px 0 8px}.corp-h small{font-size:14px;color:var(--muted);font-weight:400}.corp-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:16px;line-height:1.7}.corp-top{display:flex;align-items:center;gap:10px;font-size:19px;margin-bottom:2px}.corp-act{font-size:15px;font-weight:700;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor}.corp-row{color:var(--muted)}.corp-row b{color:var(--ink)}.corp-row b.up{color:var(--up)}.corp-link{display:inline-block;margin-top:4px;font-size:15px;color:var(--red);font-weight:600}.tlr small{font-size:12px;font-weight:400;margin-left:2px}.tlr .mgV{color:var(--ink)}.tlr .mgW{color:var(--up)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tlr .tlD{color:#8ab4ff}:root:not([data-theme="light"]) .tlr .tlT{color:#ffad66}}:root[data-theme="dark"] .tlr .tlD{color:#8ab4ff}:root[data-theme="dark"] .tlr .tlT{color:#ffad66}
 .wrow .vals.mtl{flex-direction:column;align-items:flex-end;margin:-4px 0 0}.wrow .vals.mtl b{color:var(--ink);font-size:17px}
 .src{font-size:14px;color:var(--muted);margin:10px 0 0;line-height:1.6}
@@ -604,6 +604,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="idx" data-cat="stk" data-sub="1"><span class="glyph">盤</span><div><h2>全球大盤</h2><p>台股、美股、日韓指數和匯率，含 K 線和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="mkt" data-cat="stk" data-sub="1"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
       <button class="entry" data-go="watch" data-cat="stk" data-sub="1"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="corp" data-cat="stk" data-sub="1"><span class="glyph">投</span><div><h2>公司買賣股票</h2><p>龍巖、寶島科自己買賣了哪些股票</p></div><span class="go">›</span></button>
       <button class="entry" data-go="hold" data-cat="stk" data-sub="2"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
       <button class="entry" data-go="pledge" data-cat="calc"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、張數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
       <button class="entry" data-go="debt" data-cat="calc"><span class="glyph">債</span><div><h2>總資產負債比</h2><p>股票、存款、房子和各種借款加起來，看負債佔資產多少</p></div><span class="go">›</span></button>
@@ -615,7 +616,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 13:30</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/01 14:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -710,6 +711,15 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
   </section>
 
   <!-- 除權息行事曆 -->
+  <!-- 公司買賣股票（Luna 2026-11-01）：龍巖、寶島科自己買賣別家公司股票的重大訊息 -->
+  <section id="corp" class="page" hidden>
+    <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <h1>公司買賣股票</h1>
+    <p class="lead">龍巖、寶島科自己買賣別家公司的股票，有公告的都列在這裡。</p>
+    <div id="corp-body"></div>
+    <p class="note">公司買賣股票達到公告標準，才要在公開資訊觀測站發「取得或處分有價證券」的重大訊息，金額小的看不到。「這一年累積」是一年內陸續買賣加起來達標才公告，日期是那段時間。目前抓得到大約最近一年，之後的公告會一直存下來。</p>
+    <p class="src">資料來源：Yahoo 奇摩股市「公告」（公開資訊觀測站重大訊息）。數字的版權屬於原提供者，本站只做整理，僅供參考。</p>
+  </section>
   <section id="divc" class="page" hidden>
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>除權息行事曆</h1>
@@ -943,7 +953,7 @@ const pct=n=>(n>=0?"+":"")+(n*100).toFixed(2)+"%";
 const short=n=>n>=1e8?(n/1e8).toFixed(1)+"億":n>=1e4?Math.round(n/1e4)+"萬":Math.round(n)+"";
 
 /* 路由：#stock #compound #fire #nav #dca #mkt #idx */
-const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch","wdetail","hold","divc","pledge","debt"];
+const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch","wdetail","hold","divc","pledge","debt","corp"];
 function show(p){
   if(!pages.includes(p))p="home";
   pages.forEach(x=>$(x).hidden=x!==p);
@@ -954,8 +964,8 @@ function show(p){
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // 看盤這組頁面頂端的分頁列（全球大盤／大盤高低指標／自選股），不用回首頁就能切換
-const PG_SHORT={mkt:"高低指標",hold:"持股損益",divc:"除權息",stock:"報酬比較",pledge:"質押",debt:"負債比",fire:"財務自由",compound:"複利"};
-const PG_GROUPS=[["idx","mkt","watch"],["hold","divc"],["stock","nav","dca"],["pledge","debt","fire","compound"]];
+const PG_SHORT={mkt:"高低指標",corp:"公司買賣",hold:"持股損益",divc:"除權息",stock:"報酬比較",pledge:"質押",debt:"負債比",fire:"財務自由",compound:"複利"};
+const PG_GROUPS=[["idx","mkt","watch","corp"],["hold","divc"],["stock","nav","dca"],["pledge","debt","fire","compound"]];
 PG_GROUPS.forEach(g=>g.forEach(id=>{const sec=$(id),bar=sec&&sec.querySelector(".bar");if(!bar)return;
   const nav=document.createElement("nav");nav.className="pg-tabs"+(g.length>3?" pg4":"");nav.setAttribute("aria-label","切換頁面");
   nav.innerHTML=g.map(x=>{const h=document.querySelector(`#home [data-go="${x}"] h2`);return `<button data-go="${x}"${x===id?' aria-current="page"':""}>${PG_SHORT[x]||(h?h.textContent:x)}</button>`}).join("");
@@ -2973,6 +2983,21 @@ function divcRender(){
   $("divc-lead").textContent=`自選股和我的持股（台股），這個月哪天除權息、每股配多少。資料更新於 ${divData.updated}。`;
 }
 calc.divc=divcInit;
+// 公司買賣股票（Luna 2026-11-01：獨立頁，目前只放龍巖、寶島科）
+const CORP=[["5530","龍巖"],["5312","寶島科"]];let corpData=null;
+function corpAmt(v){if(!v)return "—";const m=v.replace(/,|新台幣/g,"").match(/^(\D*?)(\d+(?:\.\d+)?)元$/);if(!m)return v;const n=+m[2];return m[1]+(n>=1e8?(n/1e8).toFixed(2)+" 億元":n>=1e4?Math.round(n/1e4).toLocaleString("zh-TW")+" 萬元":n.toLocaleString("zh-TW")+" 元")}
+function corpRender(){const box=$("corp-body");
+  if(!ON_CF){box.innerHTML='<p class="wempty">這一頁要在網站版（money.narwhallab.workers.dev）才看得到。</p>';return}
+  if(!corpData){box.innerHTML='<p class="wempty">讀取公告中…</p>';return}
+  box.innerHTML=CORP.map(([c,n])=>{const L=corpData[c]||[];
+    return `<h2 class="corp-h">${n} <small>${c}</small></h2>`+(L.length?L.map(x=>`<div class="corp-card"><div class="corp-top"><span class="corp-act ${x.act==="賣"?"down":"up"}">${x.act}</span><b>${esc((x.name||"").replace(/股份有限公司/,""))}</b></div>
+      <div class="corp-row">公告 ${esc(x.d.replace(/-/g,"/"))}${x.sum?"・這一年累積":""}${x.when?`（交易 ${esc(x.when)}）`:""}</div>
+      <div class="corp-row">數量 <b>${esc(x.qty||"—")}</b>　單價 <b>${esc(x.px||"—")}</b></div>
+      <div class="corp-row">總金額 <b>${esc(corpAmt(x.amt))}</b>${x.act==="賣"&&x.pl&&x.pl!=="不適用"?`　賺 <b class="up">${esc(corpAmt(x.pl))}</b>`:""}</div>
+      ${x.hold?`<div class="corp-row">賣完還有 <b>${esc(x.hold)}</b></div>`:""}
+      ${x.link?`<a class="corp-link" href="${esc(x.link)}" target="_blank" rel="noopener">看公告全文 ›</a>`:""}</div>`).join(""):'<p class="wempty">最近一年沒有買賣股票的公告。</p>')}).join("")}
+async function corpInit(){corpRender();if(!ON_CF)return;const d=await api("/api/corp?c="+CORP.map(x=>x[0]).join(",")+"&v=1");if(d){corpData=d;corpRender()}else if(!corpData){$("corp-body").innerHTML='<p class="wempty">公告暫時抓不到，等一下按「重新整理」。</p>'}}
+calc.corp=corpInit;
 /* 清除全部：先跳確認視窗，按「取消」就不會清除（Luna 2026-10-23：不用復原） */
 function clrBtn(id,ask,clear){$(id).addEventListener("click",()=>{if(ask()){clear();toast("已清除")}})}
 /* 質押維持率（Luna 2026-10-23）：質押股票（台股）＋借款金額存在這支手機；市值用現價（和自選股同一個來源） */

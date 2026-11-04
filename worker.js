@@ -993,6 +993,70 @@ async function dayClose(d) {
   await caches.default.put(key, new Response(JSON.stringify(out), { headers: { "Cache-Control": "max-age=172800" } })).catch(() => {});
   return out;
 }
+// ───── 止跌訊號（Luna 2026-11-04）：6 個指標，都用證交所盤後資料 ─────
+// 加權指數日 K（MI_5MINS_HIST）＋成交金額（FMTQIK）每月一份；漲跌／跌停家數（MI_INDEX MS）、融資餘額（MI_MARGN MS）、外資買賣超（BFI82U）每天一份
+const rocD = s => { const [y, m, d] = String(s).trim().split("/"); return `${+y + 1911}-${m}-${d}`; };
+async function twseMonth(path, ym) { // ym=YYYYMM；過去的月份快取 30 天，這個月 3 小時
+  const key = new Request(`https://stopm.cache/v1/${path.replace(/\W/g, "_")}/${ym}`), hit = await caches.default.match(key).catch(() => null);
+  if (hit) return hit.json();
+  const j = await twseGet(`${path}?response=json&date=${ym}01`); if (j.stat !== "OK") return [];
+  const cur = ym === twDay().slice(0, 7).replace("-", "");
+  await caches.default.put(key, new Response(JSON.stringify(j.data || []), { headers: { "Cache-Control": `max-age=${cur ? 10800 : 2592000}` } })).catch(() => {});
+  return j.data || [];
+}
+async function stopDay(d) { // 一天的漲跌家數、跌停、融資餘額（億）、外資（億）；三樣都有才長期快取
+  const key = new Request(`https://stopd.cache/v2/${d}`), hit = await caches.default.match(key).catch(() => null);
+  if (hit) return hit.json();
+  const ds = d.replace(/-/g, ""), o = { d };
+  const [mi, mg, fi] = await Promise.all([
+    twseGet(`afterTrading/MI_INDEX?response=json&date=${ds}&type=MS`).catch(() => null),
+    twseGet(`marginTrading/MI_MARGN?date=${ds}&selectType=MS&response=json`).catch(() => null),
+    twseGet(`fund/BFI82U?response=json&type=day&dayDate=${ds}`).catch(() => null)]);
+  const pc = s => { const m = String(s).replace(/,/g, "").match(/(\d+)\((\d+)\)/); return m ? [+m[1], +m[2]] : null; };
+  const t = mi && mi.stat === "OK" && (mi.tables || []).find(x => /漲跌證券數/.test(x.title || ""));
+  if (t) { const col = Math.max(1, t.fields.indexOf("股票")), up = t.data.find(r => /上漲/.test(r[0])), dn = t.data.find(r => /下跌/.test(r[0]));
+    const u = up && pc(up[col]), w = dn && pc(dn[col]); if (u && w) { o.up = u[0]; o.lu = u[1]; o.dn = w[0]; o.ld = w[1]; } }
+  const s = mg && mg.stat === "OK" && (mg.tables || []).find(x => (x.fields || [])[0] === "項目");
+  const row = s && s.data.find(r => String(r[0]).startsWith("融資金額")); if (row) o.mg = Math.round(fnum(row[5]) / 1e5); // 仟元 → 億
+  if (fi && fi.stat === "OK") { const v = Object.fromEntries(fi.data.map(r => [r[0], num(r[3]) || 0])); o.fx = Math.round(((v["外資及陸資(不含外資自營商)"] || 0) + (v["外資自營商"] || 0)) / 1e6) / 100; }
+  const full = o.up != null && o.mg != null && o.fx != null;
+  await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": `max-age=${full ? 2592000 : 1800}` } })).catch(() => {});
+  return o;
+}
+async function stopSig() {
+  const now = twDay(), ms = [2, 1, 0].map(b => { const x = new Date(now + "T00:00:00Z"); x.setUTCDate(1); x.setUTCMonth(x.getUTCMonth() - b); return x.toISOString().slice(0, 7).replace("-", ""); });
+  const [px, vo] = await Promise.all([Promise.all(ms.map(m => twseMonth("TAIEX/MI_5MINS_HIST", m))), Promise.all(ms.map(m => twseMonth("afterTrading/FMTQIK", m)))]);
+  const amt = {}; for (const r of vo.flat()) amt[rocD(r[0])] = fnum(r[2]) / 1e8;
+  const K = px.flat().map(r => ({ d: rocD(r[0]), o: fnum(r[1]), h: fnum(r[2]), l: fnum(r[3]), c: fnum(r[4]), v: amt[rocD(r[0])] })).filter(x => x.c && x.v);
+  if (K.length < 31) throw new Error("not enough days");
+  const n = K.length, last = K[n - 1], C = K.map(x => x.c), ma = k => C.slice(n - k).reduce((a, b) => a + b, 0) / k, mn = (a, b) => Math.min(...K.slice(a, b).map(x => x.l));
+  const days = await Promise.all(K.slice(n - 6).map(x => stopDay(x.d)));
+  const S = [];
+  // 1 低點不再破底：近 10 天最低沒有跌破前 20 天的最低；近 5 天最低比再前 5 天高＝低點墊高
+  { const l10 = mn(n - 10, n), lp = mn(n - 30, n - 10), up5 = mn(n - 5, n) > mn(n - 10, n - 5);
+    S.push({ k: "低點不再破底", ok: l10 > lp, v: `近 10 天最低 ${Math.round(l10)}，前 20 天最低 ${Math.round(lp)}`, r: l10 > lp ? (up5 ? "守住前低，低點墊高" : "守住前低") : "又跌破前低" }); }
+  // 2 成交量：下跌時量縮，或近 5 天出現爆量長紅而且沒有再破低
+  { const a20 = K.slice(n - 25, n - 5).reduce((s, x) => s + x.v, 0) / 20, a5 = K.slice(n - 5).reduce((s, x) => s + x.v, 0) / 5;
+    let red = null, black = null; for (let i = n - 5; i < n; i++) { const ch = K[i].c / K[i - 1].c - 1; if (K[i].v >= a20 * 1.5) { if (ch >= 0.015) red = K[i]; if (ch <= -0.015) black = K[i]; } }
+    const redOk = red && mn(K.indexOf(red) + 1 || n, n + 1) >= red.l, fall = last.c < K[n - 11].c, shrink = fall && a5 < a20 * 0.8;
+    const ok = !!((red && (K.indexOf(red) === n - 1 || redOk)) || shrink);
+    S.push({ k: "成交量", ok, v: `近 5 天平均 ${Math.round(a5).toLocaleString()} 億，前 20 天 ${Math.round(a20).toLocaleString()} 億`, r: red ? (ok ? "爆量長紅，沒有再破低" : "爆量長紅後又破低") : black ? "爆量長黑，賣壓還在" : shrink ? "下跌量縮，賣壓變小" : fall ? "還沒量縮" : "量能正常" }); }
+  // 3 融資餘額：最近 5 個交易日減少 2% 以上
+  { const a = days[0].mg, b = days[5].mg, ch = a && b ? (b / a - 1) * 100 : null;
+    S.push({ k: "融資餘額下降", ok: ch != null && ch <= -2, v: b ? `${b.toLocaleString()} 億（5 天前 ${a.toLocaleString()} 億，${ch >= 0 ? "+" : ""}${ch.toFixed(1)}%）` : "還沒公布", r: ch == null ? "資料還沒出來" : ch <= -2 ? "明顯下降，槓桿減少" : ch < 0 ? "小幅下降" : "沒有下降" }); }
+  // 4 跌停家數：今天跌停比前 5 天最多的那天少一半以上，而且下跌家數沒有比上漲多很多
+  { const td = days[5], pk = Math.max(...days.slice(0, 5).map(x => x.ld || 0)), ok = td.ld != null && td.ld <= Math.max(3, pk / 2) && td.dn <= td.up * 1.5;
+    S.push({ k: "跌停家數減少", ok, v: td.ld != null ? `今天跌停 ${td.ld} 家（前 5 天最多 ${pk} 家），上漲 ${td.up}、下跌 ${td.dn}` : "還沒公布", r: td.ld == null ? "資料還沒出來" : ok ? "恐慌降溫" : "賣壓還很大" }); }
+  // 5 外資：今天買超，或近 3 天賣超比前 3 天少
+  { const f = days.map(x => x.fx), a = f.slice(0, 3).reduce((s, x) => s + (x || 0), 0), b = f.slice(3).reduce((s, x) => s + (x || 0), 0), t = f[5];
+    const ok = t != null && (t > 0 || (a < 0 && b > a * 0.5));
+    S.push({ k: "外資賣超收斂", ok, v: `近 3 天 ${b >= 0 ? "+" : ""}${b.toFixed(0)} 億，前 3 天 ${a >= 0 ? "+" : ""}${a.toFixed(0)} 億`, r: t == null ? "資料還沒出來" : t > 0 ? "今天轉買超" : ok ? "賣超縮小" : "還在大賣" }); }
+  // 6 站回均線：收盤在 5 日、10 日、月線（20 日）之上
+  { const m5 = ma(5), m10 = ma(10), m20 = ma(20), c = last.c, on = [c >= m5, c >= m10, c >= m20];
+    S.push({ k: "站回重要均線", ok: on[0] && on[1] && on[2], v: `收盤 ${Math.round(c)}；5 日 ${Math.round(m5)}、10 日 ${Math.round(m10)}、月線 ${Math.round(m20)}`, r: on[2] ? (on[0] && on[1] ? "站上 5、10 日線和月線" : "在月線上，短線還沒站回") : on[0] && on[1] ? "站回 5、10 日線，還沒回月線" : on[0] ? "站回 5 日線" : "還在均線下面" }); }
+  return { d: last.d, c: last.c, s: S, days };
+}
+
 async function marketPe() { return twseRecent(async d => { const x = await dayClose(d); return x && x.pe ? { pe: [[d, x.pe]] } : null; }); }
 // 融資維持率 ＝ Σ(各股融資餘額張數 × 1000 × 收盤價) ÷ 融資金額餘額；證交所晚上 9 點多才公布當天的融資
 async function marginRatio() {
@@ -1324,6 +1388,7 @@ export default {
         if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 1800, () => closes(u, true));
         return new Response("{}", { status: 400 });
       }
+      case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用
         const k = url.searchParams.get("k");

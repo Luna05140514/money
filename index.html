@@ -417,7 +417,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .qc{font:inherit;font-size:17px;font-weight:700;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
 #gl-pop{z-index:70}
 .gl-card p{font-size:20px;line-height:1.7;margin:10px 0}
-.gl-card .ex{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:18px}
+.gl-ul{margin:10px 0;padding-left:1.2em;font-size:20px;line-height:1.55}.gl-ul li{margin:8px 0}.gl-card .ex{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:18px}
 .hpie{display:flex;flex-direction:column;align-items:center;gap:10px}
 .hpie h2,.hdiv h2{align-self:stretch;margin:0 0 4px;font-size:22px}
 .hpie svg{width:210px;height:210px}
@@ -467,8 +467,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wrow .sg em{display:block;font-style:normal;font-size:14px;font-weight:600;margin-top:2px;opacity:.9}
 .wrow .sg.low{background:#fdf0f1;color:#a10d26;font-weight:600}
 .wrow .sg.high{background:#eef8f1;color:#11683a;font-weight:600}
-.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:nowrap;gap:clamp(4px,1.6vw,8px);font-size:clamp(12px,3.75vw,15px);font-weight:600;color:var(--muted);margin:-6px 0 -2px;white-space:nowrap;letter-spacing:-.2px}.wrow .tlr b{font-size:clamp(13px,4vw,16px)}.tlr .tlD{color:#1a56b8}.tlr .tlT{color:#a84a00}.corp-h{font-size:22px;margin:22px 0 8px}.corp-h small{font-size:14px;color:var(--muted);font-weight:400}.corp-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:16px;line-height:1.7}.corp-top{display:flex;align-items:center;gap:10px;font-size:19px;margin-bottom:2px}.corp-act{font-size:15px;font-weight:700;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor}.corp-row{color:var(--muted)}.corp-row b{color:var(--ink)}.corp-row b.up{color:var(--up)}.corp-link{display:inline-block;margin-top:4px;font-size:15px;color:var(--red);font-weight:600}.tlr small{font-size:12px;font-weight:400;margin-left:2px}.tlr .mgV{color:var(--ink)}.tlr .mgW{color:var(--up)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tlr .tlD{color:#8ab4ff}:root:not([data-theme="light"]) .tlr .tlT{color:#ffad66}}:root[data-theme="dark"] .tlr .tlD{color:#8ab4ff}:root[data-theme="dark"] .tlr .tlT{color:#ffad66}
+.wrow .tlr{grid-column:1/-1;display:flex;flex-wrap:nowrap;gap:clamp(4px,1.6vw,8px);font-size:clamp(14px,4.3vw,17px);font-weight:700;color:var(--ink);margin:-6px 0 -2px;white-space:nowrap;letter-spacing:-.2px}.wrow .tlr b{font-size:clamp(16px,4.9vw,19px);font-weight:800}.tlD{color:#0b3f99}.tlT{color:#8a3a00}.corp-h{font-size:22px;margin:22px 0 8px}.corp-h small{font-size:14px;color:var(--muted);font-weight:400}.corp-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:16px;line-height:1.7}.corp-top{display:flex;align-items:center;gap:10px;font-size:19px;margin-bottom:2px}.corp-act{font-size:15px;font-weight:700;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor}.corp-row{color:var(--muted)}.corp-row b{color:var(--ink)}.corp-row b.up{color:var(--up)}.corp-link{display:inline-block;margin-top:4px;font-size:15px;color:var(--red);font-weight:600}.tlr small{font-size:12px;font-weight:400;margin-left:2px}.tlr .mgV{color:var(--ink)}.wrow .hdr{margin-top:4px}.hdr .hdM{color:#b26b00}.hdr .hdB{color:var(--down)}.tlr .mgW{color:var(--up)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tlD{color:#9cc2ff}:root:not([data-theme="light"]) .tlT{color:#ffb878}}:root[data-theme="dark"] .tlD{color:#9cc2ff}:root[data-theme="dark"] .tlT{color:#ffb878}
 .wrow .vals.mtl{flex-direction:column;align-items:flex-end;margin:-4px 0 0}.wrow .vals.mtl b{color:var(--ink);font-size:17px}
 .src{font-size:14px;color:var(--muted);margin:10px 0 0;line-height:1.6}
 .wrow .vals{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:15px;font-weight:600;color:var(--muted);margin:-6px 0 -2px;white-space:nowrap}.wrow .vals span{display:flex;align-items:center;gap:4px}.wrow .val{font-style:normal;font-size:16px;font-weight:700;padding:1px 6px;border-radius:6px;line-height:1.4}.wrow .val.lo{background:#e3f4ea;color:#11683a}.wrow .val.mid{background:#f6e7c1;color:#7a5a0e}.wrow .val.hi{background:#fbe3e6;color:#a10d26}
@@ -558,7 +558,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wd-seg button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .wd-ind{margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr)}
 .wd-ind button{padding:8px 2px;text-align:center;font-size:15px;white-space:nowrap}
-.wd-info{font-family:var(--num);font-size:16px;line-height:1.7}
+.wd-info{font-family:var(--num);font-size:18px;line-height:1.7;font-weight:600}.wd-info b{font-size:20px}
 .wd-ma{font-family:var(--num);font-size:14px!important;margin:4px 0 6px}
 .wd-chart{touch-action:pan-y;cursor:crosshair}
 .wd-vals{margin:0 0 8px!important;font-size:17px!important;font-family:var(--num)}
@@ -619,7 +619,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/04 12:50</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/05 18:50</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1685,6 +1685,9 @@ function ixExtra(it){const fx=ixUsd(),f0=v=>Math.round(v).toLocaleString("zh-TW"
     return `<span class="vals mtl">${fx?`<span>台幣每公克　買入 <b>${g(it.ba[1])}</b>　賣出 <b>${g(it.ba[0])}</b></span>`:""}<span>國際每盎司　買入 ${ixFmt(it.ba[1],2)}　賣出 ${ixFmt(it.ba[0],2)} 美元</span></span>`}
   if(it.cr&&!it.tw&&fx){const last=it.pts[it.pts.length-1][1];return `<span class="vals"><span>約合台幣 <b>${f0(last*fx)}</b> 元</span></span>`}
   return ""}
+// 高點跌幅（Luna 2026-11-05）：現價比近一年最高價跌了幾 %（worker /api/kd day.hi）
+function hiDrop(hi,last){if(!(hi>0)||!(last>0))return "";const p=(last/hi-1)*100;const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
+  return `<span class="tlr hdr"><span class="nw">一年高點 <b>${f(Math.max(hi,last))}</b></span><span class="nw">高點跌幅 <b class="${p<=-20?"hdB":p<=-10?"hdM":""}">${p>=0?"0%（創新高）":p.toFixed(1)+"%"}</b></span></span>`}
 // 列表上的天龍地虎（Luna 2026-11-01）：只看日 K，worker /api/kd、/api/ixkd 的 day.tl = [龍, 虎]
 function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
   return `<span class="tlr"><span class="nw">${tl[0]!=null?`龍 <b class="tlD">${f(tl[0])}</b> 壓力`:"創新高"}</span>${tl[1]!=null?`<span class="nw">虎 <b class="tlT">${f(tl[1])}</b> 支撐</span>`:""}${ex}</span>`}
@@ -1734,46 +1737,46 @@ const ON_CF=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|
 async function api(path){if(!ON_CF)return null;try{const r=await fetch(path,{cache:"no-store"});if(!r.ok)return null;const d=await r.json();return d&&!d.error?d:null}catch(_){return null}}
 /* 名詞小幫手（Luna 2026-10-23）：名詞旁邊的「？」，點了用白話解釋 */
 const GLOSS={
-  BT1:["① 每年一開始整筆買、不賣", "<ol class=\"bt-steps\"><li>每年一開始，把一整年的錢（每月 1 萬就是 12 萬）一次全部買進。</li><li>一直抱著，不賣。</li><li>2 年、3 年的話，每年一開始再整筆買一次。</li></ol>", "", "", "操作流程：每年一開始整筆買、不賣"],
-  BT2:["② 每個月固定買", "<ol class=\"bt-steps\"><li>每個月第一個交易日開盤，把這個月的錢全部買進。</li><li>一直抱著，不賣。</li></ol>", "", "", "操作流程：每個月固定買"],
-  BT3:["③ 固定買＋低點加碼", "<ol class=\"bt-steps\"><li>每個月的錢分兩半：一半在第一個交易日開盤買進。</li><li>另一半先存起來。</li><li>日 KD 或週 KD 的 K 跌破 30，隔天開盤把存的錢全部買進。</li><li>一直抱著，不賣。</li></ol>", "", "", "操作流程：固定買＋低點加碼"],
-  BT4:["③ 日 KD 30、20、金叉分 3 次買", "<ol class=\"bt-steps\"><li>每次買 1 單位（預設 5 萬元，可以自己改），錢不設上限。</li><li>日 KD 的 K 跌破 30，買 1 單位。</li><li>再跌破 20，再買 1 單位。</li><li>之後日 KD 金叉，買第 3 單位；如果中間鈍化（連 3 天 20 以下），等週 K 到 20 以下或日 KD 金叉再買。</li><li>賣法看下面兩格：「賺 10% 全賣」，或日 K 漲到 80 以上先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 KD 30、20、金叉分 3 次買"],
-  BT5:["④ 日 KD 20、隔天再低、金叉分 3 次買", "<ol class=\"bt-steps\"><li>每次買 1 單位（預設 5 萬元，可以自己改），錢不設上限。</li><li>日 KD 的 K 跌破 20，買 1 單位。</li><li>隔天 K 又更低，再買 1 單位（沒有更低就跳過）。</li><li>之後日 KD 金叉，買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或日 K 漲到 80 以上先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 KD 20、隔天再低、金叉分 3 次買"],
-  BT6:["⑤ 虎線、更低虎線、金叉分 3 次買", "<ol class=\"bt-steps\"><li>每次買 1 單位（預設 5 萬元，可以自己改），錢不設上限。</li><li>接近虎線買 1 單位。</li><li>跌破之後碰到更低的虎線，再買 1 單位。</li><li>之後日 KD 金叉買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或碰到龍線先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線、更低虎線、金叉分 3 次買"],
-  BT7:["⑥ 虎線、隔天再低、金叉分 3 次買", "<ol class=\"bt-steps\"><li>每次買 1 單位（預設 5 萬元，可以自己改），錢不設上限。</li><li>接近虎線買 1 單位。</li><li>買進隔天收盤又更低，再買 1 單位（沒有更低就跳過）。</li><li>之後日 KD 金叉買第 3 單位；鈍化的話等週 K 到 20 以下或日 KD 金叉。</li><li>賣法看下面兩格：「賺 10% 全賣」，或碰到龍線先賣一半、日 KD 死叉再賣完。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線、隔天再低、金叉分 3 次買"],
-  BT8:["① 虎線買、日 K 高點賣", "<ol class=\"bt-steps\"><li>每次買 1 單位（預設 5 萬元，可以自己改），錢不設上限。</li><li>股價跌到接近虎線（虎線往上 2% 以內）買 1 單位；之後每碰到一條新的虎線再買 1 單位。</li><li>日 K 漲到 80 以上（上面「KD 高點」可以選 70）就全部賣掉。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：虎線買、日 K 高點賣"],
-  BT9:["② 日 K 20 以下買、80 以上賣", "<ol class=\"bt-steps\"><li>每次買 1 單位（預設 5 萬元，可以自己改），錢不設上限。</li><li>日 K 跌破 20（上面「K 低點」可以選 30）買 1 單位；之後每再跌破一次再買 1 單位。</li><li>日 K 漲到 80 以上就全部賣掉。</li><li>全部賣光才開始下一輪。</li></ol>", "", "", "操作流程：日 K 20 以下買、80 以上賣"],
+  BT1:["① 每年一開始整筆買、不賣", ["每年第一天，把一年的錢一次買進","一直抱著，不賣"], "", "", "操作流程：每年一開始整筆買、不賣"],
+  BT2:["② 每個月固定買", ["每月第一個交易日買進","一直抱著，不賣"], "", "", "操作流程：每個月固定買"],
+  BT3:["③ 固定買＋低點加碼", ["每月一半的錢固定買","另一半先存著","日 K 或週 K 跌破 30，存的錢全買","一直抱著，不賣"], "", "", "操作流程：固定買＋低點加碼"],
+  BT4:["③ 日 KD 30、20、金叉分 3 次買", ["日 K 跌破 30：買 1 單位","再跌破 20：買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：日 KD 30、20、金叉分 3 次買"],
+  BT5:["④ 日 KD 20、隔天再低、金叉分 3 次買", ["日 K 跌破 20：買 1 單位","隔天 K 更低：再買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：日 KD 20、隔天再低、金叉分 3 次買"],
+  BT6:["⑤ 虎線、更低虎線、金叉分 3 次買", ["接近虎線：買 1 單位","碰到更低的虎線：再買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：虎線、更低虎線、金叉分 3 次買"],
+  BT7:["⑥ 虎線、隔天再低、金叉分 3 次買", ["接近虎線：買 1 單位","隔天收盤更低：再買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：虎線、隔天再低、金叉分 3 次買"],
+  BT8:["① 虎線買、日 K 高點賣", ["接近虎線：買 1 單位","碰到新的虎線：再買 1 單位","日 K 到 80（或 70）以上：全賣","賣光才開始下一輪"], "", "", "操作流程：虎線買、日 K 高點賣"],
+  BT9:["② 日 K 20 以下買、80 以上賣", ["日 K 跌破 20（或 30）：買 1 單位","每再跌破一次：再買 1 單位","日 K 到 80 以上：全賣","賣光才開始下一輪"], "", "", "操作流程：日 K 20 以下買、80 以上賣"],
 
-  "止跌訊號":["止跌訊號","大盤跌了一段之後，用 6 個指標看賣壓有沒有變小、買盤有沒有回來。每天收盤後用證交所的資料自動判斷。","① 低點不再破底：近 10 天最低沒有跌破前 20 天的最低。② 成交量：下跌時量縮（近 5 天比前 20 天少 2 成），或爆量長紅（量比平常多 5 成、漲 1.5% 以上）之後沒有再破低。③ 融資餘額：近 5 天減少 2% 以上。④ 跌停家數：今天跌停比前 5 天最多那天少一半以上，下跌家數沒有比上漲多很多。⑤ 外資：今天買超，或近 3 天賣超比前 3 天少一半以上。⑥ 均線：收盤站上 5 日、10 日線和月線。","5～6 項：止跌訊號明確；3～4 項：出現止跌跡象；0～2 項：還沒止跌。"],
-  KD:["KD（短線／長線）","KD 是看股價「最近算高還是算低」的指標，數字從 0 到 100。80 以上表示最近漲很多、在相對高點；30 以下表示跌很多、在相對低點。","短線看每天的 KD（日 KD），長線看每週的 KD（週 KD）。K 線往上穿過 D 線叫「金叉」，往下穿過叫「死叉」。連續好幾天都在 80 以上叫「高檔鈍化」，表示很強勢、還在一直漲；連續在 20 以下叫「低檔鈍化」。","例：K 是 85，表示股價接近最近 9 天的最高價。"],
-  本益成長比:["本益成長比（PEG）","本益成長比 = 本益比 ÷ EPS 成長率（%）。把公司賺錢成長的速度也算進來：本益比高，但賺錢成長更快，其實不一定貴。","1 以下算便宜，1～2 合理，2 以上算昂貴。EPS 衰退的股票算不出來。這裡用法人（分析師）預估的 EPS。","例：本益比 20 倍、EPS 一年成長 25%，本益成長比 = 20 ÷ 25 = 0.8，算便宜。"],
-  天龍地虎:["天龍地虎","藍色「龍」線是上面的壓力，橘色「虎」線是下面的支撐。龍＝最近一段 KD 黃金交叉（K 在 D 上面）那幾天的最高價；虎＝最近一個比現在價格低的轉折低點（前後 3 天都沒有更低）。","創新高（近一年最高）時上面沒有壓力，只剩虎線，虎線是這波上漲前拉回的最低點。跌破虎線，就往下找下一個轉折低點當新的虎線。","龍、虎的數字是當時實際成交價；K 線是還原價，所以除息前的線位置會比數字低一點點。"],
-  本益比:["本益比","本益比 = 股價 ÷ 每股一年賺的錢（EPS）。意思是：用現在的價格買，大概要幾年才能靠公司賺的錢回本。數字越低越便宜。","「今年／明年本益比」是用法人（分析師）預估的 EPS 算的。便宜、合理、昂貴是跟這檔股票自己過去 5 年的本益比比較。","例：股價 100 元、一年每股賺 5 元，本益比 = 20 倍。"],
-  股淨比:["股淨比（股價淨值比）","股淨比 = 股價 ÷ 每股淨值。淨值是公司把東西全賣掉、債還清以後，每一股可以分到的錢。1 倍表示股價剛好等於公司的家當。","金融股、賺錢不穩定的股票，常用股淨比看便宜或貴。","例：每股淨值 50 元、股價 75 元，股淨比 = 1.5 倍。"],
-  EPS:["EPS（每股盈餘）","公司賺的錢，平均分到每一股是多少元。越高代表公司越會賺錢。","",""],
-  殖利率:["殖利率","一年領到的股利 ÷ 股價，就像存款的利率。","","例：股價 100 元、一年配 5 元，殖利率 = 5%。"],
-  除權息:["除權息、發放日","公司發股利的日子。要在「除息日」的前一天還持有股票，才領得到。除息當天股價會扣掉股利。","「發放日」是錢真正匯進銀行帳戶的那天，通常比除息日晚 3～5 週。",""],
-  折溢價:["折溢價","ETF 的市價和它真正的價值（淨值）差多少。溢價表示買貴了，折價表示買便宜了。","溢價超過 1% 時買進要小心。",""],
-  維持率:["維持率","維持率 = 質押股票的市值 ÷ 借的錢。股價跌，維持率就跟著降。","跌到 130% 以下會被追繳，要補錢或補股票。","例：股票值 200 萬、借 100 萬，維持率 = 200%。"],
-  追繳:["追繳","維持率跌到 130% 以下，銀行或券商會通知你補錢或補股票。沒有補，可能會被賣掉股票（俗稱斷頭）。","",""],
-  負債比:["負債比","負債比 = 全部負債 ÷ 全部資產。30% 以下算健康，30%～50% 要注意，超過 50% 負擔偏重。","",""],
-  河流圖:["本益比河流圖","把股價和幾條「用不同本益比算出來的價格」畫在一起，像一條條河道。股價在下面幾條時算便宜，在上面幾條時算貴。","",""],
-  MACD:["MACD","看股價趨勢的指標。柱子在 0 以上表示趨勢偏向上漲，在 0 以下表示偏向下跌。","",""],
-  布林:["布林 %b","看股價在「平常波動範圍」的哪個位置。100% 以上是碰到上緣（偏高），0% 以下是碰到下緣（偏低），50% 在正中間。","",""],
-  成交量:["成交量","這一天總共買賣了多少股。量大表示很多人在交易，漲跌比較有力；量很小時，漲跌比較不可靠。","",""],
-  金銀:["黃金、白銀的買入／賣出價","上面大字是國際期貨價（每盎司、美元）。下面「買入」是你買要付的價錢，「賣出」是你賣掉能拿到的價錢，用國際現貨報價換算成台幣每公克。","銀行黃金存摺、銀樓的牌價會再加上手續費和價差，實際買賣請以銀行或銀樓公告為準。台灣的銀行沒有白銀存摺。","1 盎司 ＝ 31.1035 公克；1 台錢 ＝ 3.75 公克。"],
-  USDT:["USDT","USDT 是一種跟美元綁在一起的虛擬幣，1 USDT 大約等於 1 美元。BTC/USDT 就是 1 顆比特幣值多少 USDT。","",""],
-  看法:["價值投資和技術分析","<b>價值投資（存股）</b>：看「價格貴不貴」（位階）。左側交易，趁落難買便宜，看本益比、股淨比。","<b>技術分析（價差）</b>：看「資金進場了沒」（時機）。右側交易，趁起漲追動能，看月 MACD、週 KD、日 KD。",""],
-  價值投資:["價值投資（存股）","看「價格貴不貴」（位階）。存股是左側交易：趁落難時買便宜，看估值為主。","本益比、股淨比比過去 5 年平均低＝便宜，高＝昂貴。",""],
-  技術分析:["技術分析（價差）","看「資金進場了沒」（時機）。價差是右側交易：趁起漲時追動能，看技術為主。","月 MACD 看大方向，週 KD 看高低檔，日 KD 找買點。",""],
-  總結論:["總結論（日KD／週KD／月MACD）","把三個時間一起看：月 MACD 和月線看大方向，週 KD 看位階，日 KD 找時間點。三項都符合表裡同一列，就寫出那一列的策略。","8 個階段：底🌱試單、漲🔥重倉、升🚀抱牢、回🎯低接、警⚠️減半、空💰清倉、跌🛑觀望、彈⚡短搶。另外：週 KD 鈍化時日 KD 死叉只算洗盤；創高但 MACD 背離又破 5 月線就分批賣出；20 號後站上 10 月線＋週金叉可先卡位。","點「總結論」那一格，可以看每一項有沒有符合。"],
-  成分股:["成分股","ETF 像一個籃子，裡面裝了很多股票，這些股票就是成分股。比例越高的，對 ETF 漲跌的影響越大。","",""],
+  "止跌訊號":["止跌訊號",["大盤跌一段後，看 6 項有沒有止跌","① 低點不再破底","② 下跌量縮，或爆量長紅後不破低","③ 融資 5 天減少 2% 以上","④ 跌停家數比前幾天少一半","⑤ 外資買超，或賣超變少一半","⑥ 站上 5 日、10 日線和月線","5～6 項：止跌明確；3～4 項：有止跌跡象；0～2 項：還沒止跌"]],
+  KD:["KD（短線／長線）",["看股價最近算高還是低，0～100","80 以上：相對高點","30 以下：相對低點","日 KD 看短線，週 KD 看長線","K 往上穿過 D＝金叉，往下＝死叉","一直在 80 以上＝高檔鈍化（很強）","一直在 20 以下＝低檔鈍化（很弱）"]],
+  本益成長比:["本益成長比（PEG）",["本益比 ÷ EPS 成長率","1 以下便宜，1～2 合理，2 以上貴","EPS 衰退的算不出來","例：本益比 20、成長 25% → 0.8，便宜"]],
+  天龍地虎:["天龍地虎",["藍色「龍」線＝上面的壓力","橘色「虎」線＝下面的支撐","龍＝最近一段 KD 金叉時的最高價","虎＝最近一個比現在低的轉折低點","創新高時沒有龍，只有虎","跌破虎線，就往下找新的虎線"]],
+  本益比:["本益比",["股價 ÷ 每股一年賺的錢（EPS）","大約幾年回本，越低越便宜","今年／明年用法人預估的 EPS","便宜、昂貴是跟自己過去 5 年比","例：股價 100、EPS 5 → 20 倍"]],
+  股淨比:["股淨比（股價淨值比）",["股價 ÷ 每股淨值","淨值＝公司賣掉家當、還完債，每股分到的錢","1 倍＝股價等於家當","金融股、賺錢不穩的股票常用","例：淨值 50、股價 75 → 1.5 倍"]],
+  EPS:["EPS（每股盈餘）",["公司賺的錢，平均每一股多少元","越高越會賺錢"]],
+  殖利率:["殖利率",["一年股利 ÷ 股價，像存款利率","例：股價 100、配 5 元 → 5%"]],
+  除權息:["除權息、發放日",["除息日前一天要持有才領得到","除息當天股價會扣掉股利","發放日＝錢匯進帳戶那天","發放日通常晚 3～5 週"]],
+  折溢價:["折溢價",["ETF 市價和淨值差多少","溢價＝買貴了，折價＝買便宜了","溢價超過 1% 買進要小心"]],
+  維持率:["維持率",["股票市值 ÷ 借的錢","股價跌，維持率就降","低於 130% 會被追繳","例：股票 200 萬、借 100 萬 → 200%"]],
+  追繳:["追繳",["維持率低於 130%，要補錢或補股票","沒補可能被賣掉股票（斷頭）"]],
+  負債比:["負債比",["全部負債 ÷ 全部資產","30% 以下：健康","30～50%：要注意","50% 以上：偏重"]],
+  河流圖:["本益比河流圖",["用不同本益比算出幾條價格線","股價在下面幾條：便宜","股價在上面幾條：貴"]],
+  MACD:["MACD",["看趨勢的指標","柱子在 0 以上：偏漲","柱子在 0 以下：偏跌"]],
+  布林:["布林 %b",["看股價在平常波動的哪裡","100% 以上：偏高","0% 以下：偏低","50%：正中間"]],
+  成交量:["成交量",["這天買賣了多少股","量大：漲跌比較有力","量小：漲跌比較不可靠"]],
+  金銀:["黃金、白銀的買入／賣出價",["大字：國際價（每盎司、美元）","買入：你買要付的錢（台幣每公克）","賣出：你賣能拿到的錢","銀行、銀樓會再加手續費","台灣的銀行沒有白銀存摺","1 盎司＝31.1 公克，1 台錢＝3.75 公克"]],
+  USDT:["USDT",["跟美元綁在一起的虛擬幣","1 USDT 約等於 1 美元"]],
+  看法:["價值投資和技術分析",["<b>價值投資（存股）</b>：看價格貴不貴","趁便宜買，看本益比、股淨比","<b>技術分析（價差）</b>：看資金進場了沒","趁起漲買，看 MACD、KD"]],
+  價值投資:["價值投資（存股）",["看價格貴不貴","趁便宜時買","比過去 5 年平均低＝便宜，高＝昂貴"]],
+  技術分析:["技術分析（價差）",["看資金進場了沒","趁起漲時買","月 MACD 看方向，週 KD 看高低，日 KD 找買點"]],
+  總結論:["總結論（日KD／週KD／月MACD）",["月 MACD 看大方向","週 KD 看高低檔","日 KD 找買賣時間","三項都符合同一列，就寫出那一列的策略","點那一格可以看每項有沒有符合"]],
+  成分股:["成分股",["ETF 裡裝的股票","比例越高，影響 ETF 漲跌越大"]],
 };
 const qm=k=>`<button class="qm" data-term="${k}" aria-label="${GLOSS[k][0]}是什麼">?</button>`;
 function glShow(k){const g=GLOSS[k];if(!g)return;let box=$("gl-pop");
   if(!box){box=document.createElement("div");box.id="gl-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
-  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${g[0]}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${g[4]||g[0]+" 是什麼？"}</h2><p>${g[1]}</p>${g[2]?`<p>${g[2]}</p>`:""}${g[3]?`<p class="ex">${g[3]}</p>`:""}</div>`;box.hidden=false}
+  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${g[0]}"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${g[4]||g[0]+" 是什麼？"}</h2>${Array.isArray(g[1])?`<ul class="gl-ul">${g[1].map(x=>`<li>${x}</li>`).join("")}</ul>`:`<p>${g[1]}</p>`}${g[2]?`<p>${g[2]}</p>`:""}${g[3]?`<p class="ex">${g[3]}</p>`:""}</div>`;box.hidden=false}
 window.addEventListener("hashchange",()=>{["gl-pop","dm-pop"].forEach(id=>{const b=$(id);if(b)b.hidden=true})});
 window.addEventListener("click",e=>{const b=e.target.closest("[data-term]");if(!b)return;e.preventDefault();e.stopPropagation();glShow(b.dataset.term)},true);
 const LIVE="（即時）";
@@ -2296,7 +2299,7 @@ async function watchMgrLoad(){
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();watchMgrLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
-  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=12`);
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=13`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
@@ -2348,7 +2351,7 @@ function watchRender(){
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br>${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%`;
-    return `<button class="wrow" data-c="${esc(c)}" aria-label="${watchEdit?"移除":"查看"} ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
+    return `<button class="wrow" data-c="${esc(c)}" aria-label="${watchEdit?"移除":"查看"} ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?'<span class="wx" aria-hidden="true">✕</span>':`<span class="chg ${cls}">${chg}</span>${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows||'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
 }
 async function watchLoad(){
@@ -2716,7 +2719,7 @@ function wdKDraw(){
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   const r1=v=>v==null?"—":(Math.round(v*10)/10).toString(),r2=v=>v==null?"—":(Math.round(v*100)/100).toString();
   const d=pv?b[4]-pv[4]:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
-  const W=360,R=44,L=4,X=i=>L+(i+.5)*(W-R-L)/N,bw=Math.max(1,(W-R-L)/N*.66);
+  const W=360,R=52,L=4,X=i=>L+(i+.5)*(W-R-L)/N,bw=Math.max(1,(W-R-L)/N*.66);
   // 主圖
   if(wdK.rawFor!==wdK.daily){wdK.rawFor=wdK.daily;wdK.rawM=wdRawM(wdK.daily,wdK.divs||[])}const tl=wdTL(all,c.kk,c.dd,wdK.rawM);
   const H=230,ma=c.ma.map(T),vals=[...k.flatMap(x=>[x[2],x[3]]),...ma.flat().filter(v=>v!=null),...[tl.dr,tl.tg].filter(Boolean).map(x=>x[1])],hi=Math.max(...vals),lo=Math.min(...vals),sp=hi-lo||1,Y=v=>8+(hi-v)/sp*(H-16);
@@ -2727,7 +2730,7 @@ function wdKDraw(){
   const line=(a,col,y)=>{let p="";a.forEach((v,i)=>{if(v==null)return;p+=`${p?"L":"M"}${X(i).toFixed(1)},${y(v).toFixed(1)}`});return p?`<path d="${p}" fill="none" stroke="${col}" stroke-width="1.4"/>`:""};
   ma.forEach((a,j)=>g+=line(a,WD_MA[j][1],Y));
   [[tl.dr,"龍","#2f7de1"],[tl.tg,"虎","#c25e00"]].forEach(([x,t,col])=>{if(!x)return;const y=Y(x[1]).toFixed(1);
-    g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="1.6"/><circle cx="${L+9}" cy="${y}" r="9" fill="${col}"/><text x="${L+9}" y="${+y+4}" text-anchor="middle" fill="#fff" style="font-weight:700">${t}</text><rect x="${W-R+1}" y="${y-8}" width="${R-1}" height="16" rx="3" fill="${col}"/><text x="${W-2}" y="${+y+4}" text-anchor="end" fill="#fff" style="font-weight:700">${x[2]>=1000?Math.round(x[2]):r2(x[2])}</text>`});
+    g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="2.2"/><circle cx="${L+12}" cy="${y}" r="12" fill="${col}"/><text x="${L+12}" y="${+y+5}" text-anchor="middle" style="fill:#fff;font-weight:800;font-size:15px">${t}</text><rect x="${W-R+1}" y="${y-11}" width="${R-1}" height="22" rx="3" fill="${col}"/><text x="${W-2}" y="${+y+5}" text-anchor="end" style="fill:#fff;font-weight:800;font-size:15px">${x[2]>=1000?Math.round(x[2]):r2(x[2])}</text>`});
   const cross=`<line x1="${X(sel)}" x2="${X(sel)}" y1="0" y2="${H}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
   const dl=[0,Math.floor(N/2),N-1].map((i,j)=>`<text x="${j===0?L:j===2?W-R:X(i)}" y="${H+14}" text-anchor="${j===0?"start":j===2?"end":"middle"}">${k[i][0].slice(2).replace(/-/g,"/")}</text>`).join("");
   const main=`<svg class="wd-chart" viewBox="0 0 ${W} ${H+18}" data-n="${N}">${g}${cross}${dl}</svg>`;
@@ -2752,7 +2755,7 @@ function wdKDraw(){
   box.innerHTML=`<h2>K 線圖 ${wdK.ix?"":`<small class="muted">還原</small>`}</h2>
   ${seg}
   <div class="wd-info"><b>${b[0].replace(/-/g,"/")}</b>　開 <b>${f2(b[1])}</b>　高 <b>${f2(b[2])}</b>　低 <b>${f2(b[3])}</b>　收 <b class="${cls}">${f2(b[4])}</b>${d==null?"":`　<b class="${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</b>`}</div>
-  ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b style="color:#1a56b8">龍 ${f2(tl.dr[2])}</b> 壓力（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高</b></span>　'}${tl.tg?`<span class="nw"><b style="color:#a84a00">虎 ${f2(tl.tg[2])}</b> 支撐（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
+  ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b class="tlD">龍 ${f2(tl.dr[2])}</b> 壓力（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高</b></span>　'}${tl.tg?`<span class="nw"><b class="tlT">虎 ${f2(tl.tg[2])}</b> 支撐（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
   <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
   ${main}

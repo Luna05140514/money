@@ -899,7 +899,7 @@ async function kdList(list) {
         // 盤中今天的量還沒算完，不拿來比
         const reg = ((r.meta || {}).currentTradingPeriod || {}).regular, now = Date.now() / 1000;
         const open = reg && now >= reg.start && now < reg.end && ts[ts.length - 1] >= reg.start;
-        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol), tl: tlDay(day) }, week: { ...kdLast2(wk), mac: wkMacd(wk) } }];
+        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol), tl: tlDay(day), hi: Math.max(...day.map(b => b[0])) }, week: { ...kdLast2(wk), mac: wkMacd(wk) } }];
       } catch (_) {}
     }
     return [code, null];

@@ -251,6 +251,35 @@ function weeklyKd(ts, hi, lo, cl, n = 9) { // 台股慣用 9 週 KD，和 update
   return [Math.round(k * 10) / 10, Math.round(dv * 10) / 10];
 }
 // Yahoo 偶爾會擋（429）或逾時：換另一台主機再試，最多 3 次
+// 歷史跌幅（Luna 2026-11-06）：加權指數 10 年日 K。跌 20% 以上＝從最高點算到再創新高；跌 10% 以上＝反彈 10% 才算一段結束（近 5 年）
+function ddCalc(r){
+  const q=r.indicators.quote[0],ts=r.timestamp||[],K=[];
+  ts.forEach((t,i)=>{const h=q.high[i],l=q.low[i],c=q.close[i];if(h==null||l==null||c==null)return;K.push([new Date((t+8*3600)*1000).toISOString().slice(0,10),h,l,c])});
+  const n=K.length,r0=v=>Math.round(v*100)/100;
+  // 跌 20% 以上：從最高點算，直到創新高才算結束
+  const big=[];let pk=0,lo=-1;
+  for(let i=1;i<n;i++){
+    if(K[i][1]>K[pk][1]){if(lo>=0&&K[lo][2]/K[pk][1]<=0.8)big.push([pk,lo,i]);pk=i;lo=-1;continue}
+    if(lo<0||K[i][2]<K[lo][2])lo=i}
+  if(lo>=0&&K[lo][2]/K[pk][1]<=0.8)big.push([pk,lo,-1]);
+  // 跌 10% 以上：10% 轉折（反彈 10% 才算一段結束）
+  const sm=[];let dir=-1,ext=0,hiI=0;
+  for(let i=1;i<n;i++){if(dir<0){if(K[i][1]>K[ext][1])ext=i;else if(K[i][2]<=K[ext][1]*0.9){hiI=ext;dir=1;ext=i}}else{if(K[i][2]<K[ext][2])ext=i;else if(K[i][1]>=K[ext][2]*1.1){sm.push([hiI,ext]);dir=-1;ext=i}}}
+  const cur=dir>0?[hiI,ext]:null;
+  const back=(p,from)=>{for(let j=from+1;j<n;j++)if(K[j][1]>K[p][1])return K[j][0];return null};
+  const row=([p,l])=>({hd:K[p][0],h:r0(K[p][1]),ld:K[l][0],l:r0(K[l][2]),pct:r0((K[l][2]/K[p][1]-1)*100),back:back(p,l)});
+  const last=K[n-1];
+  return {big:big.map(row),small:sm.map(row).filter(x=>x.hd>=K[n-1][0].replace(/^\d{4}/,y=>y-5)),cur:cur?{...row(cur),last:r0(last[3]),date:last[0]}:null,from:K[0][0]};
+}
+async function ddHist() {
+  for (const host of ["query1", "query2"]) {
+    try {
+      const j = await (await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/%5ETWII?range=10y&interval=1d`, { headers: { "User-Agent": UA } })).json();
+      const r = j.chart && j.chart.result && j.chart.result[0]; if (r && (r.timestamp || []).length > 1000) return ddCalc(r);
+    } catch (_) {}
+  }
+  throw new Error("no data");
+}
 async function chart(sym) {
   for (const host of ["query1", "query2", "query1"]) {
     try {
@@ -1041,6 +1070,33 @@ async function stopDay(d) { // 一天的漲跌家數、跌停、融資餘額（�
   await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": `max-age=${full ? 2592000 : 1800}` } })).catch(() => {});
   return o;
 }
+// 融資減幅 vs 大盤跌幅（Luna 2026-11-06）：證交所融資金額（億）和加權指數收盤，比近 5 天、近 20 天、從一年高點以來的變化
+async function mgDay(d) {
+  const key = new Request(`https://mgd.cache/v1/${d}`), hit = await caches.default.match(key).catch(() => null);
+  if (hit) return hit.json();
+  const mg = await twseGet(`marginTrading/MI_MARGN?date=${d.replace(/-/g, "")}&selectType=MS&response=json`).catch(() => null), o = { d };
+  const s = mg && mg.stat === "OK" && (mg.tables || []).find(x => (x.fields || [])[0] === "項目");
+  const row = s && s.data.find(r => String(r[0]).startsWith("融資金額")); if (row) o.mg = Math.round(fnum(row[5]) / 1e5);
+  await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": `max-age=${o.mg ? 2592000 : 1800}` } })).catch(() => {});
+  return o;
+}
+async function mgCmp() {
+  let r = null;
+  for (const host of ["query1", "query2"]) {
+    try { const j = await (await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/%5ETWII?range=1y&interval=1d`, { headers: { "User-Agent": UA } })).json(); r = j.chart.result[0]; if (r) break; } catch (_) {}
+  }
+  if (!r) throw new Error("no index");
+  const q = r.indicators.quote[0], K = [];
+  (r.timestamp || []).forEach((t, i) => { if (q.close[i] != null) K.push([new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), q.close[i]]); });
+  let L = -1, mL = null;
+  for (let i = K.length - 1; i >= K.length - 5 && i >= 0; i--) { const m = await mgDay(K[i][0]); if (m.mg) { L = i; mL = m.mg; break; } }
+  if (L < 0) throw new Error("no margin");
+  let p = 0; for (let i = 0; i <= L; i++) if (K[i][1] >= K[p][1]) p = i;
+  const win = [["近 5 天", L - 5], ["近 20 天", L - 20], ["從高點", p]].filter(w => w[1] >= 0 && w[1] < L);
+  const ms = await Promise.all(win.map(w => mgDay(K[w[1]][0])));
+  const r1 = v => Math.round(v * 10) / 10;
+  return { d: K[L][0], mg: mL, ix: Math.round(K[L][1]), rows: win.map((w, i) => ms[i].mg ? { k: w[0], d0: K[w[1]][0], ix0: Math.round(K[w[1]][1]), mg0: ms[i].mg, ixp: r1((K[L][1] / K[w[1]][1] - 1) * 100), mgp: r1((mL / ms[i].mg - 1) * 100) } : null).filter(Boolean) };
+}
 async function stopSig() {
   const now = twDay(), ms = [2, 1, 0].map(b => { const x = new Date(now + "T00:00:00Z"); x.setUTCDate(1); x.setUTCMonth(x.getUTCMonth() - b); return x.toISOString().slice(0, 7).replace("-", ""); });
   const [px, vo] = await Promise.all([Promise.all(ms.map(m => twseMonth("TAIEX/MI_5MINS_HIST", m))), Promise.all(ms.map(m => twseMonth("afterTrading/FMTQIK", m)))]);
@@ -1416,6 +1472,8 @@ export default {
         if (/^[A-Z.]{1,6}$/.test(u)) return cached(request, ctx, 1800, () => closes(u, true));
         return new Response("{}", { status: 400 });
       }
+      case "/api/dd": return cached(request, ctx, 1800, ddHist); // 歷史跌幅（Luna 2026-11-06）
+      case "/api/mgc": return cached(request, ctx, 3600, mgCmp); // 融資減幅 vs 大盤跌幅（Luna 2026-11-06）
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用

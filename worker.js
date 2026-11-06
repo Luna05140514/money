@@ -1190,7 +1190,7 @@ async function indexKd(keys) {
         const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(1)); else { w[0] = Math.max(w[0], b[1]); w[1] = Math.min(w[1], b[2]); w[2] = b[3]; }
       }
       const vl = k.map(b => b[4]), hasV = vl[vl.length - 1] > 0;
-      return [key, { day: { ...kdLast2(k.map(b => b.slice(1, 4))), ...dayExtras(k.map(b => b[3]), hasV ? vl : null), tl: tlDay(k.map(b => b.slice(1, 4))) }, week: (wb => ({ ...kdLast2(wb), mac: wkMacd(wb) }))([...weeks.keys()].sort().map(x => weeks.get(x))) }];
+      return [key, { day: { ...kdLast2(k.map(b => b.slice(1, 4))), ...dayExtras(k.map(b => b[3]), hasV ? vl : null), tl: tlDay(k.map(b => b.slice(1, 4))), hi: Math.max(...k.slice(-245).map(b => b[1])) }, week: (wb => ({ ...kdLast2(wb), mac: wkMacd(wb) }))([...weeks.keys()].sort().map(x => weeks.get(x))) }];
     } catch (_) { return [key, null]; }
   };
   return Object.fromEntries((await Promise.all(keys.map(one))).filter(x => x[1]));

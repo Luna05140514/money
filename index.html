@@ -619,7 +619,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/06 08:40</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/06 09:00</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1692,7 +1692,7 @@ function hiDrop(hi,last){if(!(hi>0)||!(last>0))return "";const p=(last/hi-1)*100
 function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
   return `<span class="tlr"><span class="nw">${tl[0]!=null?`龍 <b class="tlD">${f(tl[0])}</b> 壓力`:"創新高"}</span>${tl[1]!=null?`<span class="nw">虎 <b class="tlT">${f(tl[1])}</b> 支撐</span>`:""}${ex}</span>`}
 function ixRow(it,attr){const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",dg=ixDg(it),n=it.name.replace(/（.*）/,""),pct=(d/it.prev*100).toFixed(2);
-  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br>${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</span>${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
+  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br>${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</span>${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl)+hiDrop(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.hi,last):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
 const idxList=()=>(IDX&&IDX.items||[]).filter(idxShow).sort((a,b)=>idxRg(a)-idxRg(b)||(idxRg(a)?0:idxOi(a)-idxOi(b)));
 // 大盤每一列的短線（日 KD）、長線（週 KD），10 分鐘重抓一次
 let idxKd={},idxKdAt=0,idxKdBusy=0,idxKdKeys="";
@@ -1702,7 +1702,7 @@ async function idxKdLoad(){
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
   // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
   // 夜指期和台指期是同一個合約，KD 沿用台指期的日 K
-  const got=await Promise.all(idxItems.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=${it.key==="txfn"?13:12}`)));idxKdBusy=0;
+  const got=await Promise.all(idxItems.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=${it.key==="txfn"?14:13}`)));idxKdBusy=0;
   const d=Object.assign({},...got.filter(Boolean));
   if(!Object.keys(d).length)return;Object.assign(idxKd,d);idxInit()}
 function idxInit(){
@@ -2388,7 +2388,7 @@ let coinKdAt=0;
 async function coinKdLoad(items){
   mkLoad([],[],items.map(it=>it.key),()=>{if(homeCoin())coinInit()});
   if(!ON_CF||coinKdAt>Date.now()-6e5)return;coinKdAt=Date.now();
-  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=12`)));
+  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=13`)));
   const d=Object.assign({},...got.filter(Boolean));if(!Object.keys(d).length){coinKdAt=0;return}Object.assign(idxKd,d);if(homeCoin())coinInit()}
 // 小分頁（Luna 2026-10-25）：「虛擬幣」BTC、ETH、SOL、BNB；「穩定幣」USDT、USDC
 var hcSub="1";

@@ -619,7 +619,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/05 18:50</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/06 08:40</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1702,8 +1702,8 @@ async function idxKdLoad(){
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
   // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
   // 夜指期和台指期是同一個合約，KD 沿用台指期的日 K
-  const got=await Promise.all(idxItems.filter(it=>it.key!=="txfn").map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=12`)));idxKdBusy=0;
-  const d=Object.assign({},...got.filter(Boolean));if(d.txf)d.txfn=d.txf;
+  const got=await Promise.all(idxItems.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=${it.key==="txfn"?13:12}`)));idxKdBusy=0;
+  const d=Object.assign({},...got.filter(Boolean));
   if(!Object.keys(d).length)return;Object.assign(idxKd,d);idxInit()}
 function idxInit(){
   if(!IDX||!IDX.items.length){$("idx-cards").innerHTML='<p class="note">指數資料還沒載入。</p>';return}
@@ -2374,7 +2374,7 @@ async function watchLoad(){
 function ixLivePatch(){
   if(curPage()!=="wdetail"||!wdK.ix||!wdK.daily.length)return;const it=(IDX.items||[]).find(x=>x.key===wdK.ix);if(!it||!it.pts||!it.pts.length)return;
   const ps=it.pts.map(p=>p[1]),k=wdK.daily=wdK.daily.slice(),lb=k[k.length-1],c=ps[ps.length-1];
-  if(wdK.ix==="txfn");else if(it.date===lb[0])k[k.length-1]=[lb[0],lb[1],Math.max(lb[2],...ps),Math.min(lb[3],...ps),c,lb[5]];
+  if(it.date===lb[0])k[k.length-1]=[lb[0],lb[1],Math.max(lb[2],...ps),Math.min(lb[3],...ps),c,lb[5]];
   else if(it.date>lb[0])k.push([it.date,ps[0],Math.max(...ps),Math.min(...ps),c,0]);
   const hd=document.querySelector("#wd-body .wd-head");
   if(hd&&it.prev){const f2=v=>v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2}),d=c-it.prev,cls=d>0?"up":d<0?"down":"flat";
@@ -2615,8 +2615,8 @@ async function wdRenderIx(c){
   let x=wdCache[c];
   for(let t=0;!x&&t<3;t++){
     if(t){body.innerHTML=head+`<div class="wd-sec"><p class="muted">資料來源有點忙，正在重新抓取（第 ${t+1} 次）…</p></div>`;await new Promise(r=>setTimeout(r,t*2000));if(wdCode!==c||curPage()!=="wdetail")return}
-    if(key==="txf"||key==="txfn"){ // 台指期分三段抓再接起來（夜指期沿用台指期的日 K）
-      const ps=await Promise.all([2,1,0].map(p=>api(`/api/ixk?k=txf&p=${p}&v=2`)));
+    if(key==="txf"||key==="txfn"){ // 台指期分三段抓再接起來；夜指期用夜盤自己的日 K（Luna 2026-11-06）
+      const ps=await Promise.all([2,1,0].map(p=>api(`/api/ixk?k=${key}&p=${p}&v=${key==="txfn"?3:2}`)));
       x=ps[2]?{volUnit:ps[2].volUnit,kline:[].concat(...ps.filter(Boolean).map(y=>y.kline))}:null;
     }else x=await api(`/api/ixk?k=${encodeURIComponent(key)}&v=${cr?2:1}`);
   }
@@ -2625,8 +2625,8 @@ async function wdRenderIx(c){
   if(curPage()!=="wdetail"||wdCode!==c)return;
   // 日 K 還沒有今天那根時，用今天的走勢補上（開＝第一筆、高低＝當天最高最低、收＝最新）
   const k=x.kline.slice(),ps=it.pts.map(p=>p[1]);
-  if(key!=="txfn"&&it.date&&k.length&&it.date>k[k.length-1][0])k.push([it.date,ps[0],Math.max(...ps),Math.min(...ps),ps[ps.length-1],0]);
-  else if(key!=="txfn"&&it.date&&k.length&&it.date===k[k.length-1][0]){const lb=k[k.length-1];k[k.length-1]=[lb[0],lb[1],Math.max(lb[2],...ps),Math.min(lb[3],...ps),ps[ps.length-1],lb[5]]} // 同一天：收盤換成最新價
+  if(it.date&&k.length&&it.date>k[k.length-1][0])k.push([it.date,ps[0],Math.max(...ps),Math.min(...ps),ps[ps.length-1],0]);
+  else if(it.date&&k.length&&it.date===k[k.length-1][0]){const lb=k[k.length-1];k[k.length-1]=[lb[0],lb[1],Math.max(lb[2],...ps),Math.min(lb[3],...ps),ps[ps.length-1],lb[5]]} // 同一天：收盤換成最新價
   body.innerHTML=head+`<section class="wd-sec" id="wd-k"></section>`;
   Object.assign(wdK,{daily:k,us:!!it.us,sel:null,code:c,ix:key,volUnit:x.volUnit,divs:[],last,pe:"",peg:"",rv:"",pb:"",eps:"",peY:null});
   if(!["d","w","m"].includes(wdK.period))wdK.period="d";

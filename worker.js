@@ -16,7 +16,7 @@ const CRYPTO = [["BTC-USDT", "比特幣", "BTC-USD"], ["ETH-USDT", "以太幣", 
 // 穩定幣（Luna 2026-10-24）：USDT、USDC 對台幣，用台灣交易所 MAX（max-api.maicoin.com 公開行情）
 const STABLE = [["USDT-TWD", "USDT"], ["USDC-TWD", "USDC"]];
 const ixSym = k => (CRYPTO.find(c => c[0] === k) || [0, 0, k])[2];
-const IXKEY = /^(twii|otc|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH|SOL|BNB)-USDT|(USDT|USDC)-TWD)$/;
+const IXKEY = /^(twii|otc|txfn|txf|2330|\^?[A-Z0-9]{2,6}|[A-Z]{3,6}=X|[A-Z]{2}=F|(BTC|ETH|SOL|BNB)-USDT|(USDT|USDC)-TWD)$/;
 const fxScale = s => (FX.find(f => f[0] === s) || [0, 0, 1])[2];
 const ixTz = s => /=X$/.test(s) ? "Asia/Taipei" : /-USD$/.test(s) ? "UTC" : s === "^N225" ? "Asia/Tokyo" : s === "^KS11" ? "Asia/Seoul" : /^\^TWII$|\.TW$/.test(s) ? "Asia/Taipei" : "America/New_York";
 const PICKS = [["TSM", "台積電ADR"], ["TSMX", "台積電ADR 2倍"]];
@@ -52,6 +52,24 @@ async function yahooTw(sym, name) {
 }
 
 // 台指期：先用奇摩股市「台指期近一」的 1 分鐘走勢（期交所的網站常擋 Cloudflare）。一次抓回來的是一個交易日：前一晚 15:00 起的夜盤＋當天日盤
+// 夜指期日 K（Luna 2026-11-06）：FinMind 盤後（after_market）的日期是「交易日」＝夜盤結束那天，
+// 改標成夜盤開始那天（前一個日盤日），和網頁上夜指期的日期一致；同一天取成交量最大的合約
+function txNightBars(data) {
+  const pos = new Set(), best = {};
+  for (const x of data || []) {
+    if (!/^\d{6}$/.test(x.contract_date) || !(x.close > 0)) continue;
+    if (x.trading_session === "position") { pos.add(x.date); continue; }
+    if (x.trading_session !== "after_market") continue;
+    const b = best[x.date]; if (!b || x.volume > b.volume) best[x.date] = x;
+  }
+  const pd = [...pos].sort(), out = []; let i = 0;
+  for (const d of Object.keys(best).sort()) {
+    while (i < pd.length && pd[i] < d) i++;
+    if (!i) continue;
+    const x = best[d]; out.push([pd[i - 1], x.open, x.max, x.min, x.close, x.volume]);
+  }
+  return out;
+}
 async function wtx() {
   const a = await (await get("https://tw.stock.yahoo.com/_td-stock/api/resource/FinanceChartService.ApacLibraCharts;symbols=%5B%22WTX%26%22%5D;type=tick?lang=zh-Hant-TW&region=TW")).json();
   const c = a[0].chart, ts = c.timestamp || [], cl = c.indicators.quote[0].close || [];
@@ -1082,6 +1100,13 @@ async function indexKline(key, part = 0) {
     if (!k.length) throw new Error("no data");
     return { kline: k, volUnit: "money" };
   }
+  if (key === "txfn") {
+    const day = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10), p = Math.min(2, Math.max(0, part | 0)), from = day((p + 1) * 243 - 1);
+    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${day((p + 1) * 243 + 9)}&end_date=${day(p * 243 - 10)}`)).json();
+    const to = p ? day(p * 243 - 1) : "9999", k = txNightBars(j.data).filter(b => b[0] >= from && b[0] < to);
+    if (!k.length) throw new Error("no data");
+    return { kline: k, volUnit: "lots" };
+  }
   if (key === "txf") {
     // 期貨資料很大（每天十幾個合約），分三段各 8 個月，網頁同時抓三段再接起來，每段計算量才不會超過上限
     const day = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10), p = Math.min(2, Math.max(0, part | 0));
@@ -1129,6 +1154,9 @@ async function indexKd(keys) {
       if (key === "otc") {
         const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TPEx&start_date=${y1}`)).json();
         k = (j.data || []).filter(x => x.close > 0).map(x => [x.date, x.max, x.min, x.close, x.Trading_money || 0]);
+      } else if (key === "txfn") {
+        const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${new Date(Date.now() - 220 * 864e5).toISOString().slice(0, 10)}`)).json();
+        k = txNightBars(j.data).map(b => [b[0], b[2], b[3], b[4], b[5]]);
       } else if (key === "txf") {
         const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${new Date(Date.now() - 220 * 864e5).toISOString().slice(0, 10)}`)).json();
         const best = {};
@@ -1147,8 +1175,8 @@ async function indexKd(keys) {
         const q = r.indicators.quote[0];
         k = (r.timestamp || []).map((t, i) => [ymd(t, tz), q.high[i], q.low[i], q.close[i], q.volume[i] || 0]).filter(b => b.slice(0, 4).every(v => v != null));
       }
-      if (key === "otc" || key === "txf") { // 這兩個的日 K 只到昨天，接上今天盤中
-        const live = await (key === "txf" ? txfAny() : yahooTw("^TWOII", "")).catch(() => null);
+      if (key === "otc" || key === "txf" || key === "txfn") { // 這幾個的日 K 只到昨天，接上今天盤中（夜指期接最近一段夜盤）
+        const live = await (key === "txf" ? txfAny() : key === "txfn" ? wtx().then(txfNight) : yahooTw("^TWOII", "")).catch(() => null);
         if (live && live.pts.length && k.length && live.date > k[k.length - 1][0]) {
           const v = live.pts.map(p => p[1]);
           k.push([live.date, Math.max(...v), Math.min(...v), v[v.length - 1], 0]);

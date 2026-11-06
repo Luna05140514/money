@@ -606,7 +606,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="grid" id="home-grid">
       <button class="entry" data-go="idx" data-cat="stk" data-sub="1"><span class="glyph">盤</span><div><h2>全球大盤</h2><p>台股、美股、日韓指數和匯率，含 K 線和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="mkt" data-cat="stk" data-sub="1"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="dd" data-cat="stk" data-sub="1"><span class="glyph">跌</span><div><h2>歷史跌幅</h2><p>大盤過去跌 20%、10% 以上的紀錄，多久漲回來</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="dd" data-cat="stk" data-sub="1"><span class="glyph">跌</span><div><h2>歷史跌幅</h2><p>大盤過去跌 20% 以上、10～20% 的紀錄，多久漲回來</p></div><span class="go">›</span></button>
       <button class="entry" data-go="watch" data-cat="stk" data-sub="1"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="corp" data-cat="stk" data-sub="1"><span class="glyph">投</span><div><h2>公司買賣股票</h2><p>龍巖、寶島科自己買賣了哪些股票</p></div><span class="go">›</span></button>
       <button class="entry" data-go="hold" data-cat="stk" data-sub="2"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
@@ -620,7 +620,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/06 11:55</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/06 16:35</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1845,12 +1845,12 @@ function ddRender(d){
     <div>高點 ${dt(x.hd)}　<b>${f(x.h)}</b></div><div>低點 ${dt(x.ld)}　<b>${f(x.l)}</b></div>
     <div class="dd-sub">跌了 ${mon(x.hd,x.ld)}　${on?"還沒漲回高點":`${dt(x.back)} 漲回（低點後 ${mon(x.ld,x.back)}）`}</div></div>`};
   const avg=a=>{const z=a.filter(x=>x.back);if(!z.length)return"";const p=z.reduce((s,x)=>s+x.pct,0)/z.length,m=z.reduce((s,x)=>s+(Date.parse(x.back)-Date.parse(x.ld)),0)/z.length;return `<p class="dd-avg">過去 ${z.length} 次平均跌 <b>${p.toFixed(1)}%</b>，低點後平均 <b>${mon("2000-01-01",new Date(Date.parse("2000-01-01")+m).toISOString().slice(0,10))}</b> 漲回高點</p>`};
-  const small=d.small.slice();if(d.cur&&d.cur.pct<=-10&&!small.some(x=>x.hd===d.cur.hd))small.push(d.cur);
+  const small=d.small.filter(x=>x.pct>-20);if(d.cur&&d.cur.pct<=-10&&d.cur.pct>-20&&!small.some(x=>x.hd===d.cur.hd))small.push(d.cur); // 跌 10～20% 一個區間，20% 以上不放（Luna 2026-11-06）
   const big=d.big;
   $("dd-body").innerHTML=`${d.cur?`<div class="panel dd-now">現在加權指數 <b>${f(d.cur.last)}</b>，比高點 ${dt(d.cur.hd)} 的 ${f(d.cur.h)} 跌了 <b class="dd-pct">${((d.cur.last/d.cur.h-1)*100).toFixed(1)}%</b></div>`:""}
     <h2 class="dd-h">近 10 年跌 20% 以上：${big.length} 次</h2>${avg(big)}${big.slice().reverse().map(card).join("")}
-    <h2 class="dd-h">近 5 年跌 10% 以上：${small.length} 次</h2>${avg(small)}${small.slice().reverse().map(card).join("")}
-    <p class="note">跌幅用加權指數的最高價、最低價算。跌 20% 以上：從高點算到再創新高為止；跌 10% 以上：反彈 10% 就算一段結束，所以同一波大跌可能分成兩段。</p>`}
+    <h2 class="dd-h">近 5 年跌 10～20%：${small.length} 次</h2>${avg(small)}${small.slice().reverse().map(card).join("")}
+    <p class="note">跌幅用加權指數的最高價、最低價算。跌 20% 以上：從高點算到再創新高為止；跌 10～20%：反彈 10% 就算一段結束，跌超過 20% 的放在上面那一區。</p>`}
 async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1").then(mgcRender);
   const d=await api("/api/mkt");if(!d||!MKT)return;
   ["inst","vix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});

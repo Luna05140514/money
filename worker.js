@@ -1133,17 +1133,42 @@ async function stopSig() {
 
 async function marketPe() { return twseRecent(async d => { const x = await dayClose(d); return x && x.pe ? { pe: [[d, x.pe]] } : null; }); }
 // 融資維持率 ＝ Σ(各股融資餘額張數 × 1000 × 收盤價) ÷ 融資金額餘額；證交所晚上 9 點多才公布當天的融資
-async function marginRatio() {
-  return twseRecent(async d => {
-    const mm = await twseGet(`marginTrading/MI_MARGN?response=json&selectType=ALL&date=${d.replace(/-/g, "")}`);
-    if (mm.stat !== "OK") return null;
+// 指定那一天的大盤融資維持率（%）：上市＋上櫃合計（和財經 M 平方「上市櫃融資維持率」同口徑，Luna 2026-11-07）
+// ＝ Σ(每檔融資餘額張數 × 1000 × 收盤價) ÷ 融資金額
+async function tpexMg(d) {
+  const ds = d.replace(/-/g, "/"), H = { headers: { "User-Agent": UA } };
+  const [mb, cl] = await Promise.all([
+    fetch(`https://www.tpex.org.tw/www/zh-tw/margin/balance?date=${ds}&response=json`, H).then(r => r.json()),
+    fetch(`https://www.tpex.org.tw/www/zh-tw/afterTrading/otc?date=${ds}&type=EW&response=json`, H).then(r => r.json())]);
+  const t = (mb.tables || [])[0], c = (cl.tables || [])[0]; if (!t || !c || !(t.data || []).length || !(c.data || []).length) return null;
+  const px = {}; for (const r of c.data) { const v = fnum(r[2]); if (v) px[r[0].trim()] = v; }
+  let val = 0; for (const r of t.data) { const n = fnum(r[6]), p = px[r[0].trim()]; if (n && p) val += n * 1000 * p; }
+  const row = (t.summary || []).find(r => /融資金/.test(r[1] || "")), amt = row ? fnum(row[6]) * 1000 : 0;
+  return amt ? { val, amt } : null;
+}
+async function marginAt(d) {
+    const [mm, tp] = await Promise.all([twseGet(`marginTrading/MI_MARGN?response=json&selectType=ALL&date=${d.replace(/-/g, "")}`), tpexMg(d).catch(() => null)]);
+    if (mm.stat !== "OK" || !tp) return null;
     const sum = (mm.tables || []).find(x => (x.fields || [])[0] === "項目"), det = (mm.tables || []).find(x => (x.fields || [])[0] === "代號");
     const row = sum && sum.data.find(r => String(r[0]).startsWith("融資金額")); if (!row || !det) return null;
     const x = await dayClose(d); if (!x) return null;
     let val = 0; for (const r of det.data) { const c = r[0].trim(), n = fnum(r[6]); if (n && x.close[c]) val += n * 1000 * x.close[c]; }
     const amt = fnum(row[5]) * 1000;
-    return amt ? { margin: [[d, Math.round(val / amt * 10000) / 100]] } : null;
-  });
+    return amt ? Math.round((val + tp.val) / (amt + tp.amt) * 10000) / 100 : null;
+}
+// 國安基金進場那天：加權指數收盤＋融資維持率；兩樣都有就快取 30 天，之後不再變
+async function nsfDay(d) {
+  const key = new Request(`https://nsf.cache/v2/${d}`), hit = await caches.default.match(key).catch(() => null);
+  if (hit) return hit.json();
+  const o = { d };
+  try { const r = (await (await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII?range=1mo&interval=1d`, { headers: { "User-Agent": UA } })).json()).chart.result[0], q = r.indicators.quote[0];
+    (r.timestamp || []).forEach((t, i) => { if (new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10) === d && q.close[i] != null) o.c = Math.round(q.close[i] * 100) / 100; }); } catch (_) {}
+  o.mt = await marginAt(d).catch(() => null);
+  if (o.c != null && o.mt != null) await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": "max-age=2592000" } })).catch(() => {});
+  return o;
+}
+async function marginRatio() {
+  return twseRecent(async d => { const v = await marginAt(d); return v ? { margin: [[d, v]] } : null; });
 }
 
 // 同一個網址在 sec 秒內大家共用同一份結果
@@ -1474,6 +1499,7 @@ export default {
       }
       case "/api/dd": return cached(request, ctx, 1800, ddHist); // 歷史跌幅（Luna 2026-11-06）
       case "/api/mgc": return cached(request, ctx, 3600, mgCmp); // 融資減幅 vs 大盤跌幅（Luna 2026-11-06）
+      case "/api/nsf": { const d = url.searchParams.get("d") || ""; if (!/^\d{4}-\d\d-\d\d$/.test(d)) return new Response("{}", { status: 400 }); return cached(request, ctx, 1800, () => nsfDay(d)); }
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用

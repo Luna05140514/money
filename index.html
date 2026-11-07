@@ -620,7 +620,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/07 00:00</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/08 00:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1845,7 +1845,7 @@ calc.dd=()=>ddLoad();
 async function ddLoad(){
   if(!ON_CF){$("dd-body").innerHTML='<p>歷史跌幅要用你的網站（Cloudflare 版）打開才看得到。</p>';return}
   if(!ddNsf&&new Date().toISOString().slice(0,10)>="2026-11-09")api("/api/nsf?d=2026-11-09").then(v=>{if(v&&v.d){ddNsf=v;if(ddData)ddRender(ddData)}});
-  if(!ddMg)api("/api/mval?k=mg").then(m=>{const a=m&&m.margin;if(a&&a.length){ddMg=a[a.length-1];if(ddData)ddRender(ddData)}});
+  if(!ddMg)api("/api/mval?k=mg&v=2").then(m=>{const a=m&&m.margin;if(a&&a.length){ddMg=a[a.length-1];if(ddData)ddRender(ddData)}});
   if(!ddData){const d=await api("/api/dd?v=1");if(!d||!d.big){$("dd-body").innerHTML='<p>暫時抓不到資料，請稍後按右上角「重新整理」。</p>';return}ddData=d}
   ddRender(ddData)}
 function ddRender(d){
@@ -1866,7 +1866,7 @@ async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1
   ["inst","vix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});
   MKT.updated=d.updated+LIVE;mktInit();
   // 本益比、融資維持率是盤後資料，各自抓（Luna 2026-10-24）
-  for(const k of ["pe","mg"]){const x=await api(`/api/mval?k=${k}&v=1`);if(x){Object.assign(MKT,x);mktInit()}}
+  for(const k of ["pe","mg"]){const x=await api(`/api/mval?k=${k}&v=${k==="mg"?2:1}`);if(x){Object.assign(MKT,x);mktInit()}}
 }
 // 股票報酬比較、回測：選到的那幾檔向 /api/stk 拿最新日線和當日走勢，每檔每次開網頁只抓一次
 const liveDone=new Set();

@@ -896,7 +896,8 @@ function tlDay(bars) {
     const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100; k = k * 2 / 3 + rsv / 3; d = d * 2 / 3 + k / 3; K.push(k); D.push(d); });
   const c = bars[n - 1][2]; let dr = null, tg = null, ws = -1;
   for (let e = n - 1; e >= 0 && dr == null;) { const up = K[e] > D[e]; let s = e; while (s > 0 && (K[s - 1] > D[s - 1]) === up) s--;
-    if (up && (e > s || e === n - 1)) { let b = s; for (let i = s; i <= e; i++) if (bars[i][0] > bars[b][0]) b = i; if (bars[b][0] > c) { dr = bars[b][0]; ws = s; } }
+    if (up && e > s) { // 至少 2 根；只有今天 1 根剛金叉的不算（Luna 2026-11-08 對照 2330）
+    let b = s; for (let i = s; i <= e; i++) if (bars[i][0] > bars[b][0]) b = i; if (bars[b][0] > c) { dr = bars[b][0]; ws = s; } }
     e = s - 1; }
   if (dr != null) { let hi = 0; for (let i = Math.max(0, n - 250); i < n; i++) hi = Math.max(hi, bars[i][0]);
     if (dr >= hi) { dr = null; if (ws > 0) { const e = ws - 1; let s = e; while (s > 0 && !(K[s - 1] > D[s - 1])) s--; let lo = Infinity; for (let i = s; i <= e; i++) lo = Math.min(lo, bars[i][1]); if (lo < c) tg = lo; } } }
@@ -1142,9 +1143,9 @@ async function tpexMg(d) {
     fetch(`https://www.tpex.org.tw/www/zh-tw/afterTrading/otc?date=${ds}&type=EW&response=json`, H).then(r => r.json())]);
   const t = (mb.tables || [])[0], c = (cl.tables || [])[0]; if (!t || !c || !(t.data || []).length || !(c.data || []).length) return null;
   const px = {}; for (const r of c.data) { const v = fnum(r[2]); if (v) px[r[0].trim()] = v; }
-  let val = 0; for (const r of t.data) { const n = fnum(r[6]), p = px[r[0].trim()]; if (n && p) val += n * 1000 * p; }
+  let val = 0, etf = 0; for (const r of t.data) { const c = r[0].trim(), n = fnum(r[6]), p = px[c]; if (n && p) { val += n * 1000 * p; if (/^0/.test(c)) etf += n * 1000 * p; } }
   const row = (t.summary || []).find(r => /融資金/.test(r[1] || "")), amt = row ? fnum(row[6]) * 1000 : 0;
-  return amt ? { val, amt } : null;
+  return amt ? { val, amt, etf } : null;
 }
 async function marginAt(d) {
     const [mm, tp] = await Promise.all([twseGet(`marginTrading/MI_MARGN?response=json&selectType=ALL&date=${d.replace(/-/g, "")}`), tpexMg(d).catch(() => null)]);
@@ -1152,9 +1153,11 @@ async function marginAt(d) {
     const sum = (mm.tables || []).find(x => (x.fields || [])[0] === "項目"), det = (mm.tables || []).find(x => (x.fields || [])[0] === "代號");
     const row = sum && sum.data.find(r => String(r[0]).startsWith("融資金額")); if (!row || !det) return null;
     const x = await dayClose(d); if (!x) return null;
-    let val = 0; for (const r of det.data) { const c = r[0].trim(), n = fnum(r[6]); if (n && x.close[c]) val += n * 1000 * x.close[c]; }
-    const amt = fnum(row[5]) * 1000;
-    return amt ? Math.round((val + tp.val) / (amt + tp.amt) * 10000) / 100 : null;
+    let val = 0, etf = 0; for (const r of det.data) { const c = r[0].trim(), n = fnum(r[6]); if (n && x.close[c]) { val += n * 1000 * x.close[c]; if (/^0/.test(c)) etf += n * 1000 * x.close[c]; } }
+    const amt = fnum(row[5]) * 1000; if (!amt) return null;
+    // 扣除 ETF（Luna 2026-11-08）：證交所只公布融資總金額，ETF 借的錢用「ETF 融資市值 × 6 成（融資成數）」估算後扣掉
+    const E = etf + tp.etf, V = val + tp.val, A = amt + tp.amt, r2 = v => Math.round(v * 10000) / 100;
+    return { all: r2(V / A), ex: r2((V - E) / (A - E * 0.6)) };
 }
 // 國安基金進場那天：加權指數收盤＋融資維持率；兩樣都有就快取 30 天，之後不再變
 async function nsfDay(d) {
@@ -1163,12 +1166,12 @@ async function nsfDay(d) {
   const o = { d };
   try { const r = (await (await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII?range=1mo&interval=1d`, { headers: { "User-Agent": UA } })).json()).chart.result[0], q = r.indicators.quote[0];
     (r.timestamp || []).forEach((t, i) => { if (new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10) === d && q.close[i] != null) o.c = Math.round(q.close[i] * 100) / 100; }); } catch (_) {}
-  o.mt = await marginAt(d).catch(() => null);
+  const m = await marginAt(d).catch(() => null); o.mt = m ? m.all : null;
   if (o.c != null && o.mt != null) await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": "max-age=2592000" } })).catch(() => {});
   return o;
 }
 async function marginRatio() {
-  return twseRecent(async d => { const v = await marginAt(d); return v ? { margin: [[d, v]] } : null; });
+  return twseRecent(async d => { const v = await marginAt(d); return v ? { margin: [[d, v.all]], marginEx: [[d, v.ex]] } : null; });
 }
 
 // 同一個網址在 sec 秒內大家共用同一份結果

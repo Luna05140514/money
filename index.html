@@ -274,7 +274,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .mcard .big small{font-family:var(--body);font-size:14px;color:var(--muted);margin-left:4px}
 .mcard .asof{font-size:12.5px;color:var(--muted);width:100%}
 .mcard .what{margin:8px 0 0;font-size:14px}
-.mgc h2{font-size:20px}.mgc .asof{font-size:15px;color:var(--muted);margin:2px 0 6px}.mg-row{padding:10px 0;border-top:1px solid var(--line)}.mg-k{font-size:18px;font-weight:700}.mg-k small{font-size:14px;font-weight:400;color:var(--muted)}.mg-v{display:flex;gap:16px;font-size:18px;margin:4px 0;font-family:var(--num)}.mg-v b{font-size:22px}.mg-v .down{color:var(--down)}.mg-v .up{color:var(--up)}.mgc .what{font-size:15px;color:var(--muted);margin:10px 0 0}.mgc .pill{display:inline-block;font-size:16px;font-weight:700;padding:3px 12px}.stop ul{list-style:none;margin:10px 0 0;padding:0}.stop li{display:grid;grid-template-columns:30px 1fr;gap:2px 8px;padding:10px 0;border-top:1px solid var(--line)}.stop .ic{font-size:22px;line-height:1.2;grid-row:span 2;text-align:center}.stop .ic.y{color:var(--red)}.stop .ic.n{color:var(--muted)}.stop b{font-size:18px}.stop .rs{font-size:17px;font-weight:700}.stop .vs{grid-column:2;font-size:14px;color:var(--muted)}.stop h2{font-size:20px}.stop .cnt{font-family:var(--num);font-size:30px;font-weight:600}
+.mgex{font-size:19px;margin:6px 0 2px}.mgex b{font-size:22px}.mgex small{font-size:14px;color:var(--muted);margin-left:4px}.mgc h2{font-size:20px}.mgc .asof{font-size:15px;color:var(--muted);margin:2px 0 6px}.mg-row{padding:10px 0;border-top:1px solid var(--line)}.mg-k{font-size:18px;font-weight:700}.mg-k small{font-size:14px;font-weight:400;color:var(--muted)}.mg-v{display:flex;gap:16px;font-size:18px;margin:4px 0;font-family:var(--num)}.mg-v b{font-size:22px}.mg-v .down{color:var(--down)}.mg-v .up{color:var(--up)}.mgc .what{font-size:15px;color:var(--muted);margin:10px 0 0}.mgc .pill{display:inline-block;font-size:16px;font-weight:700;padding:3px 12px}.stop ul{list-style:none;margin:10px 0 0;padding:0}.stop li{display:grid;grid-template-columns:30px 1fr;gap:2px 8px;padding:10px 0;border-top:1px solid var(--line)}.stop .ic{font-size:22px;line-height:1.2;grid-row:span 2;text-align:center}.stop .ic.y{color:var(--red)}.stop .ic.n{color:var(--muted)}.stop b{font-size:18px}.stop .rs{font-size:17px;font-weight:700}.stop .vs{grid-column:2;font-size:14px;color:var(--muted)}.stop h2{font-size:20px}.stop .cnt{font-family:var(--num);font-size:30px;font-weight:600}
 .zone{position:relative;display:flex;height:10px;border-radius:5px;overflow:hidden;margin:0 0 4px}
 .zone span{height:100%}
 .zone-lb{display:flex;font-size:11.5px;color:var(--muted)}
@@ -620,7 +620,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/08 00:10</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/08 18:20</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1566,7 +1566,7 @@ const MKT_DEF=[
     asof:d=>`${d.replace(/-/g,"/")} 收盤，證交所資料，每天盤後更新`},
   {key:"margin",short:"融資維持率",name:"大盤融資維持率",unit:"%",min:120,max:200,
     zones:[[140,"偏低 恐慌","cold"],[170,"適中","mid"],[Infinity,"偏高 過熱","hot"]],
-    what:"全部融資買進的股票現在的市值 ÷ 融資借的錢。跌到 140% 以下常有人被追繳、斷頭，多半接近低點；170% 以上表示融資很賺、市場偏熱。用證交所每天公布的各股融資餘額和收盤價算出。",
+    what:"上市＋上櫃全部融資買進的股票現在的市值 ÷ 融資借的錢。跌到 140% 以下常有人被追繳、斷頭，多半接近低點；170% 以上表示融資很賺、市場偏熱。用證交所每天公布的各股融資餘額和收盤價算出。",
     asof:d=>`${d.replace(/-/g,"/")} 收盤，證交所資料，晚上 9 點多公布當天的融資`},
   {key:"vix",short:"恐慌指數",name:"台股恐慌指數（臺指 VIX）",unit:"",min:10,max:50,
     zones:[[20,"平靜","mid"],[30,"緊張","hot"],[Infinity,"恐慌","hot"]],
@@ -1713,7 +1713,7 @@ async function idxKdLoad(){
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
   // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
   // 夜指期和台指期是同一個合約，KD 沿用台指期的日 K
-  const got=await Promise.all(idxItems.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=${it.key==="txfn"?14:13}`)));idxKdBusy=0;
+  const got=await Promise.all(idxItems.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=${it.key==="txfn"?15:14}`)));idxKdBusy=0;
   const d=Object.assign({},...got.filter(Boolean));
   if(!Object.keys(d).length)return;Object.assign(idxKd,d);idxInit()}
 function idxInit(){
@@ -1845,7 +1845,7 @@ calc.dd=()=>ddLoad();
 async function ddLoad(){
   if(!ON_CF){$("dd-body").innerHTML='<p>歷史跌幅要用你的網站（Cloudflare 版）打開才看得到。</p>';return}
   if(!ddNsf&&new Date().toISOString().slice(0,10)>="2026-11-09")api("/api/nsf?d=2026-11-09").then(v=>{if(v&&v.d){ddNsf=v;if(ddData)ddRender(ddData)}});
-  if(!ddMg)api("/api/mval?k=mg&v=2").then(m=>{const a=m&&m.margin;if(a&&a.length){ddMg=a[a.length-1];if(ddData)ddRender(ddData)}});
+  if(!ddMg)api("/api/mval?k=mg&v=3").then(m=>{const a=m&&m.margin;if(a&&a.length){ddMg=a[a.length-1];if(ddData)ddRender(ddData)}});
   if(!ddData){const d=await api("/api/dd?v=1");if(!d||!d.big){$("dd-body").innerHTML='<p>暫時抓不到資料，請稍後按右上角「重新整理」。</p>';return}ddData=d}
   ddRender(ddData)}
 function ddRender(d){
@@ -1866,7 +1866,7 @@ async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1
   ["inst","vix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});
   MKT.updated=d.updated+LIVE;mktInit();
   // 本益比、融資維持率是盤後資料，各自抓（Luna 2026-10-24）
-  for(const k of ["pe","mg"]){const x=await api(`/api/mval?k=${k}&v=${k==="mg"?2:1}`);if(x){Object.assign(MKT,x);mktInit()}}
+  for(const k of ["pe","mg"]){const x=await api(`/api/mval?k=${k}&v=${k==="mg"?3:1}`);if(x){Object.assign(MKT,x);mktInit()}}
 }
 // 股票報酬比較、回測：選到的那幾檔向 /api/stk 拿最新日線和當日走勢，每檔每次開網頁只抓一次
 const liveDone=new Set();
@@ -2351,7 +2351,7 @@ async function watchMgrLoad(){
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();watchMgrLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
-  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=13`);
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=14`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
@@ -2440,7 +2440,7 @@ let coinKdAt=0;
 async function coinKdLoad(items){
   mkLoad([],[],items.map(it=>it.key),()=>{if(homeCoin())coinInit()});
   if(!ON_CF||coinKdAt>Date.now()-6e5)return;coinKdAt=Date.now();
-  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=13`)));
+  const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=14`)));
   const d=Object.assign({},...got.filter(Boolean));if(!Object.keys(d).length){coinKdAt=0;return}Object.assign(idxKd,d);if(homeCoin())coinInit()}
 // 小分頁（Luna 2026-10-25）：「虛擬幣」BTC、ETH、SOL、BNB；「穩定幣」USDT、USDC
 var hcSub="1";
@@ -2715,7 +2715,7 @@ function wdRawM(d,divs){const m={};let f=1,j;const dv=[...divs].filter(v=>v[1]>0
 function wdTL(a,K,D,m,nn){const n=nn||a.length;if(n<10)return {};const M=i=>m[a[i][0]]||1,c=a[n-1][4]*M(n-1);let dr=null,tg=null;
   let ws=-1;
   for(let e=n-1;e>=0&&!dr;){const up=K[e]>D[e];let s=e;while(s>0&&(K[s-1]>D[s-1])===up)s--;
-    if(up&&(e>s||e===n-1)){let b=s;for(let i=s;i<=e;i++)if(a[i][2]*M(i)>a[b][2]*M(b))b=i;if(a[b][2]*M(b)>c){dr=[a[b][0],a[b][2],a[b][2]*M(b)];ws=s}}
+    if(up&&e>s){let b=s;for(let i=s;i<=e;i++)if(a[i][2]*M(i)>a[b][2]*M(b))b=i;if(a[b][2]*M(b)>c){dr=[a[b][0],a[b][2],a[b][2]*M(b)];ws=s}}
     e=s-1}
   // 龍是近一年最高價（創新高）→ 只有虎；虎＝這波上漲前那段 KD 死叉（拉回）的最低點（Luna 2026-11-01，中信金）
   if(dr){let hi=0;for(let i=Math.max(0,n-250);i<n;i++)hi=Math.max(hi,a[i][2]*M(i));

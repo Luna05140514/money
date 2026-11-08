@@ -620,7 +620,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/08 18:20</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/08 22:30</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -700,13 +700,13 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     </div>
     <div class="panel hform" id="hold-dca" style="margin-top:12px">
       <h2>定期定額（每月自動買進）</h2>
-      <div id="dca-list"></div>
+      <div id="hdca-list"></div>
       <h3 class="dca-h3">新增定期定額</h3>
-      <div class="field"><label for="dca-q">股票</label><div class="search"><input id="dca-q" type="search" placeholder="輸入代號或名字，例如 0050" autocomplete="off" aria-label="輸入定期定額的股票代號或名字"><ul id="dca-sug" role="listbox" hidden></ul></div></div>
-      <div class="pick" id="dca-pick"></div>
-      <div class="field"><label for="dca-day">每月幾號買</label><select id="dca-day" class="dca-sel"></select></div>
-      <div class="field"><label for="dca-amt">每次買多少錢</label><div class="unit"><input id="dca-amt" type="number" inputmode="numeric" min="1" step="1" placeholder="例如 3000"><span id="dca-cur">元</span></div></div>
-      <div class="hbtns"><button id="dca-save">加入定期定額</button></div>
+      <div class="field"><label for="hdca-q">股票</label><div class="search"><input id="hdca-q" type="search" placeholder="輸入代號或名字，例如 0050" autocomplete="off" aria-label="輸入定期定額的股票代號或名字"><ul id="hdca-sug" role="listbox" hidden></ul></div></div>
+      <div class="pick" id="hdca-pick"></div>
+      <div class="field"><label for="hdca-day">每月幾號買</label><select id="hdca-day" class="dca-sel"></select></div>
+      <div class="field"><label for="hdca-amt">每次買多少錢</label><div class="unit"><input id="hdca-amt" type="number" inputmode="numeric" min="1" step="1" placeholder="例如 3000"><span id="hdca-cur">元</span></div></div>
+      <div class="hbtns"><button id="hdca-save">加入定期定額</button></div>
       <p class="note">每月那一天收盤後，用當天收盤價算能買幾股（零股，無條件捨去），自動加進這一頁的持股；遇到假日就用下一個交易日。從明天開始算，之後每次打開網站會自動補上沒買到的。手續費沒有算進去，實際股數以券商為準。美股的金額是美元。</p>
     </div>
     <div class="hclr"><button id="hold-clr">清除全部</button></div>
@@ -3085,27 +3085,27 @@ function dcaAdd(pg,c,n,d){const key=holdKeyOf(pg);let list=[];try{const v=JSON.p
   let at=0;a.forEach(e=>{if(e[0]<=d)at=e[1]});a.forEach(e=>{if(e[0]>d)e[1]+=n});const e=a.find(x=>x[0]===d);if(e)e[1]+=n;else a.push([d,at+n]);
   a.sort((x,y)=>x[0]<y[0]?-1:x[0]>y[0]?1:0);try{localStorage.setItem(holdLogKey(pg),JSON.stringify(lg))}catch(_){}}
 let dcaPick="";
-function dcaRender(){const pg=holdPages[holdCur];if(!pg||!$("dca-list"))return;const plans=dcaRead(pg),f0=v=>Math.round(v).toLocaleString("zh-TW");
-  $("dca-list").innerHTML=plans.length?plans.map((p,i)=>{const r=idxOf[p.c],us=!!r[4],hs=(p.hist||[]).filter(h=>h.n>0),tot=hs.reduce((a,h)=>a+h.n,0),nx=dcaNext(p),lt=(p.hist||[]).slice(-3).reverse();
+function dcaRender(){const pg=holdPages[holdCur];if(!pg||!$("hdca-list"))return;const plans=dcaRead(pg),f0=v=>Math.round(v).toLocaleString("zh-TW");
+  $("hdca-list").innerHTML=plans.length?plans.map((p,i)=>{const r=idxOf[p.c],us=!!r[4],hs=(p.hist||[]).filter(h=>h.n>0),tot=hs.reduce((a,h)=>a+h.n,0),nx=dcaNext(p),lt=(p.hist||[]).slice(-3).reverse();
     return `<div class="dca-row"><div class="dca-t"><b>${esc(r[1])}</b><small>${esc(r[0])}</small><button class="ch-x" data-dcx="${i}" aria-label="刪除 ${esc(r[1])} 定期定額">✕</button></div>
       <p class="dca-m">每月 <b>${p.day}</b> 號買 <b>${f0(p.amt)}</b> ${us?"美元":"元"}</p>
       <p class="dca-s">已買 ${hs.length} 次，共 ${tot.toLocaleString("zh-TW")} 股${nx?`　下次 ${nx.slice(5).replace("-","/")}`:""}</p>
       ${lt.map(h=>`<p class="dca-h">${h.d.slice(5).replace("-","/")}　收盤 ${h.p}　${h.n>0?`買 ${h.n.toLocaleString("zh-TW")} 股`:"錢不夠買 1 股"}</p>`).join("")}</div>`}).join(""):'<p class="ch-empty">這一頁還沒有定期定額。</p>';
-  const sel=$("dca-day");if(!sel.options.length)sel.innerHTML=Array.from({length:31},(_,i)=>`<option value="${i+1}">每月 ${i+1} 號</option>`).join("");
+  const sel=$("hdca-day");if(!sel.options.length)sel.innerHTML=Array.from({length:31},(_,i)=>`<option value="${i+1}">每月 ${i+1} 號</option>`).join("");
   if(!dcaRender.bound){dcaRender.bound=1;
-    $("dca-list").addEventListener("click",e=>{const b=e.target.closest("[data-dcx]");if(!b)return;const pg=holdPages[holdCur],a=dcaRead(pg),p=a[+b.dataset.dcx];if(!p)return;
+    $("hdca-list").addEventListener("click",e=>{const b=e.target.closest("[data-dcx]");if(!b)return;const pg=holdPages[holdCur],a=dcaRead(pg),p=a[+b.dataset.dcx];if(!p)return;
       if(!confirm(`確定停止「${idxOf[p.c][1]}」的定期定額嗎？\n（已經買進的股數會留著）`))return;a.splice(+b.dataset.dcx,1);dcaWrite(pg,a);dcaRender();toast("已停止")});
-    const q=$("dca-q"),sug=$("dca-sug"),pick=()=>{const r=idxOf[dcaPick];$("dca-pick").textContent=r?`已選：${r[1]}（${r[0]}）`:"";$("dca-cur").textContent=r&&r[4]?"美元":"元"};
+    const q=$("hdca-q"),sug=$("hdca-sug"),pick=()=>{const r=idxOf[dcaPick];$("hdca-pick").textContent=r?`已選：${r[1]}（${r[0]}）`:"";$("hdca-cur").textContent=r&&r[4]?"美元":"元"};
     q.addEventListener("input",()=>{const t=q.value.trim().toLowerCase();if(!t){sug.hidden=true;return}
       const sc=r=>r[0].toLowerCase().startsWith(t)?0:r[1].toLowerCase().startsWith(t)?1:r[1].toLowerCase().includes(t)?2:9;
       const hits=STOCK.index.map(r=>[sc(r),r]).filter(x=>x[0]<9).sort((a,b)=>a[0]-b[0]||a[1][0].length-b[1][0].length).slice(0,8).map(x=>x[1]);
       sug.innerHTML=hits.length?hits.map(r=>`<li role="option" data-code="${r[0]}"><span>${esc(r[1])}</span><b>${r[0]}</b></li>`).join(""):`<li class="none">找不到「${esc(q.value.trim())}」</li>`;sug.hidden=false});
-    sug.addEventListener("pointerdown",e=>{const li=e.target.closest("[data-code]");if(!li)return;e.preventDefault();dcaPick=li.dataset.code;q.value="";sug.hidden=true;pick();$("dca-amt").focus()});
+    sug.addEventListener("pointerdown",e=>{const li=e.target.closest("[data-code]");if(!li)return;e.preventDefault();dcaPick=li.dataset.code;q.value="";sug.hidden=true;pick();$("hdca-amt").focus()});
     q.addEventListener("blur",()=>setTimeout(()=>sug.hidden=true,150));
-    $("dca-save").addEventListener("click",()=>{const amt=Math.round(parseFloat($("dca-amt").value));
-      if(!idxOf[dcaPick]){toast("請先輸入並選一檔股票");q.focus();return}if(!(amt>0)){toast("請輸入每次買多少錢");$("dca-amt").focus();return}
+    $("hdca-save").addEventListener("click",()=>{const amt=Math.round(parseFloat($("hdca-amt").value));
+      if(!idxOf[dcaPick]){toast("請先輸入並選一檔股票");q.focus();return}if(!(amt>0)){toast("請輸入每次買多少錢");$("hdca-amt").focus();return}
       const pg=holdPages[holdCur],a=dcaRead(pg),tm=new Date(Date.now()+32*3600e3).toISOString().slice(0,10);
-      a.push({c:dcaPick,day:+$("dca-day").value,amt,start:tm,hist:[]});dcaWrite(pg,a);dcaPick="";pick();$("dca-amt").value="";dcaRender();toast("已加入定期定額")})}}
+      a.push({c:dcaPick,day:+$("hdca-day").value,amt,start:tm,hist:[]});dcaWrite(pg,a);dcaPick="";pick();$("hdca-amt").value="";dcaRender();toast("已加入定期定額")})}}
 setTimeout(()=>{dcaRun()},2500);
 setInterval(()=>{if(ON_CF&&!document.hidden&&curPage()==="hold")holdQuote()},60000);
 

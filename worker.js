@@ -1149,15 +1149,17 @@ async function tpexMg(d) {
 }
 async function marginAt(d) {
     const [mm, tp] = await Promise.all([twseGet(`marginTrading/MI_MARGN?response=json&selectType=ALL&date=${d.replace(/-/g, "")}`), tpexMg(d).catch(() => null)]);
-    if (mm.stat !== "OK" || !tp) return null;
+    if (mm.stat !== "OK") return null;
+    // 上櫃網站有時擋 Cloudflare（Luna 2026-11-09 看到停在 10/22 的 176）：抓不到就先只算上市，不要整個沒資料
+    const tq = tp || { val: 0, amt: 0, etf: 0 };
     const sum = (mm.tables || []).find(x => (x.fields || [])[0] === "項目"), det = (mm.tables || []).find(x => (x.fields || [])[0] === "代號");
     const row = sum && sum.data.find(r => String(r[0]).startsWith("融資金額")); if (!row || !det) return null;
     const x = await dayClose(d); if (!x) return null;
     let val = 0, etf = 0; for (const r of det.data) { const c = r[0].trim(), n = fnum(r[6]); if (n && x.close[c]) { val += n * 1000 * x.close[c]; if (/^0/.test(c)) etf += n * 1000 * x.close[c]; } }
     const amt = fnum(row[5]) * 1000; if (!amt) return null;
     // 扣除 ETF（Luna 2026-11-08）：證交所只公布融資總金額，ETF 借的錢用「ETF 融資市值 × 6 成（融資成數）」估算後扣掉
-    const E = etf + tp.etf, V = val + tp.val, A = amt + tp.amt, r2 = v => Math.round(v * 10000) / 100;
-    return { all: r2(V / A), ex: r2((V - E) / (A - E * 0.6)) };
+    const E = etf + tq.etf, V = val + tq.val, A = amt + tq.amt, r2 = v => Math.round(v * 10000) / 100;
+    return { all: r2(V / A), ex: r2((V - E) / (A - E * 0.6)), ...(tp ? {} : { tw: 1 }) };
 }
 // 國安基金進場那天：加權指數收盤＋融資維持率；兩樣都有就快取 30 天，之後不再變
 async function nsfDay(d) {
@@ -1171,7 +1173,7 @@ async function nsfDay(d) {
   return o;
 }
 async function marginRatio() {
-  return twseRecent(async d => { const v = await marginAt(d); return v ? { margin: [[d, v.all]], marginEx: [[d, v.ex]] } : null; });
+  return twseRecent(async d => { const v = await marginAt(d); return v ? { margin: [[d, v.all]], marginEx: [[d, v.ex]], ...(v.tw ? { mgTw: 1 } : {}) } : null; });
 }
 
 // 同一個網址在 sec 秒內大家共用同一份結果

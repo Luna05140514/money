@@ -620,7 +620,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/10 17:55</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/10 18:00</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2232,9 +2232,9 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
   // 價差（Luna 2026-11-01）：每種買法一張卡，下面左右兩格是兩種賣法（週 KD 死叉分兩次賣／賣一半＋死叉賣完）
   BT_NM[8]=`② 日 K ${btKLo} 以下買、80 以上賣`;BT_NM[7]=`① 虎線買、龍線且日 K ${btKHi} 以上賣`;const SM=[[5,"賺 10% 全賣"],[1,"賣一半＋死叉賣完"]] /* 週KD死叉、賺 20% 移除（Luna 2026-11-02） */,h0=btHalfV,run=(h,m)=>{btHalfV=m;return btRun(P,start,M,h,!!r[2],Y)};
   const R=HOW.map(h=>h<20?btRun(P,start,M,h,!!r[2],Y):null),RS=HOW.map(h=>h<20?null:h===23||h===20?[run(h,0)]:SM.map(([m])=>run(h,m)));btHalfV=h0;
-  const all=btKind?RS.filter((x,i)=>i>=3&&i!==6).flat():R.slice(0,3) /* ⑥ 移除（Luna 2026-11-10） */,srt=[...new Set(all.map(x=>x.ret))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
+  const all=btKind?RS.filter((x,i)=>i>=3&&i!==6).flat():R.slice(0,3) /* ⑥ 移除（Luna 2026-11-10） */,KY=x=>btKind?Math.round(x.val-x.inv):x.ret /* 價差看賺多少錢排最高／次高（Luna 2026-11-10） */,srt=[...new Set(all.map(KY))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
   const w=n=>n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,"")+" 萬":Math.round(n).toLocaleString();
-  const tag=x=>x.ret===best?' <em>最高</em>':x.ret===second?' <em class="sec">次高</em>':"",cls=x=>x.ret===best?" best":x.ret===second?" second":"";
+  const tag=x=>KY(x)===best?' <em>最高</em>':KY(x)===second?' <em class="sec">次高</em>':"",cls=x=>KY(x)===best?" best":KY(x)===second?" second":"";
   const head=`<p class="bt-s">${(R[0]||RS[3][0]).from.replace(/-/g,"/")} 到 ${to.replace(/-/g,"/")}，${btKind?`每次買 ${btUnitV.toLocaleString()}${btUtV?" 股":cur}，錢不設上限，報酬率＝賺的錢 ÷ 一輪最多用掉的錢`:`每月 ${M.toLocaleString()}${cur}`}</p>`;
   // ①② 虎線買龍線賣、日 K 20 買 80 賣並排在最上面（Luna 2026-11-02）；③～⑥ 每種買法一張卡、下面兩種賣法
   const cell=(i,x,lab,m,q)=>{const g=x.val-x.inv;return `<div class="bt-cell${cls(x)}">${q?`<div class="bt-cn">${BT_NM[i]}<i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></div>`:""}<div class="bt-cl">${lab}${tag(x)}</div>

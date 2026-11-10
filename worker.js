@@ -894,14 +894,15 @@ function tlDay(bars) {
   const K = [], D = []; let k = 50, d = 50;
   bars.forEach((b, i) => { let H = -Infinity, L = Infinity; for (let j = Math.max(0, i - 8); j <= i; j++) { H = Math.max(H, bars[j][0]); L = Math.min(L, bars[j][1]); }
     const rsv = H === L ? 50 : (b[2] - L) / (H - L) * 100; k = k * 2 / 3 + rsv / 3; d = d * 2 / 3 + k / 3; K.push(k); D.push(d); });
-  const c = bars[n - 1][2]; let dr = null, tg = null, ws = -1;
+  const c = bars[n - 1][2]; let dr = null, tg = null, ws = -1, we = -1;
   for (let e = n - 1; e >= 0 && dr == null;) { const up = K[e] > D[e]; let s = e; while (s > 0 && (K[s - 1] > D[s - 1]) === up) s--;
     if (up && e > s) { // 至少 2 根；只有今天 1 根剛金叉的不算（Luna 2026-11-08 對照 2330）
-    let b = s; for (let i = s; i <= e; i++) if (bars[i][0] > bars[b][0]) b = i; if (bars[b][0] > c) { dr = bars[b][0]; ws = s; } }
+    let b = s; for (let i = s; i <= e; i++) if (bars[i][0] > bars[b][0]) b = i; if (b < n - 1 && bars[b][0] > c) { dr = bars[b][0]; ws = s; we = e; } } // 最高點是今天（還在漲）不算龍（Luna 2026-11-10 對照 App）
     e = s - 1; }
   if (dr != null) { let hi = 0; for (let i = Math.max(0, n - 250); i < n; i++) hi = Math.max(hi, bars[i][0]);
-    if (dr >= hi) { dr = null; if (ws > 0) { const e = ws - 1; let s = e; while (s > 0 && !(K[s - 1] > D[s - 1])) s--; let lo = Infinity; for (let i = s; i <= e; i++) lo = Math.min(lo, bars[i][1]); if (lo < c) tg = lo; } } }
-  for (let i = n - 4; i >= 3 && tg == null; i--) { const l = bars[i][1]; if (l >= c) continue; let ok = 1; for (let j = i - 3; j <= i + 3 && ok; j++) { if (j === i) continue; const x = bars[j][1]; if (x < l || (j > i && x === l)) ok = 0; } if (ok) tg = l; }
+    // 只有「現在這段金叉」創新高才不畫龍；已經回檔的舊高點還是壓力（Luna 2026-11-10 加權週線）
+    if (dr >= hi && we === n - 1) { dr = null; if (ws > 0) { const e = ws - 1; let s = e; while (s > 0 && !(K[s - 1] > D[s - 1])) s--; let lo = Infinity; for (let i = s; i <= e; i++) lo = Math.min(lo, bars[i][1]); if (lo < c) tg = lo; } } }
+  for (let i = n - 3; i >= 3 && tg == null; i--) { const l = bars[i][1]; if (l >= c) continue; let ok = 1; for (let j = i - 3; j <= Math.min(n - 1, i + 3) && ok; j++) { if (j === i) continue; const x = bars[j][1]; if (x < l || (j > i && x === l)) ok = 0; } if (ok) tg = l; }
   const r = v => v == null ? null : Math.round(v * 100) / 100;
   return [r(dr), r(tg)];
 }

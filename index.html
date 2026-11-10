@@ -620,7 +620,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/10 18:35</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/10 19:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1753,10 +1753,10 @@ const GLOSS={
   BT3:["③ 固定買＋低點加碼", ["每月一半的錢固定買","另一半先存著","日 K 或週 K 跌破 30，存的錢全買","一直抱著，不賣"], "", "", "操作流程：固定買＋低點加碼"],
   BT4:["③ 日 KD 30、20、金叉分 3 次買", ["日 K 跌破 30：買 1 單位","再跌破 20：買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：日 KD 30、20、金叉分 3 次買"],
   BT5:["④ 日 KD 20、隔天再低、金叉分 3 次買", ["日 K 跌破 20：買 1 單位","隔天 K 更低：再買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：日 KD 20、隔天再低、金叉分 3 次買"],
-  BT6:["⑤ 虎線、更低虎線、金叉分 3 次買", ["接近虎線：買 1 單位","碰到更低的虎線：再買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：虎線、更低虎線、金叉分 3 次買"],
+  BT6:["④ 虎線、更低虎線、金叉分 3 次買", ["接近虎線：買 1 單位","碰到更低的虎線：再買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：虎線、更低虎線、金叉分 3 次買"],
   BT7:["⑥ 虎線、隔天再低、金叉分 3 次買", ["接近虎線：買 1 單位","隔天收盤更低：再買 1 單位","日 KD 金叉：買第 3 單位","賣法看下面兩格","賣光才開始下一輪"], "", "", "操作流程：虎線、隔天再低、金叉分 3 次買"],
   BT8:["① 虎線買、更低的虎線再買", ["接近虎線：買 1 單位","跌到更低的虎線：再買 1 單位","左格：碰到龍線，全賣","右格：賺 10% 以上，全賣","賣光才開始下一輪"], "", "", "操作流程：虎線買、更低的虎線再買"],
-  BT9:["② 日 K 20 以下買、更低再買", ["日 K 跌破 20（或 30）：買 1 單位","日 K 再跌破、而且價格比上次買的更低：再買 1 單位","左格：日 K 到 80 以上，全賣","右格：賺 10% 以上，全賣","賣光才開始下一輪"], "", "", "操作流程：日 K 20 以下買、更低再買"],
+  BT9:["② 日 K 30、20、鈍化、金叉分 4 次買", ["日 K 跌破 30：買 1 單位","日 K 再跌破 20：再買 1 單位","日 K 連 3 天在 20 以下（鈍化）：加碼 1 單位","日 KD 金叉：再買 1 單位，這一輪就不再買","左格：日 K 到 80 以上，全賣","右格：賺 10% 以上，全賣","賣光才開始下一輪"], "", "", "操作流程：日 K 30、20、鈍化、金叉分 4 次買"],
 
   融資減幅:["融資減幅 vs 大盤跌幅",["融資＝借錢買股票，多是散戶","大盤跌、融資也大減＝散戶認賠退場","融資減幅 ÷ 大盤跌幅 1.5 倍以上：籌碼較乾淨","不到 1 倍：散戶還沒退場，可能還會再跌"]],
   "止跌訊號":["止跌訊號",["大盤跌一段後，看 6 項有沒有止跌","① 低點不再破底","② 下跌量縮，或爆量長紅後不破低","③ 融資 5 天減少 2% 以上","④ 跌停家數比前幾天少一半","⑤ 外資買超，或賣超變少一半","⑥ 站上 5 日、10 日線和月線","5～6 項：止跌明確；3～4 項：有止跌跡象；0～2 項：還沒止跌"]],
@@ -2025,7 +2025,7 @@ function sumOf(dy,wk,M){const ok=(f,x)=>{try{return!!(x&&f(x))}catch(_){return f
 const BT_FB=0.001425,btData={};let btCode=null,btYears=3,btDate="",btCal=0; // btCal：價差看今年(0)／去年(1)／前年(2)，每次算 1 年（Luna 2026-11-02）
 // 把資料切到某一天為止（價差算整年用）
 function btCut(P,end){const n=P.B.findIndex(b=>b.dt>end);if(n<0)return P;const o={};for(const k in P)o[k]=Array.isArray(P[k])?P[k].slice(0,n):P[k];return o}
-const BT_NM=["① 每年一開始整筆買、不賣","② 每個月固定買","③ 固定買＋低點加碼","③ 日 KD 30、20、金叉分 3 次買","④ 日 KD 20、隔天再低、金叉分 3 次買","⑤ 虎線、更低虎線、金叉分 3 次買","⑥ 虎線、隔天再低、金叉分 3 次買","① 虎線買、更低的虎線再買","② 日 K 20 以下買、更低再買"];
+const BT_NM=["① 每年一開始整筆買、不賣","② 每個月固定買","③ 固定買＋低點加碼","③ 日 KD 30、20、金叉分 3 次買","④ 日 KD 20、隔天再低、金叉分 3 次買","④ 虎線、更低虎線、金叉分 3 次買","⑥ 虎線、隔天再低、金叉分 3 次買","① 虎線買、更低的虎線再買","② 日 K 30、20、鈍化、金叉分 4 次買"];
 const btWk=s=>{const x=new Date(s+"T00:00:00Z"),wd=(x.getUTCDay()+6)%7;return new Date(x-wd*864e5).toISOString().slice(0,10)};
 function btPrep(r){const B=r.d.map((d,i)=>({dt:d,o:r.o[i],h:r.h[i],l:r.l[i],c:r.c[i]}));
   // 日 KD(9)
@@ -2051,7 +2051,7 @@ function btPrep(r){const B=r.d.map((d,i)=>({dt:d,o:r.o[i],h:r.h[i],l:r.l[i],c:r.
 // 週 MACD 往下（Luna 2026-11-01）：這週的週 MACD 柱子比上週低
 function btWdn(B,WO,y){let j=y;const k=btWk(B[y].dt);while(j>0&&btWk(B[j].dt)===k)j--;return WO[y]<WO[j]}
 function btRun(P,start,M,how,etf,Y=3,L=null){const {B,DK,DD,WK,WD,DM,DO,WM,WO,MA,TD,TT}=P,FS=BT_FB+(etf?0.001:0.003),t0=Math.max(2,B.findIndex(b=>b.dt>=start));
-  let lumpM=0,bs=0,bBase=0,ddc=0,nDep=0,nextY="",half=false,dull=false,pot=0,cash=0,sh=0,inv=0,units=0,nav=1,pk=1,dd=0,cost=0,win=0,lose=0,nb=0,ns=0,step=0,lbp=0,wait=false,sb=0,ss=0,sS=0;
+  let lumpM=0,bs=0,bBase=0,ddc=0,nDep=0,nextY="",half=false,dull=false,pot=0,cash=0,sh=0,inv=0,units=0,nav=1,pk=1,dd=0,cost=0,win=0,lose=0,nb=0,ns=0,step=0,lbp=0,f4=0,f4d=0,wait=false,sb=0,ss=0,sS=0;
   // 詳細買賣紀錄（Luna 2026-10-30）：有傳 L 就把每筆買賣記下來；日 K、週 K 是訊號那天（前一天收盤）的數字
   let T=t0,rs=0,pkU=0,totU=0; // 價差錢不設上限（Luna 2026-11-02）：rs 這一輪用掉的錢，pkU 一輪最多用過的錢，報酬率＝賺的錢 ÷ pkU
   const lg=(x,why)=>{if(L)L.push(Object.assign(x,{d:B[T].dt,why,dk:DK[T-1],dd:DD[T-1],wk:WK[T-1],wd:WD[T-1],i:T-1}))};
@@ -2106,12 +2106,16 @@ function btRun(P,start,M,how,etf,Y=3,L=null){const {B,DK,DD,WK,WD,DM,DO,WM,WO,MA
         else if(btHalfV===2){if(WK[y]<WD[y]&&WK[y-1]>=WD[y-1]&&WK[y-1]>=80){if(!half){sell(o,Math.floor(sh*0.5)||sh,"週 KD 高檔死叉，賣一半");half=true}else{sell(o,sh,"第二次週 KD 高檔死叉，賣剩下的");half=false}}}
         else if(half&&dx){if(sell(o,sh,"日 KD 死叉，賣剩下的")!==false)half=false}
         else if(!half&&hi){if(how===20||!btHalfV)sell(hp,sh,hw+"，全賣");else if(sell(hp,sh/2,hw+"，賣一半")!==false)half=true}
-        if(sh===0){bs=0;half=false;dull=false;bBase=0;rs=0;step=0;lbp=0}}
+        if(sh===0){bs=0;half=false;dull=false;bBase=0;rs=0;step=0;lbp=0;f4=0;f4d=0}}
       // 買
       if(bs>=1&&DK[y]<=20&&DK[y-1]<=20&&DK[y-2]<=20)dull=true;
       const third=()=>{if(bs===2&&(gx||(dull&&WK[y]<=20))){b1(o,gx?"日 KD 金叉，再買 1 單位":"日 KD 鈍化後週 K 到 20 以下，再買 1 單位");bs=3}};
       const tg=TT[y],near=tg!=null&&b.l<=tg*1.02,tp=near?Math.min(o,tg*1.02):null;
-      if(how===20){if(DK[y]<=btKLo&&DK[y-1]>btKLo&&(!lbp||o<lbp)){if(b1(o,lbp?"日 K 再跌破 "+btKLo+"、價格更低，再買 1 單位":"日 K 跌破 "+btKLo+"，買 1 單位"))lbp=o}} // 更低才再買（Luna 2026-11-10） // ⑥ 改成 20 以下買（Luna 2026-11-02）
+      if(how===20){ // 分 4 次買（Luna 2026-11-10）：日 K 跌破 30、跌破 20、20 以下鈍化加碼、金叉，各買 1 次
+        if(f4===0&&DK[y]<=30&&DK[y-1]>30){if(b1(o,"日 K 跌破 30，買 1 單位"))f4=1}
+        else if(f4===1&&DK[y]<=20&&DK[y-1]>20){if(b1(o,"日 K 再跌破 20，再買 1 單位"))f4=2}
+        else if(f4>=1&&f4<3&&!f4d&&DK[y]<=20&&DK[y-1]<=20&&DK[y-2]<=20){if(b1(o,"日 K 20 以下鈍化，加碼 1 單位"))f4d=1}
+        else if(f4>=1&&f4<3&&gx){if(b1(o,"日 KD 金叉，再買 1 單位"))f4=3}} // ⑥ 改成 20 以下買（Luna 2026-11-02）
       else if(how===21){
         if(bs===0&&DK[y]<=30&&DK[y-1]>30){if(b1(o,"日 K 跌破 30，買 1 單位"))bs=1}
         if(bs===1&&DK[y]<=20&&DK[y-1]>20){b1(o,"日 K 再跌破 20，再買 1 單位");bs=2}
@@ -2180,7 +2184,7 @@ function btOpen(keep){let box=$("bt-pop");if(keep!==true)btGroup=watchTab;
       <label class="bt-m bt-dl">指定買進日期<input id="bt-dt" type="date" value="${btDate}"><button class="wedit wedit2" data-btdx>清除</button></label>
       <label class="bt-m bt-k0">每月投入<input id="bt-m" type="number" min="1000" step="1000" value="${m}" inputmode="numeric"><span id="bt-cur">元</span></label>
       <label class="bt-m bt-k1">每單位<input id="bt-unit" type="number" min="1" step="${btUtV?1000:10000}" value="${unit}" inputmode="numeric"><select id="bt-ut" aria-label="單位"><option value="0"${btUtV?"":" selected"}>元</option><option value="1"${btUtV?" selected":""}>股</option></select></label>
-      <label class="bt-m bt-k1">K 低點<select id="bt-klo" aria-label="K 低點">${[20,30].map(v=>`<option value="${v}"${btKLo===v?" selected":""}>${v}</option>`).join("")}</select><span>以下買（②）</span></label>
+      <label class="bt-m bt-k1" hidden>K 低點<select id="bt-klo" aria-label="K 低點">${[20,30].map(v=>`<option value="${v}"${btKLo===v?" selected":""}>${v}</option>`).join("")}</select><span>以下買（②）</span></label>
       <label class="bt-m bt-k1" hidden>KD 高點<select id="bt-khi" aria-label="KD 高點">${[70,80].map(v=>`<option value="${v}"${btKHi===v?" selected":""}>${v}</option>`).join("")}</select><span>以上賣（①）</span></label></div>
     <div class="watch-tabs bt-k" role="tablist"><button role="tab" data-btk="0" aria-selected="${btKind===0}">存股 ①②③</button><button role="tab" data-btk="1" aria-selected="${btKind===1}">價差 ①～⑥</button></div>
     <div id="bt-out"></div>
@@ -2230,9 +2234,9 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
   else if(P.B[30]&&P.B[30].dt>start){out.innerHTML=`<p class="bt-s">${esc(r[1])} ${btKind?"那一年還沒有資料，換近一點的年份看看。":`上市還不到 ${btYears} 年，換短一點的期間看看。`}</p>`;return}
   const HOW=[8,0,3,21,22,24,25,23,20];btLast={P,start,M,Y,etf:!!r[2],code:btCode};
   // 價差（Luna 2026-11-01）：每種買法一張卡，下面左右兩格是兩種賣法（週 KD 死叉分兩次賣／賣一半＋死叉賣完）
-  BT_NM[8]=`② 日 K ${btKLo} 以下買、更低再買`;BT_NM[7]=`① 虎線買、更低的虎線再買`;const SM=[[5,"賺 10% 全賣"],[1,"賣一半＋死叉賣完"]] /* 週KD死叉、賺 20% 移除（Luna 2026-11-02） */,h0=btHalfV,run=(h,m)=>{btHalfV=m;return btRun(P,start,M,h,!!r[2],Y)};
+  BT_NM[8]="② 日 K 30、20、鈍化、金叉分 4 次買";BT_NM[7]=`① 虎線買、更低的虎線再買`;const SM=[[5,"賺 10% 全賣"],[1,"賣一半＋死叉賣完"]] /* 週KD死叉、賺 20% 移除（Luna 2026-11-02） */,h0=btHalfV,run=(h,m)=>{btHalfV=m;return btRun(P,start,M,h,!!r[2],Y)};
   const R=HOW.map(h=>h<20?btRun(P,start,M,h,!!r[2],Y):null),RS=HOW.map(h=>h<20?null:h===23||h===20?[run(h,0),run(h,5)]:SM.map(([m])=>run(h,m)));btHalfV=h0;
-  const all=btKind?RS.filter((x,i)=>i>=3&&i!==6).flat():R.slice(0,3) /* ⑥ 移除（Luna 2026-11-10） */,KY=x=>btKind?Math.round(x.val-x.inv):x.ret /* 價差看賺多少錢排最高／次高（Luna 2026-11-10） */,srt=[...new Set(all.map(KY))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
+  const all=btKind?RS.filter((x,i)=>i>=3&&i!==4&&i!==6).flat():R.slice(0,3) /* ⑥、④ 移除（Luna 2026-11-10），原 ⑤ 改叫 ④ */,KY=x=>btKind?Math.round(x.val-x.inv):x.ret /* 價差看賺多少錢排最高／次高（Luna 2026-11-10） */,srt=[...new Set(all.map(KY))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
   const w=n=>n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,"")+" 萬":Math.round(n).toLocaleString();
   const tag=x=>KY(x)===best?' <em>最高</em>':KY(x)===second?' <em class="sec">次高</em>':"",cls=x=>KY(x)===best?" best":KY(x)===second?" second":"";
   const head=`<p class="bt-s">${(R[0]||RS[3][0]).from.replace(/-/g,"/")} 到 ${to.replace(/-/g,"/")}，${btKind?`每次買 ${btUnitV.toLocaleString()}${btUtV?" 股":cur}，錢不設上限，報酬率＝賺的錢 ÷ 一輪最多用掉的錢`:`每月 ${M.toLocaleString()}${cur}`}</p>`;
@@ -2241,7 +2245,7 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
         <b class="bt-pct ${g>=0?"up":"dn"}">${x.ret>=0?"+":""}${x.ret.toFixed(1)}%</b><div class="bt-cg ${g>=0?"up":"dn"}">${g>=0?"賺":"賠"} ${Math.round(Math.abs(g)).toLocaleString()}${cur}</div>
         <div class="bt-cd">${x.pkU?`一輪最多用 ${w(x.inv)}<br>總共買 ${w(x.totU)}`:"沒有買過"}</div><div class="bt-cd">${x.ddc<0.5?"沒跌破成本":`最多跌 −${x.ddc.toFixed(0)}%`}</div><div class="bt-cd">賣 ${x.win+x.lose} 次，賺 ${x.win} 次</div>
         <button class="bt-lgb" data-btlog="${i}" data-bthm="${m}">詳細資料</button></div>`};
-  if(btKind){out.innerHTML=head+[[7,"碰到龍線全賣"],[8,"日 K 80 以上全賣"]].map(([i,l])=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div><div class="bt-2">${cell(i,RS[i][0],l,0,0)}${cell(i,RS[i][1],"賺 10% 全賣",5,0)}</div></div>`).join("")+[3,4,5].map(i=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div>
+  if(btKind){out.innerHTML=head+[[7,"碰到龍線全賣"],[8,"日 K 80 以上全賣"]].map(([i,l])=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div><div class="bt-2">${cell(i,RS[i][0],l,0,0)}${cell(i,RS[i][1],"賺 10% 全賣",5,0)}</div></div>`).join("")+[3,5].map(i=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div>
       <div class="bt-2">${RS[i].map((x,k)=>cell(i,x,SM[k][1],SM[k][0],0)).join("")}</div></div>`).join("");return}
   out.innerHTML=head+R.map((x,i)=>{if(!x||i>=3)return "";const g=x.val-x.inv;
     return `<div class="bt-res${x.ret===best?" best":x.ret===second?" second":""}"><div class="bt-nm">${BT_NM[i]}${x.ret===best?' <em>最高</em>':x.ret===second?' <em class="sec">次高</em>':""}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i><button class="bt-lgb" data-btlog="${i}">詳細資料</button></span></div>

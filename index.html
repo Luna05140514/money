@@ -620,7 +620,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/10 19:10</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/10 19:30</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2177,16 +2177,14 @@ function btOpen(keep){let box=$("bt-pop");if(keep!==true)btGroup=watchTab;
   let m=10000,cap=150000,unit=50000;try{m=+localStorage.getItem("facai-bt-m")||10000;cap=+localStorage.getItem("facai-bt-cap")||150000;unit=+localStorage.getItem("facai-bt-unit")||50000;btUtV=+localStorage.getItem("facai-bt-ut")===1?1:0}catch(_){}
   box.innerHTML=`<div class="sg-card bt-card" role="dialog" aria-label="回測"><button class="sg-x" data-btx aria-label="關閉">✕</button>
     <h2>回測：存股和價差哪個好</h2>
-    <p class="bt-s">選一檔股票，看用 7 種方法買會變多少。存股看過去 1～3 年、每月投入；價差看今年、去年或前年一整年，每次買 1 單位（預設 5 萬），錢不設上限。</p>
+    <p class="bt-s">選一檔股票，看用 5 種方法買會變多少。存股看過去 1～3 年、每月投入；價差看今年、去年或前年一整年，每次買 1 單位（預設 5 萬），錢不設上限。</p>
     <div class="watch-tabs bt-g" role="tablist">${watchGroups.map((x,i)=>`<button role="tab" data-btg="${i}" aria-selected="${i===btGroup}">${esc(x.name)}</button>`).join("")}</div>
     <div class="bt-chips">${list.map(c=>`<button data-btc="${c}">${esc(idxOf[c][1])}<small>${c}</small></button>`).join("")||"這一頁沒有股票"}</div>
     <div class="bt-row"><div class="watch-tabs bt-y bt-k0">${[1,2,3].map(y=>`<button data-bty="${y}">${y} 年</button>`).join("")}</div><div class="watch-tabs bt-y bt-k1">${["今年","去年","前年"].map((t,i)=>`<button data-btyc="${i}">${t}</button>`).join("")}</div>
       <label class="bt-m bt-dl">指定買進日期<input id="bt-dt" type="date" value="${btDate}"><button class="wedit wedit2" data-btdx>清除</button></label>
       <label class="bt-m bt-k0">每月投入<input id="bt-m" type="number" min="1000" step="1000" value="${m}" inputmode="numeric"><span id="bt-cur">元</span></label>
-      <label class="bt-m bt-k1">每單位<input id="bt-unit" type="number" min="1" step="${btUtV?1000:10000}" value="${unit}" inputmode="numeric"><select id="bt-ut" aria-label="單位"><option value="0"${btUtV?"":" selected"}>元</option><option value="1"${btUtV?" selected":""}>股</option></select></label>
-      <label class="bt-m bt-k1" hidden>K 低點<select id="bt-klo" aria-label="K 低點">${[20,30].map(v=>`<option value="${v}"${btKLo===v?" selected":""}>${v}</option>`).join("")}</select><span>以下買（②）</span></label>
-      <label class="bt-m bt-k1" hidden>KD 高點<select id="bt-khi" aria-label="KD 高點">${[70,80].map(v=>`<option value="${v}"${btKHi===v?" selected":""}>${v}</option>`).join("")}</select><span>以上賣（①）</span></label></div>
-    <div class="watch-tabs bt-k" role="tablist"><button role="tab" data-btk="0" aria-selected="${btKind===0}">存股 ①②③</button><button role="tab" data-btk="1" aria-selected="${btKind===1}">價差 ①～⑥</button></div>
+      <label class="bt-m bt-k1">每單位<input id="bt-unit" type="number" min="1" step="${btUtV?1000:10000}" value="${unit}" inputmode="numeric"><select id="bt-ut" aria-label="單位"><option value="0"${btUtV?"":" selected"}>元</option><option value="1"${btUtV?" selected":""}>股</option></select></label></div>
+    <div class="watch-tabs bt-k" role="tablist"><button role="tab" data-btk="0" aria-selected="${btKind===0}">存股 ①②③</button><button role="tab" data-btk="1" aria-selected="${btKind===1}">價差 ①②</button></div>
     <div id="bt-out"></div>
     <details class="bt-how"><summary>怎麼算的</summary><ul>
       <li>每個月拿出同樣的錢，沒用完的錢留到下個月一起用。最後「變成」＝股票市值＋還沒用的錢。</li>
@@ -2194,14 +2192,10 @@ function btOpen(keep){let box=$("bt-pop");if(keep!==true)btGroup=watchTab;
       <li>① 每年一開始整筆買：每年一開始把一整年的錢一次全部買進，不賣。</li>
       <li>② 每個月固定買（定期定額）：每月第一個交易日開盤全部買。</li>
       <li>③ 固定買＋低點加碼：每月的錢一半在第一個交易日開盤買，另一半存起來；日 KD 或週 KD 的 K 跌到 30 以下（相對低點），隔天開盤把存的錢全部買進。</li>
-      <li>價差 ①～⑥：錢不設上限，每次買 1 單位（「每單位」自己填，預設 5 萬元）。「一輪最多用」是從買進到全部賣光那一輪，最多一共用掉多少錢（挑用最多的那一輪）；「總共買」是整年每一次買進的錢加起來；報酬率＝全部賺的錢 ÷ 一輪最多用的錢。全部賣光才開始下一輪。</li>
-      <li>價差 ① 接近虎線買 1 單位，碰到新的虎線再買，日 K 漲到 80 以上（或選 70）全部賣掉（只有這一種賣法）。</li>
-      <li>價差 ② 日 K 跌破 20（或選 30）買 1 單位，每再跌破一次再買，日 K 漲到 80 以上全部賣掉（只有這一種賣法）。</li>
-      <li>價差 ③ K 跌破 30 買 1 單位，再跌破 20 再買 1 單位；之後出現金叉再買 1 單位，如果中間鈍化（連 3 天 20 以下），等週 K 到 20 以下或日 KD 金叉再買。</li>
-      <li>價差 ④ K 跌破 20 買 1 單位；隔天 K 又更低，再買 1 單位；第 3 單位和 ③ 一樣（金叉，或鈍化後週 K 到 20 以下）。</li>
-      <li>價差 ⑤ 股價跌到接近虎線（虎線往上 2% 以內）買 1 單位，跌破後碰到更低的虎線再買 1 單位，第 3 單位和 ③ 一樣。</li>
-      <li>價差 ⑥ 接近虎線買 1 單位，隔天收盤又更低再買 1 單位，第 3 單位和 ③ 一樣。</li>
-      <li>價差每一種買法一張卡，下面兩格是兩種賣法：左邊「賺 10% 全賣」是收盤比買進平均成本賺 10% 以上，隔天全部賣掉；右邊「賣一半＋死叉賣完」在高點（①② 是日 K 漲到 80 以上，③④ 是碰到龍線）先賣一半，等日 KD 死叉再賣剩下的。</li>
+      <li>價差 ①②：錢不設上限，每次買 1 單位（「每單位」自己填，預設 5 萬元）。「一輪最多用」是從買進到全部賣光那一輪，最多一共用掉多少錢（挑用最多的那一輪）；「總共買」是每一次買進的錢加起來；報酬率＝全部賺的錢 ÷ 一輪最多用的錢。全部賣光才開始下一輪。「最高、次高」看誰賺的錢多。</li>
+      <li>價差 ① 股價跌到接近虎線（虎線往上 2% 以內）買 1 單位，跌到更低的虎線再買 1 單位。</li>
+      <li>價差 ② 日 K 跌破 30 買 1 單位，再跌破 20 再買 1 單位，20 以下鈍化（連 3 天）加碼 1 單位，日 KD 金叉再買 1 單位，金叉買完這一輪就不再買。</li>
+      <li>每張卡兩格是兩種賣法：① 左邊碰到龍線全賣，② 左邊日 K 漲到 80 以上全賣；兩張卡的右邊都是收盤比買進平均成本賺 10% 以上，隔天全部賣掉。</li>
       <li>最多跌幾 %＝回測期間，手上股票的市值比買進的成本（平均每股買價）最多少掉幾 %。沒有比成本低過，就寫「沒有跌破買進成本」。</li>
       <li>用含息還原價，配息等於自動再買回去。買整數股（零股），手續費 0.1425%，賣出另外算證交稅（ETF 0.1%、股票 0.3%）。訊號在收盤出現，隔天開盤買賣。美股用美元算。</li>
       <li>過去的結果不代表未來，只是參考。</li></ul></details>
@@ -2236,7 +2230,7 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
   // 價差（Luna 2026-11-01）：每種買法一張卡，下面左右兩格是兩種賣法（週 KD 死叉分兩次賣／賣一半＋死叉賣完）
   BT_NM[8]="② 日 K 30、20、鈍化、金叉分 4 次買";BT_NM[7]=`① 虎線買、更低的虎線再買`;const SM=[[5,"賺 10% 全賣"],[1,"賣一半＋死叉賣完"]] /* 週KD死叉、賺 20% 移除（Luna 2026-11-02） */,h0=btHalfV,run=(h,m)=>{btHalfV=m;return btRun(P,start,M,h,!!r[2],Y)};
   const R=HOW.map(h=>h<20?btRun(P,start,M,h,!!r[2],Y):null),RS=HOW.map(h=>h<20?null:h===23||h===20?[run(h,0),run(h,5)]:SM.map(([m])=>run(h,m)));btHalfV=h0;
-  const all=btKind?RS.filter((x,i)=>i>=3&&i!==4&&i!==6).flat():R.slice(0,3) /* ⑥、④ 移除（Luna 2026-11-10），原 ⑤ 改叫 ④ */,KY=x=>btKind?Math.round(x.val-x.inv):x.ret /* 價差看賺多少錢排最高／次高（Luna 2026-11-10） */,srt=[...new Set(all.map(KY))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
+  const all=btKind?RS.filter((x,i)=>i===7||i===8).flat():R.slice(0,3) /* 價差只留 ①②（Luna 2026-11-10 移除其他） */,KY=x=>btKind?Math.round(x.val-x.inv):x.ret /* 價差看賺多少錢排最高／次高（Luna 2026-11-10） */,srt=[...new Set(all.map(KY))].sort((a,b)=>b-a),best=srt[0],second=srt[1];
   const w=n=>n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,"")+" 萬":Math.round(n).toLocaleString();
   const tag=x=>KY(x)===best?' <em>最高</em>':KY(x)===second?' <em class="sec">次高</em>':"",cls=x=>KY(x)===best?" best":KY(x)===second?" second":"";
   const head=`<p class="bt-s">${(R[0]||RS[3][0]).from.replace(/-/g,"/")} 到 ${to.replace(/-/g,"/")}，${btKind?`每次買 ${btUnitV.toLocaleString()}${btUtV?" 股":cur}，錢不設上限，報酬率＝賺的錢 ÷ 一輪最多用掉的錢`:`每月 ${M.toLocaleString()}${cur}`}</p>`;
@@ -2245,7 +2239,7 @@ function btResult(){const out=$("bt-out");let P=btData[btCode];if(!out||!P)retur
         <b class="bt-pct ${g>=0?"up":"dn"}">${x.ret>=0?"+":""}${x.ret.toFixed(1)}%</b><div class="bt-cg ${g>=0?"up":"dn"}">${g>=0?"賺":"賠"} ${Math.round(Math.abs(g)).toLocaleString()}${cur}</div>
         <div class="bt-cd">${x.pkU?`一輪最多用 ${w(x.inv)}<br>總共買 ${w(x.totU)}`:"沒有買過"}</div><div class="bt-cd">${x.ddc<0.5?"沒跌破成本":`最多跌 −${x.ddc.toFixed(0)}%`}</div><div class="bt-cd">賣 ${x.win+x.lose} 次，賺 ${x.win} 次</div>
         <button class="bt-lgb" data-btlog="${i}" data-bthm="${m}">詳細資料</button></div>`};
-  if(btKind){out.innerHTML=head+[[7,"碰到龍線全賣"],[8,"日 K 80 以上全賣"]].map(([i,l])=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div><div class="bt-2">${cell(i,RS[i][0],l,0,0)}${cell(i,RS[i][1],"賺 10% 全賣",5,0)}</div></div>`).join("")+[3,5].map(i=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div>
+  if(btKind){out.innerHTML=head+[[7,"碰到龍線全賣"],[8,"日 K 80 以上全賣"]].map(([i,l])=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div><div class="bt-2">${cell(i,RS[i][0],l,0,0)}${cell(i,RS[i][1],"賺 10% 全賣",5,0)}</div></div>`).join("")+[].map(i=>`<div class="bt-res bt-pc"><div class="bt-nm">${BT_NM[i]}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i></span></div>
       <div class="bt-2">${RS[i].map((x,k)=>cell(i,x,SM[k][1],SM[k][0],0)).join("")}</div></div>`).join("");return}
   out.innerHTML=head+R.map((x,i)=>{if(!x||i>=3)return "";const g=x.val-x.inv;
     return `<div class="bt-res${x.ret===best?" best":x.ret===second?" second":""}"><div class="bt-nm">${BT_NM[i]}${x.ret===best?' <em>最高</em>':x.ret===second?' <em class="sec">次高</em>':""}<span class="bt-qs"><i class="qm bt-q" data-term="BT${i+1}" role="button" tabindex="0" aria-label="怎麼操作">?</i><button class="bt-lgb" data-btlog="${i}">詳細資料</button></span></div>

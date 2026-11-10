@@ -359,7 +359,7 @@ async function divCal() {
     if (!o || (o[4] == null && r[4] != null)) by.set(k, [String(r[0]).trim(), String(r[1]).replace(/\*$/, "").trim(), r[2], r[3], r[4]]);
   }
   const t = now.toISOString();
-  return { updated: `${t.slice(0, 10)} ${t.slice(11, 16)}`, items: [...by.values()].sort((a, b) => a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0), ...(src.some(x => !x) ? { __partial: 1 } : {}) };
+  return { updated: `${t.slice(0, 10)} ${t.slice(11, 16)}`, items: [...by.values()].sort((a, b) => a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0), ...(!src[0] || !src[1] ? { __partial: 1 } : {}) }; // 上櫃常擋 Cloudflare：只缺上櫃不算不完整，免得一直用舊備份（Luna 2026-11-10 看不到 11 月 00878）
 }
 
 // ───── 淨值查詢：證交所 ETF 盤中預估淨值（格式同 nav_table）─────

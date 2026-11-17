@@ -336,10 +336,26 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wmb:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 /* 表格（Luna 2026-11-17 照片）：商品／成交固定不動，往左滑看漲跌和分析 */
 .wrow>.ac{display:none}
-.wsimple{--c1:84px;--c2:88px;--gc:var(--c1) var(--c2) 86px repeat(4,84px)}
-#idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) 86px repeat(3,84px)}
+.wsimple{--c1:84px;--c2:88px;--gc:var(--c1) var(--c2) 86px repeat(5,88px)}
+#idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) 86px repeat(4,88px)}
 @media (min-width:701px){.wsimple{--c1:190px;--c2:130px}}
 .wsimple .wlist{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* 往左滑像翻頁，一次跳一欄（Luna 2026-11-17） */
+.wsimple .wlist{scroll-snap-type:x mandatory;scroll-padding-left:calc(var(--c1) + var(--c2));overscroll-behavior-x:contain}
+.wsimple .wthead span.snp{scroll-snap-align:start;scroll-snap-stop:always}
+/* 手機：右邊剛好兩欄一頁，往左滑翻到下一頁 */
+@media (max-width:700px){
+  .wsimple{--cw:calc((100vw - 50px - var(--c1) - var(--c2)) / 2)}
+  .wsimple{--gc:var(--c1) var(--c2) repeat(6,var(--cw))}
+  #idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) calc(var(--cw) * 2) repeat(4,var(--cw))}
+  #idx.wsimple .wrow:not(.wed)>.chg,#hc-rows.wsimple .wrow:not(.wed)>.chg{align-items:center}
+  #idx.wsimple .wthead span:nth-child(3),#hc-rows.wsimple .wthead span:nth-child(3){text-align:center}
+  .wsimple .wrow:not(.wed)>.chg,.wsimple .wrow:not(.wed)>.ac{padding-left:3px;padding-right:3px}
+  .wsimple .wrow:not(.wed)>.chg{font-size:clamp(13px,3.9vw,19px)}
+  .wsimple .wrow>.ac .sg{font-size:clamp(13px,3.7vw,15px)!important;padding:2px 3px!important}
+  .wsimple .wrow>.ac .sg{white-space:normal!important;line-height:1.2;text-align:center;max-width:calc(2em + 8px);box-sizing:border-box}
+  .wsimple .wrow:not(.wed)>.ac.atl{font-size:clamp(13px,3.9vw,16px)}
+}
 .wsimple .wthead{display:grid;grid-template-columns:var(--gc);width:max-content;min-width:100%;box-sizing:border-box;padding:10px 0;font-size:16px;font-weight:700;color:var(--muted);background:var(--surface);border-bottom:1px solid var(--line)}
 .wsimple .wthead span{text-align:center;padding:0 6px}
 .wsimple .wthead span:nth-child(1){text-align:left;padding-left:10px}
@@ -359,7 +375,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wsimple .wrow>.ac .sg{font-size:15px;padding:3px 6px;white-space:nowrap}
 .wsimple .wrow>.ac.na{color:var(--muted)}
 .wsimple .wrow:not(.wed)>.ac.atl{flex-direction:column;justify-content:center;gap:2px;line-height:1.2}
-.wsimple .wthead span:last-child{line-height:1.15;font-size:14px}
+.wsimple .wthead span.h2l{line-height:1.15;font-size:14px}
+.wsimple .wrow:not(.wed)>.ac.akd{flex-direction:column;justify-content:center;gap:4px}
 .wsimple .wrow>.ac .val{font-style:normal}
 .swipe-tip{display:none}
 .wsimple .swipe-tip{display:block;text-align:right;font-size:15px;color:var(--muted);margin:6px 2px 0}
@@ -460,6 +477,13 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .glrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 0;font-size:17px;color:var(--muted)}
 .qc{font:inherit;font-size:17px;font-weight:700;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
 #gl-pop{z-index:70}
+#pe-pop{z-index:70}
+#pe-pop h3{font-size:19px;margin:14px 0 6px}
+.pe-t{border-collapse:collapse;font-size:19px}
+.pe-t td{padding:5px 12px 5px 0}
+.pe-n{color:var(--muted);font-size:15px;margin:4px 0}
+.wsimple .wrow>.ac.apv{cursor:pointer}
+.wsimple .wrow>.ac.apv .val{text-decoration:underline dotted;text-underline-offset:4px}
 .gl-card p{font-size:20px;line-height:1.7;margin:10px 0}
 .dd-h{font-size:22px;margin:22px 0 6px}.dd-avg{font-size:17px;margin:0 0 10px;color:var(--muted)}.dd-avg b{color:var(--ink)}.dd-now{font-size:19px;line-height:1.6}.dd-now .dd-pct,.dd-row .dd-pct{color:var(--down)}.dd-row{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:18px;line-height:1.6;font-family:var(--num)}.dd-row.on{border:2px solid var(--down)}.dd-top{display:flex;align-items:center;gap:10px}.dd-row .dd-pct{font-size:26px}.dd-tag{font-size:15px;font-weight:700;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor;color:var(--down)}.dd-h3{font-size:19px;margin:6px 0 6px}.dd-tb{width:100%;table-layout:fixed;border-collapse:collapse;font-size:16px;margin:0 0 4px;background:var(--surface);border-radius:12px;overflow:hidden}.dd-tb th{font-size:14px;color:var(--muted);font-weight:700;padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);line-height:1.3}.dd-tb td{white-space:normal;overflow-wrap:anywhere;padding:9px 4px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--num);line-height:1.35}.dd-tb td:first-child{text-align:left;padding-left:8px}.dd-tb td small{display:block;font-size:13px;color:var(--muted);white-space:normal;word-break:break-all}.dd-tb th:first-child{width:30%}.dd-tb td small.nb{word-break:keep-all;overflow-wrap:normal}.dd-tb tr.now td{background:var(--bg)}.dd-tb td:nth-child(3) b{color:var(--down)}.dd-tn{font-size:14px;color:var(--muted);margin:0 0 14px}.dd-nt{font-weight:700}.dd-nsf b.mt{color:var(--ink)}.dd-ns{font-size:14px;font-weight:400;color:var(--muted)}.dd-nsf b{color:var(--down)}.dd-nsf{font-size:17px;background:var(--bg);border-radius:10px;padding:6px 10px;margin:6px 0;line-height:1.55;font-family:var(--sans,inherit)}.dd-sub{color:var(--muted);font-size:16px}.gl-ul{margin:10px 0;padding-left:1.2em;font-size:20px;line-height:1.55}.gl-ul li{margin:8px 0}.gl-card .ex{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:18px}
 .hpie{display:flex;flex-direction:column;align-items:center;gap:10px}
@@ -674,7 +698,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 02:20</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 02:50</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1755,12 +1779,22 @@ function hiDrop(hi,last){if(!(hi>0)||!(last>0))return "";const p=(last/hi-1)*100
   return `<span class="tlr hdr"><span class="nw">一年高點 <b>${f(Math.max(hi,last))}</b></span><span class="nw">高點跌幅 <b class="${p<=-20?"hdB":p<=-10?"hdM":""}">${p>=0?"0%（創新高）":p.toFixed(1)+"%"}</b></span></span>`}
 // 列表上的天龍地虎（Luna 2026-11-01）：只看日 K，worker /api/kd、/api/ixkd 的 day.tl = [龍, 虎]
 // 表格往左滑的分析欄（Luna 2026-11-17）：日KD、週KD、壓力線、支撐線、價值（自選股）
-function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span>漲跌</span>${val?"<span>價位</span>":""}<span>日KD</span><span>週KD</span><span>壓力線<br>支撐線</span></div>`}
-function anaCells(dy,wk,tl,val){const kd=(o,L)=>{if(!o||o.k==null)return `<span class="ac na">—</span>`;const m=SG_LOGIC[L][sgHit(o)];return `<span class="ac"><i class="sg ${m[1]}">${m[2]}</i></span>`};
+function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span class="snp">漲跌</span>${val?"<span>價位</span>":""}<span class="snp">日KD</span><span>週KD</span><span class="snp">壓力線</span><span>支撐線</span></div>`}
+function anaCells(dy,wk,tl,val){const kd=(o,L)=>{if(!o||o.k==null)return `<i class="sg na">—</i>`;const m=SG_LOGIC[L][sgHit(o)];return `<i class="sg ${m[1]}">${m[2]}</i>`};
   const f=v=>v==null?"—":v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
-  return (val===undefined?"":`<span class="ac">${val&&val[1]?`<b class="val ${val[0]}">${val[1]}</b>`:"—"}</span>`)+kd(dy,"短線")+kd(wk,"長線")+`<span class="ac atl"><b class="tlD">${f(tl&&tl[0])}</b><b class="tlT">${f(tl&&tl[1])}</b></span>`}
+  return (val===undefined?"":val&&val[1]?`<span class="ac apv" data-pe="${esc(val[2])}" role="button" tabindex="0" aria-label="看便宜、合理、昂貴的價錢"><b class="val ${val[0]}">${val[1]}</b></span>`:`<span class="ac">—</span>`)+`<span class="ac">${kd(dy,"短線")}</span><span class="ac">${kd(wk,"長線")}</span><span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span>`}
 // 價位（Luna 2026-11-17）：只用今年本益比（現價 ÷ 今年預估 EPS）對照近 5 年本益比區間
-function peMini(c,last){const v=watchVal[c];if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜"]:x>=v.hi?["hi","昂貴"]:["mid","合理"]}
+function peMini(c,last){const v=watchVal[c];if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜",c]:x>=v.hi?["hi","昂貴",c]:["mid","合理",c]}
+// 點「價位」跳出小視窗（Luna 2026-11-17）：今年、明年的本益比和便宜／合理／昂貴價
+function pePop(c){const v=watchVal[c],it=watchItem(c);if(!v||!it)return;const last=it.last;
+  const f=x=>x>=100?Math.round(x).toLocaleString():x.toFixed(x>=10?1:2);
+  const yr=(n,e)=>{if(!(e>0))return `<h3>${n}</h3><p>沒有分析師預估 EPS。</p>`;const x=last/e,[k,t]=x<=v.lo?["lo","便宜"]:x>=v.hi?["hi","昂貴"]:["mid","合理"];
+    return `<h3>${n}　本益比 ${x.toFixed(1)} <b class="val ${k}">${t}</b></h3><table class="pe-t"><tr><td><b class="val lo">便宜</b></td><td>${f(v.lo*e)} 元以下</td></tr><tr><td><b class="val mid">合理</b></td><td>約 ${f(v.avg*e)} 元</td></tr><tr><td><b class="val hi">昂貴</b></td><td>${f(v.hi*e)} 元以上</td></tr></table><p class="pe-n">預估 EPS ${e.toFixed(2)} 元</p>`};
+  let box=$("pe-pop");if(!box){box=document.createElement("div");box.id="pe-pop";box.className="sg-pop";document.body.appendChild(box);
+    box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
+  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${esc(it.name)} 價位"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(it.name)}　現在 ${f(last)} 元</h2>${yr("今年",v.eps)}${yr("明年",v.eps1)}<p class="ex">便宜、合理、昂貴＝近 5 年本益比的低點、平均、高點 × 分析師預估 EPS。</p></div>`;box.hidden=false}
+window.addEventListener("click",e=>{const b=e.target.closest("[data-pe]");if(!b)return;e.preventDefault();e.stopPropagation();pePop(b.dataset.pe)},true);
+window.addEventListener("hashchange",()=>{const b=$("pe-pop");if(b)b.hidden=true});
 function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
   return `<span class="tlr"><span class="nw">${tl[0]!=null?`壓力線 <b class="tlD">${f(tl[0])}</b>`:"創新高"}</span>${tl[1]!=null?`<span class="nw">支撐線 <b class="tlT">${f(tl[1])}</b></span>`:""}${ex}</span>`}
 function ixRow(it,attr){const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",dg=ixDg(it),n=it.name.replace(/（.*）/,""),pct=(d/it.prev*100).toFixed(2);

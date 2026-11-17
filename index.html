@@ -696,12 +696,11 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="divc" data-cat="stk" data-sub="2"><span class="glyph">息</span><div><h2>除權息行事曆</h2><p>自選股和持股這個月哪天除息、每股配多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="stock" data-cat="stk" data-sub="3"><span class="glyph">比</span><div><h2>股票報酬比較</h2><p>ETF 與個股的含息報酬走勢、殖利率、費用並排比較</p></div><span class="go">›</span></button>
       <button class="entry" data-go="dca" data-cat="stk" data-sub="3"><span class="glyph">測</span><div><h2>回測報酬率</h2><p>用真實含息股價回測定期定額，看每月投入到現在賺多少</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="nav" data-cat="stk" data-sub="3"><span class="glyph">淨</span><div><h2>淨值查詢</h2><p>輸入 ETF 代號或名字，查市價、淨值和折溢價</p></div><span class="go">›</span></button>
       <button class="entry" data-go="fire" data-cat="calc"><span class="glyph">由</span><div><h2>財務自由計算機</h2><p>算出需要多少錢、還要幾年才能財務自由</p></div><span class="go">›</span></button>
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 03:20</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 03:40</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1061,9 +1060,9 @@ function show(p){
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // 看盤這組頁面頂端的分頁列（全球大盤／大盤高低指標／自選股），不用回首頁就能切換
 const PG_SHORT={mkt:"高低指標",dd:"歷史跌幅",corp:"公司買賣",hold:"持股損益",divc:"除權息",stock:"報酬比較",pledge:"質押",debt:"負債比",fire:"財務自由",compound:"複利"};
-const PG_GROUPS=[["idx","watch","mkt","dd"],["hold","divc"],["stock","dca","nav"],["pledge","debt","fire","compound"]];
+const PG_GROUPS=[["idx","watch","mkt","dd"],["hold","divc"],["stock","dca"],["pledge","debt","fire","compound"]];
 // 簡易版（Luna 2026-11-01）：頁面上面的分頁也跟著換成簡易版的兩組
-const PG_SIMPLE=[["idx","watch","mkt","dd"],["stock","dca","nav"]];
+const PG_SIMPLE=[["idx","watch","mkt","dd"],["stock","dca"]];
 function pgBuild(simple){document.querySelectorAll("nav.pg-tabs").forEach(n=>n.remove());
 const G=simple?[...PG_SIMPLE,...PG_GROUPS.filter(g=>!g.some(x=>PG_SIMPLE.flat().includes(x)))]:PG_GROUPS;
 G.forEach(g=>g.forEach(id=>{const sec=$(id),bar=sec&&sec.querySelector(".bar");if(!bar)return;
@@ -1789,7 +1788,9 @@ function anaCells(dy,wk,tl,val){const kd=(o,L)=>{if(!o||o.k==null)return `<i cla
 // 價位（Luna 2026-11-17）：只用今年本益比（現價 ÷ 今年預估 EPS）對照近 5 年本益比區間
 // ETF 折溢價（Luna 2026-11-17）：市價比淨值貴＝溢價（紅），便宜＝折價（綠）；美股 ETF 沒有淨值資料
 function premCell(c){const n=STOCK&&STOCK.nav&&STOCK.nav[c],x=n?n[3]:null;if(x==null)return "—";
-  return `<b class="${x>0?"up":x<0?"down":""}" style="display:flex;flex-direction:column;align-items:center;line-height:1.2"><small style="font-size:13px">${x>0?"溢價":x<0?"折價":"平價"}</small>${Math.abs(x).toFixed(2)}%</b>`}
+  // 溢價用正的、折價用負的（Luna 2026-11-17），上面是金額（市價－淨值），下面是 %
+  const amt=n[1]!=null&&n[2]!=null?n[1]-n[2]:null,sg=v=>v>0?"+":v<0?"−":"";
+  return `<b class="${x>0?"up":x<0?"down":""}" style="display:flex;flex-direction:column;align-items:center;line-height:1.2">${amt!=null?`<span>${sg(amt)}${Math.abs(amt).toFixed(2)}</span>`:""}<small style="font-size:.8em">${sg(x)}${Math.abs(x).toFixed(2)}%</small></b>`}
 function peMini(c,last){const v=watchVal[c];if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜",c]:x>=v.hi?["hi","昂貴",c]:["mid","合理",c]}
 // 點「價位」跳出小視窗（Luna 2026-11-17）：今年、明年的本益比和便宜／合理／昂貴價
 function pePop(c){const v=watchVal[c],it=watchItem(c);if(!v||!it)return;const last=it.last;

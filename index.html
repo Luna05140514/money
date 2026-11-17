@@ -320,6 +320,10 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 /* 五個分頁排成一排（Luna 2026-10-24），字小一點，太長的名字用…… */
 #watch-tabs{grid-auto-columns:minmax(0,1fr);gap:2px;padding:3px}
 #watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;padding:12px 2px;min-width:0}
+/* 自選股「分析」按鈕（Luna 2026-11-17）：沒按只顯示名字、價格、漲跌 */
+.wana{font-size:18px;font-weight:700;padding:5px 16px}
+#watch.wsimple .wrow>:not(.nm):not(.px):not(.chg){display:none!important}
+@media (max-width:700px){.watch-top{flex-wrap:wrap}.watch-time{flex:1 1 100%}.watch-top .wana{margin-left:0}}
 .wedit2{margin-left:0}
 .watch-top{flex-wrap:wrap}
 .bt-card h2{font-size:22px;margin:0 30px 6px 0}.bt-s{color:var(--muted);font-size:16px;margin:6px 0}
@@ -631,7 +635,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/15 23:10</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 00:20</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -749,7 +753,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>自選股</h1>
     <div class="watch">
-      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit" id="watch-ren">✎ 改名</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button><button class="wedit wedit2" id="watch-bt">📊 回測</button></div>
+      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wana" id="watch-ana" aria-pressed="false">🔍 分析</button><button class="wedit wedit2" id="watch-ren">✎ 改名</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button><button class="wedit wedit2" id="watch-bt">📊 回測</button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <div class="wlist" id="watch-cards"></div>
@@ -2522,6 +2526,9 @@ function watchInit(){
   q.addEventListener("blur",()=>setTimeout(()=>sug.hidden=true,150));
   // 改名這頁（Luna 2026-10-24）
   $("watch-bt").addEventListener("click",btOpen);
+  (()=>{const k="facai-watch-ana",bt=$("watch-ana"),set=on=>{bt.setAttribute("aria-pressed",on?"true":"false");$("watch").classList.toggle("wsimple",!on)};
+    let on=false;try{on=localStorage.getItem(k)==="1"}catch(e){}set(on);
+    bt.addEventListener("click",()=>{on=!on;set(on);try{localStorage.setItem(k,on?"1":"0")}catch(e){}})})();
   $("watch-ren").addEventListener("click",()=>{const g=watchGroups[watchTab];if(!g)return;const n=(prompt("這一頁要改成什麼名字？",g.name)||"").trim();if(!n)return;g.name=n.slice(0,10);watchSave();watchRender()});
 }
 

@@ -345,6 +345,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wsimple .wthead span.snp{scroll-snap-align:start;scroll-snap-stop:always}
 /* 手機：右邊剛好兩欄一頁，往左滑翻到下一頁 */
 @media (max-width:700px){
+  .wsimple{--c2:96px}
+  .wsimple .wrow:not(.wed)>.px{font-size:15px!important;letter-spacing:-.02em}
   .wsimple{--cw:calc((100vw - 50px - var(--c1) - var(--c2)) / 2)}
   .wsimple{--gc:var(--c1) var(--c2) repeat(6,var(--cw))}
   #idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) calc(var(--cw) * 2) repeat(4,var(--cw))}
@@ -365,9 +367,9 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wsimple .wrow:not(.wed)>*{padding:12px 6px;display:flex;align-items:center;box-sizing:border-box}
 .wsimple .wrow:not(.wed)>:not(.nm):not(.px):not(.chg):not(.ac){display:none!important}
 .wsimple .wrow:not(.wed)>.nm{grid-row:auto!important;grid-column:1!important;position:sticky;left:0;z-index:1;background:var(--surface);flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding-left:8px;padding-right:2px}
-.wsimple .wrow:not(.wed)>.nm b{white-space:normal!important;overflow:visible;font-size:17px;line-height:1.25;word-break:normal;overflow-wrap:anywhere}
+.wsimple .wrow:not(.wed)>.nm b{white-space:normal!important;overflow:hidden;max-width:100%;font-size:17px;line-height:1.25;word-break:normal;overflow-wrap:anywhere}
 .wsimple .wrow:not(.wed)>.nm small{display:none}
-.wsimple .wrow:not(.wed)>.px{grid-column:2!important;position:sticky;left:var(--c1);z-index:1;background:var(--surface);justify-content:flex-end;padding-right:6px;font-size:clamp(15px,4.3vw,21px);line-height:1.2;box-shadow:4px 0 6px -4px rgba(0,0,0,.18)}
+.wsimple .wrow:not(.wed)>.px{grid-column:2!important;overflow:hidden;min-width:0;position:sticky;left:var(--c1);z-index:1;background:var(--surface);justify-content:flex-end;padding-right:6px;font-size:clamp(15px,4.3vw,21px);line-height:1.2;box-shadow:4px 0 6px -4px rgba(0,0,0,.18)}
 .wsimple .wrow:not(.wed)>.chg{grid-column:3!important;flex-direction:column;align-items:flex-end;justify-content:center;font-size:clamp(15px,4.2vw,19px);line-height:1.2;min-width:0}
 .wsimple .wrow:not(.wed)>.chg br{display:none!important}
 .wsimple .wrow:not(.wed)>.chg .pc{font-size:.8em;font-weight:600}
@@ -480,7 +482,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 #pe-pop{z-index:70}
 #pe-pop h3{font-size:19px;margin:14px 0 6px}
 .pe-t{border-collapse:collapse;font-size:19px}
-.pe-t td{padding:5px 12px 5px 0}
+.pe-t td,.pe-t th{padding:8px 18px 8px 0;text-align:right}.pe-t th{color:var(--muted);font-size:17px}.pe-t td:first-child{text-align:left}
+.pe-t td{font-size:21px;font-weight:700}
 .pe-n{color:var(--muted);font-size:15px;margin:4px 0}
 .wsimple .wrow>.ac.apv{cursor:pointer}
 .wsimple .wrow>.ac.apv .val{text-decoration:underline dotted;text-underline-offset:4px}
@@ -698,7 +701,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 02:50</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 03:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1788,11 +1791,11 @@ function peMini(c,last){const v=watchVal[c];if(!v||!(v.eps>0)||!(last>0)||!(v.lo
 // 點「價位」跳出小視窗（Luna 2026-11-17）：今年、明年的本益比和便宜／合理／昂貴價
 function pePop(c){const v=watchVal[c],it=watchItem(c);if(!v||!it)return;const last=it.last;
   const f=x=>x>=100?Math.round(x).toLocaleString():x.toFixed(x>=10?1:2);
-  const yr=(n,e)=>{if(!(e>0))return `<h3>${n}</h3><p>沒有分析師預估 EPS。</p>`;const x=last/e,[k,t]=x<=v.lo?["lo","便宜"]:x>=v.hi?["hi","昂貴"]:["mid","合理"];
-    return `<h3>${n}　本益比 ${x.toFixed(1)} <b class="val ${k}">${t}</b></h3><table class="pe-t"><tr><td><b class="val lo">便宜</b></td><td>${f(v.lo*e)} 元以下</td></tr><tr><td><b class="val mid">合理</b></td><td>約 ${f(v.avg*e)} 元</td></tr><tr><td><b class="val hi">昂貴</b></td><td>${f(v.hi*e)} 元以上</td></tr></table><p class="pe-n">預估 EPS ${e.toFixed(2)} 元</p>`};
+  const e0=v.eps>0?v.eps:null,e1=v.eps1>0?v.eps1:null,cell=(m,e)=>e?f(m*e):"—";
+  const rows=[["lo","便宜",v.lo],["mid","合理",v.avg],["hi","昂貴",v.hi]].map(([k,t,m])=>`<tr><td><b class="val ${k}">${t}</b></td><td>${cell(m,e0)}</td><td>${cell(m,e1)}</td></tr>`).join("");
   let box=$("pe-pop");if(!box){box=document.createElement("div");box.id="pe-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
-  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${esc(it.name)} 價位"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(it.name)}　現在 ${f(last)} 元</h2>${yr("今年",v.eps)}${yr("明年",v.eps1)}<p class="ex">便宜、合理、昂貴＝近 5 年本益比的低點、平均、高點 × 分析師預估 EPS。</p></div>`;box.hidden=false}
+  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${esc(it.name)} 價位"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(it.name)}　現在 ${f(last)}</h2><table class="pe-t"><tr><th></th><th>今年</th><th>明年</th></tr>${rows}</table></div>`;box.hidden=false}
 window.addEventListener("click",e=>{const b=e.target.closest("[data-pe]");if(!b)return;e.preventDefault();e.stopPropagation();pePop(b.dataset.pe)},true);
 window.addEventListener("hashchange",()=>{const b=$("pe-pop");if(b)b.hidden=true});
 function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});

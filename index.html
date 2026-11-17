@@ -336,8 +336,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wmb:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 /* 表格（Luna 2026-11-17 照片）：商品／成交固定不動，往左滑看漲跌和分析 */
 .wrow>.ac{display:none}
-.wsimple{--c1:84px;--c2:88px;--gc:var(--c1) var(--c2) 86px repeat(5,88px)}
-#idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) 86px repeat(4,88px)}
+.wsimple{--c1:84px;--c2:88px;--gc:var(--c1) var(--c2) 86px repeat(8,88px)}
+#idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) 86px repeat(7,88px)}
 @media (min-width:701px){.wsimple{--c1:190px;--c2:130px}}
 .wsimple .wlist{overflow-x:auto;-webkit-overflow-scrolling:touch}
 /* 往左滑像翻頁，一次跳一欄（Luna 2026-11-17） */
@@ -348,8 +348,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
   .wsimple{--c2:96px}
   .wsimple .wrow:not(.wed)>.px{font-size:15px!important;letter-spacing:-.02em}
   .wsimple{--cw:calc((100vw - 50px - var(--c1) - var(--c2)) / 2)}
-  .wsimple{--gc:var(--c1) var(--c2) repeat(6,var(--cw))}
-  #idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) calc(var(--cw) * 2) repeat(4,var(--cw))}
+  .wsimple{--gc:var(--c1) var(--c2) repeat(9,var(--cw))}
+  #idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) calc(var(--cw) * 2) repeat(7,var(--cw))}
   #idx.wsimple .wrow:not(.wed)>.chg,#hc-rows.wsimple .wrow:not(.wed)>.chg{align-items:center}
   #idx.wsimple .wthead span:nth-child(3),#hc-rows.wsimple .wthead span:nth-child(3){text-align:center}
   .wsimple .wrow:not(.wed)>.chg,.wsimple .wrow:not(.wed)>.ac{padding-left:3px;padding-right:3px}
@@ -700,7 +700,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 02:00</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 07:45</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1781,10 +1781,16 @@ function hiDrop(hi,last){if(!(hi>0)||!(last>0))return "";const p=(last/hi-1)*100
   return `<span class="tlr hdr"><span class="nw">一年高點 <b>${f(Math.max(hi,last))}</b></span><span class="nw">高點跌幅 <b class="${p<=-20?"hdB":p<=-10?"hdM":""}">${p>=0?"0%（創新高）":p.toFixed(1)+"%"}</b></span></span>`}
 // 列表上的天龍地虎（Luna 2026-11-01）：只看日 K，worker /api/kd、/api/ixkd 的 day.tl = [龍, 虎]
 // 表格往左滑的分析欄（Luna 2026-11-17）：日KD、週KD、壓力線、支撐線、價值（自選股）
-function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span class="snp">漲跌</span>${val?`<span>${val===true?"價位":val}</span>`:""}<span class="snp">日KD</span><span>週KD</span><span class="snp">壓力線</span><span>支撐線</span></div>`}
-function anaCells(dy,wk,tl,val){const kd=(o,L)=>{if(!o||o.k==null)return `<i class="sg na">—</i>`;const m=SG_LOGIC[L][sgHit(o)];return `<i class="sg ${m[1]}">${m[2]}</i>`};
+function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span class="snp">漲跌</span>${val?`<span>${val===true?"價位":val}</span>`:""}<span class="snp">日KD</span><span>週KD</span><span class="snp h2l">週<br>MACD</span><span class="h2l">月<br>MACD</span><span class="snp">壓力線</span><span>支撐線</span><span class="snp h2l">一年高<br>跌幅</span></div>`}
+function anaCells(dy,wk,tl,val,last,mo){const kd=(o,L)=>{if(!o||o.k==null)return `<i class="sg na">—</i>`;const m=SG_LOGIC[L][sgHit(o)];return `<i class="sg ${m[1]}">${m[2]}</i>`};
   const f=v=>v==null?"—":v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
-  return (val===undefined?"":typeof val==="string"?`<span class="ac">${val}</span>`:val&&val[1]?`<span class="ac apv" data-pe="${esc(val[2])}" role="button" tabindex="0" aria-label="看便宜、合理、昂貴的價錢"><b class="val ${val[0]}">${val[1]}</b></span>`:`<span class="ac">—</span>`)+`<span class="ac">${kd(dy,"短線")}</span><span class="ac">${kd(wk,"長線")}</span><span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span>`}
+  return (val===undefined?"":typeof val==="string"?`<span class="ac">${val}</span>`:val&&val[1]?`<span class="ac apv" data-pe="${esc(val[2])}" role="button" tabindex="0" aria-label="看便宜、合理、昂貴的價錢"><b class="val ${val[0]}">${val[1]}</b></span>`:`<span class="ac">—</span>`)+`<span class="ac">${kd(dy,"短線")}</span><span class="ac">${kd(wk,"長線")}</span><span class="ac">${macCell(wk&&wk.mac)}</span><span class="ac">${macCell(moState(mo)?mo:null)}</span><span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span>${hiCell(dy&&dy.hi,last)}`}
+// 週 MACD、月 MACD（Luna 2026-11-18：放在日週 KD 下一頁，判斷和技術分析框一樣：多頭／空頭＋向上／向下＋減緩）
+function macCell(x){if(!x||x.osc==null)return `<i class="sg na">—</i>`;const bull=x.dif!=null?+x.dif>=0:+x.osc>=0,gx=+x.osc>=0,o=+x.osc,po=+x.posc,slow=gx?o<po:o>po;
+  return `<i class="sg ${gx?(slow?"high":"buy"):(slow?"low":"sell")}">${bull?"多頭":"空頭"}${gx?"向上":"向下"}${slow?"減緩":""}</i>`}
+// 一年內高點跌幅（Luna 2026-11-18）：現價比一年最高價跌了多少，下面小字是一年高點
+function hiCell(hi,last){if(!(hi>0)||!(last>0))return `<span class="ac">—</span>`;const h=Math.max(hi,last),p=(last/h-1)*100,f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
+  return `<span class="ac hdr"><b class="${p<=-20?"hdB":p<=-10?"hdM":""}" style="display:flex;flex-direction:column;align-items:center;line-height:1.2"><span>${p>=-0.05?"創新高":p.toFixed(1)+"%"}</span><small style="font-size:.75em;color:var(--muted)">高 ${f(h)}</small></b></span>`}
 // 價位（Luna 2026-11-17）：只用今年本益比（現價 ÷ 今年預估 EPS）對照近 5 年本益比區間
 // ETF 折溢價（Luna 2026-11-17）：市價比淨值貴＝溢價（紅），便宜＝折價（綠）；美股 ETF 沒有淨值資料
 function premCell(c){const n=STOCK&&STOCK.nav&&STOCK.nav[c],x=n?n[3]:null;if(x==null)return "—";
@@ -1806,7 +1812,7 @@ window.addEventListener("hashchange",()=>{const b=$("pe-pop");if(b)b.hidden=true
 function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
   return `<span class="tlr"><span class="nw">${tl[0]!=null?`壓力線 <b class="tlD">${f(tl[0])}</b>`:"創新高"}</span>${tl[1]!=null?`<span class="nw">支撐線 <b class="tlT">${f(tl[1])}</b></span>`:""}${ex}</span>`}
 function ixRow(it,attr){const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",dg=ixDg(it),n=it.name.replace(/（.*）/,""),pct=(d/it.prev*100).toFixed(2);
-  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br><small class="pc">${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</small></span>${(()=>{const q=ON_CF&&!it.fx&&!it.tw&&idxKd[it.key];return anaCells(q&&q.day,q&&q.week,q&&q.day&&q.day.tl)})()}${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl)+hiDrop(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.hi,last):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
+  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br><small class="pc">${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</small></span>${(()=>{const q=ON_CF&&!it.fx&&!it.tw&&idxKd[it.key];return anaCells(q&&q.day,q&&q.week,q&&q.day&&q.day.tl,undefined,last,ON_CF&&!it.fx&&!it.tw?mkData[it.key]:null)})()}${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl)+hiDrop(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.hi,last):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
 const idxList=()=>(IDX&&IDX.items||[]).filter(idxShow).sort((a,b)=>idxRg(a)-idxRg(b)||(idxRg(a)?0:idxOi(a)-idxOi(b)));
 // 大盤每一列的短線（日 KD）、長線（週 KD），10 分鐘重抓一次
 let idxKd={},idxKdAt=0,idxKdBusy=0,idxKdKeys="";
@@ -2506,7 +2512,7 @@ function watchRender(){
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br><small class="pc">${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%</small>`;
-    const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):peMini(c,it.last));
+    const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):peMini(c,it.last),it.last,mkData[c]);
     if(watchEdit)return `<div class="wrow wed" data-c="${esc(c)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="wmv"><span class="wmb wdrag" aria-label="按住拖動 ${esc(it.name)}，可用上下鍵移動" role="button" tabindex="0">☰</span><span class="wmb wdx" data-rm="1" role="button" tabindex="0" aria-label="移除 ${esc(it.name)}">✕</span></span></div>`;
     return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows?(watchEdit?"":anaHead((()=>{const e=g.list.filter(c=>idxOf[c]).map(c=>!!idxOf[c][2]);return e.length&&e.every(x=>x)?"折溢價":e.some(x=>x)?"價位<br>折溢價":true})()))+rows:'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';

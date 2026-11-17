@@ -322,7 +322,6 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 #watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;padding:12px 2px;min-width:0}
 /* 自選股「分析」按鈕（Luna 2026-11-17）：沒按只顯示名字、價格、漲跌 */
 .wana{font-size:18px;font-weight:700;padding:5px 16px}
-#watch.wsimple .wrow:not(.wed)>:not(.nm):not(.px):not(.chg),#idx.wsimple .wrow>:not(.nm):not(.px):not(.chg):not(.vals){display:none!important}
 @media (max-width:700px){.watch-top{flex-wrap:wrap}.watch-time{flex:1 1 100%}.watch-top .wana{margin-left:0}}
 /* 自選股編輯：大大的 ▲▼ 移動、✕ 移除（Luna 2026-11-17） */
 .wrow.wed{grid-template-columns:minmax(0,1fr) auto!important;cursor:default}
@@ -335,21 +334,34 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wrow.wdragging{background:var(--gold-soft);box-shadow:0 6px 18px rgba(0,0,0,.2);position:relative;z-index:3}
 .wmb.wdx{background:var(--red);color:#fff;border-color:var(--red)}
 .wmb:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-/* 沒按「分析」：像看盤 app 的表格，商品／成交／漲跌三欄（Luna 2026-11-17 照片） */
-.wthead{display:none}
-.page.wsimple .wthead{display:grid;grid-template-columns:minmax(0,1fr) clamp(92px,27vw,132px) clamp(78px,22vw,112px);gap:8px;padding:10px 14px;margin-top:12px;font-size:17px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0}
-.page.wsimple .wthead span{text-align:right}.page.wsimple .wthead span:first-child{text-align:center}
-.page.wsimple .wthead+.wlist{margin-top:0!important;border-radius:0 0 8px 8px}
-#watch.wsimple .wthead{margin-bottom:-10px}
-.page.wsimple .wrow:not(.wed){grid-template-columns:minmax(0,1fr) clamp(92px,27vw,132px) clamp(78px,22vw,112px)!important;gap:8px!important;align-items:center;padding:12px 14px}
-.page.wsimple .wrow:not(.wed)>.nm{grid-row:auto!important;grid-column:1!important;text-align:center;align-self:center}
-.page.wsimple .wrow:not(.wed)>.nm b{white-space:normal!important;overflow:visible;font-size:19px;line-height:1.25;word-break:normal;overflow-wrap:anywhere}
-.page.wsimple .wrow:not(.wed)>.nm small{display:none}
-.page.wsimple .wrow:not(.wed)>.px{grid-column:2!important;text-align:right;font-size:clamp(16px,4.6vw,22px);line-height:1.2}
-.page.wsimple .wrow:not(.wed)>.chg{grid-column:3!important;text-align:right;font-size:clamp(15px,4.2vw,20px);line-height:1.2;min-width:0}
-.page.wsimple .wrow:not(.wed)>.chg br{display:inline!important}
-.page.wsimple .wrow:not(.wed)>.chg .pc{font-size:.8em;font-weight:600}
-#idx.wsimple .wrow>.vals{grid-column:1/-1}
+/* 表格（Luna 2026-11-17 照片）：商品／成交固定不動，往左滑看漲跌和分析 */
+.wrow>.ac{display:none}
+.wsimple{--c1:84px;--c2:88px;--gc:var(--c1) var(--c2) 86px repeat(5,84px)}
+#idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) 86px repeat(4,84px)}
+@media (min-width:701px){.wsimple{--c1:190px;--c2:130px}}
+.wsimple .wlist{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.wsimple .wthead{display:grid;grid-template-columns:var(--gc);width:max-content;min-width:100%;box-sizing:border-box;padding:10px 0;font-size:16px;font-weight:700;color:var(--muted);background:var(--surface);border-bottom:1px solid var(--line)}
+.wsimple .wthead span{text-align:center;padding:0 6px}
+.wsimple .wthead span:nth-child(1){text-align:left;padding-left:10px}
+.wsimple .wthead span:nth-child(-n+2){position:sticky;background:var(--surface);z-index:2}
+.wsimple .wthead span:nth-child(1){left:0}.wsimple .wthead span:nth-child(2){left:var(--c1);text-align:right;padding-right:8px}
+.wsimple .wrow:not(.wed){grid-template-columns:var(--gc)!important;width:max-content;min-width:100%;gap:0!important;align-items:stretch;padding:0!important}
+.wsimple .wrow:not(.wed)>*{padding:12px 6px;display:flex;align-items:center;box-sizing:border-box}
+.wsimple .wrow:not(.wed)>:not(.nm):not(.px):not(.chg):not(.ac){display:none!important}
+.wsimple .wrow:not(.wed)>.nm{grid-row:auto!important;grid-column:1!important;position:sticky;left:0;z-index:1;background:var(--surface);flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding-left:8px;padding-right:2px}
+.wsimple .wrow:not(.wed)>.nm b{white-space:normal!important;overflow:visible;font-size:17px;line-height:1.25;word-break:normal;overflow-wrap:anywhere}
+.wsimple .wrow:not(.wed)>.nm small{display:none}
+.wsimple .wrow:not(.wed)>.px{grid-column:2!important;position:sticky;left:var(--c1);z-index:1;background:var(--surface);justify-content:flex-end;padding-right:6px;font-size:clamp(15px,4.3vw,21px);line-height:1.2;box-shadow:4px 0 6px -4px rgba(0,0,0,.18)}
+.wsimple .wrow:not(.wed)>.chg{grid-column:3!important;flex-direction:column;align-items:flex-end;justify-content:center;font-size:clamp(15px,4.2vw,19px);line-height:1.2;min-width:0}
+.wsimple .wrow:not(.wed)>.chg br{display:none!important}
+.wsimple .wrow:not(.wed)>.chg .pc{font-size:.8em;font-weight:600}
+.wsimple .wrow:not(.wed)>.ac{display:flex;justify-content:center;font-size:16px;font-weight:700;text-align:center}
+.wsimple .wrow>.ac .sg{font-size:15px;padding:3px 6px;white-space:nowrap}
+.wsimple .wrow>.ac.na{color:var(--muted)}
+.wsimple .wrow>.ac .val{font-style:normal}
+.swipe-tip{display:none}
+.wsimple .swipe-tip{display:block;text-align:right;font-size:15px;color:var(--muted);margin:6px 2px 0}
+@media (min-width:900px){.swipe-tip{display:none!important}}
 .wedit2{margin-left:0}
 .watch-top{flex-wrap:wrap}
 .bt-card h2{font-size:22px;margin:0 30px 6px 0}.bt-s{color:var(--muted);font-size:16px;margin:6px 0}
@@ -641,7 +653,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="watch-tabs" id="home-tabs" role="tablist"><button role="tab" data-ht="stk" aria-selected="true">股市</button><button role="tab" data-ht="coin" aria-selected="false">虛擬幣</button><button role="tab" data-ht="calc" aria-selected="false">財務計算機</button></div>
     <div class="watch-tabs" id="home-sub" role="tablist"><button role="tab" data-hs="1" aria-selected="true">看盤</button><button role="tab" data-hs="2" aria-selected="false">持股</button><button role="tab" data-hs="3" aria-selected="false">工具</button></div>
     <div class="watch-tabs" id="home-csub" role="tablist" hidden><button role="tab" data-hc="1" aria-selected="true">虛擬幣</button><button role="tab" data-hc="3" aria-selected="false">穩定幣</button><button role="tab" data-hc="2" aria-selected="false">持有</button></div>
-    <div id="hc-rows" hidden><div class="wlist" id="coin-cards"></div><p class="lead" id="coin-lead" style="margin-top:10px"></p>
+    <div id="hc-rows" class="wsimple" hidden><p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="coin-cards"></div><p class="lead" id="coin-lead" style="margin-top:10px"></p>
       <p class="src">資料來源：幣安 Binance 公開行情（抓不到時改用 OKX）；換算台幣用 Yahoo Finance 的美元匯率；USDT、USDC 的台幣價格來自 MAX 交易所。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p></div>
     <div id="hc-hold" hidden></div>
     <div class="grid" id="home-grid">
@@ -660,7 +672,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 01:40</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 02:10</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -709,9 +721,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>全球大盤</h1>
     <p class="lead" id="idx-lead">台股與美股主要指數的當天走勢。</p>
-    <div class="watch-top"><button class="wedit wana" id="idx-ana" aria-pressed="false" style="margin-left:0">🔍 分析</button></div>
     <div class="watch-tabs" id="idx-tabs" role="tablist"></div>
-    <div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span>漲跌</span></div><div class="wlist" id="idx-cards" style="margin-top:12px"></div>
+    <p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="idx-cards" style="margin-top:6px"></div>
     <div class="ibig" id="idx-big" hidden></div>
     <p class="note">加權、櫃買指數來自 Yahoo 奇摩股市，台指期為期交所近月合約日盤，美股、日經、韓股指數和匯率來自 Yahoo Finance（日韓約延遲 20 分鐘；日圓、韓元用美元匯率換算）。美股是美東時間，台灣白天看到的是前一個交易日；日韓是台灣時間。點任一列可以看 K 線。</p>
     <p class="src">資料來源：Yahoo 奇摩股市（加權、櫃買指數、台積電）、臺灣期貨交易所（台指期）、Yahoo Finance（美股、日經、韓股指數、匯率、黃金白銀期貨價、K 線）、Swissquote（黃金白銀國際現貨買入賣出價）、FinMind（櫃買、台指期 K 線）。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
@@ -779,10 +790,10 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>自選股</h1>
     <div class="watch">
-      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wana" id="watch-ana" aria-pressed="false">🔍 分析</button><button class="wedit wedit2" id="watch-ren">✎ 改名</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button><button class="wedit wedit2" id="watch-bt">📊 回測</button></div>
+      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-ren">✎ 改名</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button><button class="wedit wedit2" id="watch-bt">📊 回測</button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
-      <div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span>漲跌</span></div><div class="wlist" id="watch-cards"></div>
+      <p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="watch-cards"></div>
     </div>
     <p class="src">資料來源：Yahoo 奇摩股市（台股即時報價）、Yahoo Finance（美股報價、K 線）、FinMind（台股股價、EPS、本益比、股淨比、配息）、鉅亨網（FactSet 分析師預估 EPS）、Nasdaq（美股配息）。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
   </section>
@@ -1741,10 +1752,17 @@ function ixExtra(it){const fx=ixUsd(),f0=v=>Math.round(v).toLocaleString("zh-TW"
 function hiDrop(hi,last){if(!(hi>0)||!(last>0))return "";const p=(last/hi-1)*100;const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
   return `<span class="tlr hdr"><span class="nw">一年高點 <b>${f(Math.max(hi,last))}</b></span><span class="nw">高點跌幅 <b class="${p<=-20?"hdB":p<=-10?"hdM":""}">${p>=0?"0%（創新高）":p.toFixed(1)+"%"}</b></span></span>`}
 // 列表上的天龍地虎（Luna 2026-11-01）：只看日 K，worker /api/kd、/api/ixkd 的 day.tl = [龍, 虎]
+// 表格往左滑的分析欄（Luna 2026-11-17）：日KD、週KD、壓力線、支撐線、價值（自選股）
+function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span>漲跌</span>${val?"<span>價位</span>":""}<span>日KD</span><span>週KD</span><span>壓力線</span><span>支撐線</span></div>`}
+function anaCells(dy,wk,tl,val){const kd=(o,L)=>{if(!o||o.k==null)return `<span class="ac na">—</span>`;const m=SG_LOGIC[L][sgHit(o)];return `<span class="ac"><i class="sg ${m[1]}">${m[2]}</i></span>`};
+  const f=v=>v==null?"—":v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
+  return (val===undefined?"":`<span class="ac">${val&&val[1]?`<b class="val ${val[0]}">${val[1]}</b>`:"—"}</span>`)+kd(dy,"短線")+kd(wk,"長線")+`<span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span>`}
+// 價位（Luna 2026-11-17）：只用今年本益比（現價 ÷ 今年預估 EPS）對照近 5 年本益比區間
+function peMini(c,last){const v=watchVal[c];if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜"]:x>=v.hi?["hi","昂貴"]:["mid","合理"]}
 function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
   return `<span class="tlr"><span class="nw">${tl[0]!=null?`壓力線 <b class="tlD">${f(tl[0])}</b>`:"創新高"}</span>${tl[1]!=null?`<span class="nw">支撐線 <b class="tlT">${f(tl[1])}</b></span>`:""}${ex}</span>`}
 function ixRow(it,attr){const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",dg=ixDg(it),n=it.name.replace(/（.*）/,""),pct=(d/it.prev*100).toFixed(2);
-  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br><small class="pc">${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</small></span>${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl)+hiDrop(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.hi,last):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
+  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br><small class="pc">${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</small></span>${(()=>{const q=ON_CF&&!it.fx&&!it.tw&&idxKd[it.key];return anaCells(q&&q.day,q&&q.week,q&&q.day&&q.day.tl)})()}${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl)+hiDrop(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.hi,last):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
 const idxList=()=>(IDX&&IDX.items||[]).filter(idxShow).sort((a,b)=>idxRg(a)-idxRg(b)||(idxRg(a)?0:idxOi(a)-idxOi(b)));
 // 大盤每一列的短線（日 KD）、長線（週 KD），10 分鐘重抓一次
 let idxKd={},idxKdAt=0,idxKdBusy=0,idxKdKeys="";
@@ -1767,7 +1785,7 @@ function idxInit(){
   let tab=0;try{tab=+localStorage.getItem("facai-idx-tab")||0}catch(_){}
   $("idx-tabs").innerHTML=["台股","美股","日韓","匯率"].map((t,i)=>`<button role="tab" data-it="${i}" aria-selected="${i===tab}">${t}</button>`).join("");
   const row=(it,i)=>ixRow(it,`data-big="${i}"`);
-  $("idx-cards").innerHTML=items.map((it,i)=>idxRg(it)===tab?row(it,i):"").join("");
+  $("idx-cards").innerHTML=anaHead(false)+items.map((it,i)=>idxRg(it)===tab?row(it,i):"").join("");
   idxKdLoad();
   if(!idxInit.tabs){idxInit.tabs=1;$("idx-tabs").addEventListener("click",e=>{const t=e.target.closest("[data-it]");if(!t)return;try{localStorage.setItem("facai-idx-tab",t.dataset.it)}catch(_){}idxInit()})}
   if(idxInit.bound)return;idxInit.bound=1;
@@ -2417,6 +2435,7 @@ function watchValTag(c,last,part){const v=watchVal[c];if(!v||!(last>0))return"";
     // 合理價：近 5 年本益比區間（平均 ±1 個標準差）× 今年預估 EPS
     const fe=pe[0][1];if(v.lo>0&&v.hi>0&&v.avg>0)out.push(band(v,fe))}
   if(!out.length)return"";
+  if(part==="mini")return mini;
   // 自選股（Luna 2026-10-24）：平常只寫「便宜／合理／昂貴」一格，點了才在下面顯示全部
   if(part==="chip")return `<span class="vchip${watchSel[c]==="v"?" on":""}" data-xp="v:${esc(c)}" role="button" tabindex="0"><small>價值投資</small><b class="val ${mini[0]}">${mini[1]}</b></span>`;
   return `<span class="vals vbox vdet">${out.join("")}</span>`}
@@ -2442,9 +2461,10 @@ function watchRender(){
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br><small class="pc">${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%</small>`;
+    const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,peMini(c,it.last));
     if(watchEdit)return `<div class="wrow wed" data-c="${esc(c)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="wmv"><span class="wmb wdrag" aria-label="按住拖動 ${esc(it.name)}，可用上下鍵移動" role="button" tabindex="0">☰</span><span class="wmb wdx" data-rm="1" role="button" tabindex="0" aria-label="移除 ${esc(it.name)}">✕</span></span></div>`;
-    return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
-  $("watch-cards").innerHTML=rows||'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
+    return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
+  $("watch-cards").innerHTML=rows?(watchEdit?"":anaHead(true))+rows:'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
 }
 async function watchLoad(){
   const codes=watchAll().filter(c=>idxOf[c]);
@@ -2489,7 +2509,7 @@ function coinInit(){
   if(!items.length){$("coin-cards").innerHTML='<p class="note" style="padding:14px">虛擬幣資料還沒載入，請按右上角「重新整理」。</p>';return}
   $("coin-lead").textContent=hcSub==="3"?`USDT、USDC 是 1 顆換多少台幣（MAX 交易所），今天的漲跌從台灣時間 0 點算起。資料更新於 ${IDX.updated}。`:`比特幣、以太幣、SOL、BNB 是對 USDT（約等於 1 美元）的價格（幣安），今天的漲跌從台灣時間 0 點算起，點任一列可以看 K 線。資料更新於 ${IDX.updated}。`;
   // USDT、USDC 只顯示即時價格（Luna 2026-10-24：不要技術分析、不用點進去看 K 線）
-  $("coin-cards").innerHTML=items.map(it=>ixRow(it,it.tw?'tabindex="-1" style="cursor:default"':`data-ck="${esc(it.key)}"`)).join("");
+  $("coin-cards").innerHTML=anaHead(false)+items.map(it=>ixRow(it,it.tw?'tabindex="-1" style="cursor:default"':`data-ck="${esc(it.key)}"`)).join("");
   coinKdLoad(items.filter(it=>!it.tw));
   if(coinInit.bound)return;coinInit.bound=1;
   $("coin-cards").addEventListener("click",e=>{const b=e.target.closest("[data-ck]");if(b)wdOpen("IX:"+b.dataset.ck)})}
@@ -2570,9 +2590,8 @@ function watchInit(){
   // 改名這頁（Luna 2026-10-24）
   $("watch-bt").addEventListener("click",btOpen);
   // 「分析」按鈕：自選股和全球大盤各自記住（Luna 2026-11-17）
-  [["watch","facai-watch-ana"],["idx","facai-idx-ana"]].forEach(([pg,k])=>{const bt=$(pg+"-ana"),set=on=>{bt.setAttribute("aria-pressed",on?"true":"false");$(pg).classList.toggle("wsimple",!on)};
-    let on=false;try{on=localStorage.getItem(k)==="1"}catch(e){}set(on);
-    bt.addEventListener("click",()=>{on=!on;set(on);try{localStorage.setItem(k,on?"1":"0")}catch(e){}})});
+  // 表格：名字和股價固定，往左滑看分析（Luna 2026-11-17，分析按鈕移除）
+  $("watch").classList.add("wsimple");$("idx").classList.add("wsimple");
   $("watch-ren").addEventListener("click",()=>{const g=watchGroups[watchTab];if(!g)return;const n=(prompt("這一頁要改成什麼名字？",g.name)||"").trim();if(!n)return;g.name=n.slice(0,10);watchSave();watchRender()});
 }
 

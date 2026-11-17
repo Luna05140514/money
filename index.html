@@ -700,7 +700,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 03:40</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 02:00</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1790,7 +1790,8 @@ function anaCells(dy,wk,tl,val){const kd=(o,L)=>{if(!o||o.k==null)return `<i cla
 function premCell(c){const n=STOCK&&STOCK.nav&&STOCK.nav[c],x=n?n[3]:null;if(x==null)return "—";
   // 溢價用正的、折價用負的（Luna 2026-11-17），上面是金額（市價－淨值），下面是 %
   const amt=n[1]!=null&&n[2]!=null?n[1]-n[2]:null,sg=v=>v>0?"+":v<0?"−":"";
-  return `<b class="${x>0?"up":x<0?"down":""}" style="display:flex;flex-direction:column;align-items:center;line-height:1.2">${amt!=null?`<span>${sg(amt)}${Math.abs(amt).toFixed(2)}</span>`:""}<small style="font-size:.8em">${sg(x)}${Math.abs(x).toFixed(2)}%</small></b>`}
+  // 0.5% 以內用一般字色，溢價 0.5% 以上紅、折價 0.5% 以上綠（Luna 2026-11-18）
+  return `<b class="${x>=0.5?"up":x<=-0.5?"down":""}" style="color:${x>=0.5||x<=-0.5?"":"var(--ink)"};display:flex;flex-direction:column;align-items:center;line-height:1.2">${amt!=null?`<span>${sg(amt)}${Math.abs(amt).toFixed(2)}</span>`:""}<small style="font-size:.8em">${sg(x)}${Math.abs(x).toFixed(2)}%</small></b>`}
 function peMini(c,last){const v=watchVal[c];if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜",c]:x>=v.hi?["hi","昂貴",c]:["mid","合理",c]}
 // 點「價位」跳出小視窗（Luna 2026-11-17）：今年、明年的本益比和便宜／合理／昂貴價
 function pePop(c){const v=watchVal[c],it=watchItem(c);if(!v||!it)return;const last=it.last;

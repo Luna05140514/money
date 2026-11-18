@@ -41,7 +41,9 @@ button,input,select{font:inherit;color:inherit}
 /* 首頁 */
 .hero{background:var(--red);color:#fff7e6;border-radius:6px;padding:40px 28px 34px;position:relative;overflow:hidden}
 .hero::after{content:"發";position:absolute;right:-10px;bottom:-60px;font-family:var(--display);font-weight:900;font-size:220px;line-height:1;color:rgba(255,215,120,.16);pointer-events:none}
-.hero .eyebrow{font-size:13px;letter-spacing:.2em;color:#ffd98a}.hmode{display:inline-flex;margin-top:14px;border:1.5px solid #ffd98a;border-radius:999px;overflow:hidden;position:relative;z-index:1}.hmode button{font:inherit;font-size:17px;font-weight:700;padding:7px 20px;border:0;background:transparent;color:#ffe3a3;cursor:pointer}.hmode button[aria-pressed="true"]{background:#ffd98a;color:#7a1010}
+.hero .eyebrow{font-size:13px;letter-spacing:.2em;color:#ffd98a}.hmrow{display:flex;align-items:center;gap:10px;margin-top:14px;position:relative;z-index:1}.hmrow .hmode{margin:0 0 0 auto;flex:none}.hmrow .hmode button{white-space:nowrap;padding:6px 10px;font-size:15px}
+.twii-bar.twii-home{position:static;transform:none;font-size:13px;padding:4px 9px;flex:none}
+.hmode{display:inline-flex;margin-top:14px;border:1.5px solid #ffd98a;border-radius:999px;overflow:hidden;position:relative;z-index:1}.hmode button{font:inherit;font-size:17px;font-weight:700;padding:7px 20px;border:0;background:transparent;color:#ffe3a3;cursor:pointer}.hmode button[aria-pressed="true"]{background:#ffd98a;color:#7a1010}
 .hero h1{font-family:var(--display);font-weight:900;font-size:clamp(40px,9vw,76px);line-height:1.1;margin:6px 0 10px;letter-spacing:.06em;text-wrap:balance;color:#ffe3a3}
 .hero p{margin:0;max-width:34em;color:#ffeccc}
 .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
@@ -684,7 +686,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar home-bar"><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <h1>賺大錢發發發</h1>
-      <div class="hmode" id="home-mode" role="group" aria-label="切換版本"><button data-hm="simple">簡易版</button><button data-hm="full">完整版</button></div>
+      <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換版本"><button data-hm="simple">簡易版</button><button data-hm="full">完整版</button></div></div>
     </header>
     <div class="watch-tabs" id="home-stabs" role="tablist" hidden><button role="tab" data-hst="1">股票</button><button role="tab" data-hst="2">工具</button></div>
     <div class="watch-tabs" id="home-tabs" role="tablist"><button role="tab" data-ht="stk" aria-selected="true">股市</button><button role="tab" data-ht="coin" aria-selected="false">虛擬幣</button><button role="tab" data-ht="calc" aria-selected="false">財務計算機</button></div>
@@ -708,7 +710,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 12:15</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 12:25</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2539,9 +2541,11 @@ async function watchValLoad(){
 function twiiBar(){const sec=$("watch"),h1=sec&&sec.querySelector("h1");if(!h1)return;let el=$("watch-twii");
   if(!el){el=document.createElement("button");el.id="watch-twii";el.className="twii-bar";el.dataset.go="idx";}
   if(el.parentNode!==h1)h1.appendChild(el); // 放在「自選股」標題左邊、不佔版面（Luna：原本格式不要變）
-  const it=IDX&&IDX.items&&IDX.items.find(x=>x.key==="twii");if(!it||!it.pts||!it.pts.length||!(it.prev>0)){el.hidden=true;return}
+  const it=IDX&&IDX.items&&IDX.items.find(x=>x.key==="twii");if(!it||!it.pts||!it.pts.length||!(it.prev>0)){el.hidden=true;if($("home-twii"))$("home-twii").hidden=true;return}
   const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",f=v=>v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
-  el.hidden=false;el.dataset.dir=cls;el.textContent=`大盤 ${d>0?"▲ +":d<0?"▼ −":""}${f(Math.abs(d))}`} // 照 Luna 截圖（2026-11-18）：膠囊框「大盤 ▼ −140.48」，跌綠底、漲紅底、白字白框
+  const txt=`大盤 ${d>0?"▲ +":d<0?"▼ −":""}${f(Math.abs(d))}`;
+  // 首頁也放一個：簡易／完整移到右邊，左邊放大盤漲跌（Luna 2026-11-18）
+  [el,$("home-twii")].forEach(x=>{if(!x)return;x.hidden=false;x.dataset.dir=cls;x.textContent=txt})} // 照 Luna 截圖（2026-11-18）：膠囊框「大盤 ▼ −140.48」，跌綠底、漲紅底、白字白框
 function watchRender(){twiiBar();
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("")+`<button class="wt-add" id="wt-plus" aria-label="新增分頁">＋</button>`;{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}

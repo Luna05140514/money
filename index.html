@@ -318,8 +318,11 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 #home [hidden]{display:none!important}
 .home-empty{text-align:center;font-size:20px;color:var(--muted);padding:28px 16px}
 /* 五個分頁排成一排（Luna 2026-10-24），字小一點，太長的名字用…… */
-#watch-tabs{grid-auto-columns:minmax(4.2em,1fr);gap:2px;padding:3px;overflow-x:auto;scrollbar-width:none}
-#watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;padding:12px 2px;min-width:0}
+#watch-tabs{display:flex;gap:2px;padding:3px;overflow-x:auto;scrollbar-width:none}
+#watch-tabs button{flex:1 1 0;min-width:4.2em}
+#watch-tabs button.wt-add{min-width:2.2em!important;flex:0 0 2.2em;color:var(--red);font-size:22px;padding:8px 0}
+#watch-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;padding:12px 1px;min-width:3em;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.wt-card{display:grid;gap:10px}.wt-card h2{margin:0 0 4px;font-size:21px}.wt-card button{all:unset;cursor:pointer;text-align:center;font-size:19px;font-weight:700;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.wt-card .wt-d{color:var(--red)}
 /* 自選股「分析」按鈕（Luna 2026-11-17）：沒按只顯示名字、價格、漲跌 */
 .wana{font-size:18px;font-weight:700;padding:5px 16px}
 @media (max-width:700px){.watch-top{flex-wrap:wrap}.watch-time{flex:1 1 100%}.watch-top .wana{margin-left:0}}
@@ -700,7 +703,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:00</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:15</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -818,7 +821,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>自選股</h1>
     <div class="watch">
-      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-ren">✎ 改名</button><button class="wedit wedit2" id="watch-add">＋ 新增分頁</button><button class="wedit wedit2" id="watch-del">刪除分頁</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button><button class="wedit wedit2" id="watch-bt">📊 回測</button></div>
+      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button><button class="wedit wedit2" id="watch-bt">📊 回測</button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="watch-cards"></div>
@@ -1133,6 +1136,9 @@ document.addEventListener("click",e=>{if(!e.target.closest("[data-lock]"))return
   if(!lockCfg())lockSetup();else if(lockMode==="locked")lockAsk();else lockMenu()});
 lockIcons();
 // 首頁分頁（Luna 2026-10-24）：股市／虛擬幣／財務計算機，記住上次看的
+// 每次打開都從首頁的第一個分頁開始，不記上次看到哪（Luna 2026-11-18）；按「↻ 重新整理」才留在原地
+const TAB_KEYS=["facai-home-tab","facai-home-sub","facai-home-csub","facai-home-stab","facai-watch-tab","facai-idx-tab"];
+try{if(!sessionStorage.getItem("facai-page"))TAB_KEYS.forEach(k=>localStorage.removeItem(k))}catch(_){}
 function homeTab(k){if(!["stk","coin","calc"].includes(k))k="stk";try{localStorage.setItem("facai-home-tab",k)}catch(_){}
   document.querySelectorAll("#home-tabs [data-ht]").forEach(b=>b.setAttribute("aria-selected",b.dataset.ht===k));
   let s="1";try{s=localStorage.getItem("facai-home-sub")||"1"}catch(_){}if(!["1","2","3"].includes(s))s="1";
@@ -2525,7 +2531,7 @@ async function watchValLoad(){
   if(ch&&curPage()==="watch")watchRender()}
 function watchRender(){
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
-  $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("");{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}
+  $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("")+`<button class="wt-add" id="watch-add" aria-label="新增分頁">＋</button>`;{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}
   const g=watchGroups[watchTab]||watchGroups[0];
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
@@ -2665,12 +2671,22 @@ function watchInit(){
   // 表格：名字和股價固定，往左滑看分析（Luna 2026-11-17，分析按鈕移除）
   $("watch").classList.add("wsimple");$("idx").classList.add("wsimple");
   const own=()=>{try{localStorage.setItem("facai-watch-own","1")}catch(_){}},go=i=>{watchTab=i;try{localStorage.setItem("facai-watch-tab",i)}catch(_){}watchRender();watchLoad()};
-  $("watch-ren").addEventListener("click",()=>{const g=watchGroups[watchTab];if(!g)return;const n=(prompt("這一頁要改成什麼名字？",g.name)||"").trim();if(!n)return;g.name=n.slice(0,10);own();watchSave();watchRender()});
+  const ren=()=>{const g=watchGroups[watchTab];if(!g)return;const n=(prompt("這一頁要改成什麼名字？",g.name)||"").trim();if(!n)return;g.name=n.slice(0,10);own();watchSave();watchRender()};
   // 新增、刪除分頁（Luna 2026-11-18）：新增的分頁是空的，加在最後；刪除要確認，至少留一頁
-  $("watch-add").addEventListener("click",()=>{const n=(prompt("新分頁的名字？","新分頁")||"").trim();if(!n)return;watchGroups.push({name:n.slice(0,10),list:[]});own();watchSave();go(watchGroups.length-1)});
-  $("watch-del").addEventListener("click",()=>{const g=watchGroups[watchTab];if(!g)return;if(watchGroups.length<=1){alert("至少要留一個分頁。");return}
+  $("watch-tabs").addEventListener("click",e=>{if(!e.target.closest("#watch-add"))return;const n=(prompt("新分頁的名字？","新分頁")||"").trim();if(!n)return;watchGroups.push({name:n.slice(0,10),list:[]});own();watchSave();go(watchGroups.length-1)});
+  const del=()=>{const g=watchGroups[watchTab];if(!g)return;if(watchGroups.length<=1){alert("至少要留一個分頁。");return}
     if(!confirm(`確定要刪除「${g.name}」這個分頁嗎？${g.list.length?`\n裡面的 ${g.list.length} 檔股票也會一起移除。`:""}\n（按「取消」就不會刪除）`))return;
-    watchGroups.splice(watchTab,1);own();watchSave();go(Math.max(0,watchTab-1))});
+    watchGroups.splice(watchTab,1);own();watchSave();go(Math.max(0,watchTab-1))};
+  // 長按分頁（電腦按右鍵）跳出「改名」「刪除」（Luna 2026-11-18），上面的改名、刪除按鈕拿掉
+  const menu=i=>{if(watchTab!==i)go(i);const g=watchGroups[i];let box=$("wt-menu");if(!box){box=document.createElement("div");box.id="wt-menu";box.className="sg-pop";document.body.appendChild(box);
+      box.addEventListener("click",e=>{const b=e.target.closest("[data-wm]");if(e.target!==box&&!b)return;box.hidden=true;if(b&&b.dataset.wm==="r")ren();if(b&&b.dataset.wm==="d")del()})}
+    box.innerHTML=`<div class="sg-card wt-card" role="dialog" aria-label="分頁選項"><h2>「${esc(g.name)}」分頁</h2><button data-wm="r">✎ 改名</button><button data-wm="d" class="wt-d">🗑 刪除這個分頁</button><button data-wm="x">取消</button></div>`;box.hidden=false};
+  let lpT=0,lpX=0,lpY=0,lpDone=false;const tabs=$("watch-tabs");
+  tabs.addEventListener("pointerdown",e=>{const b=e.target.closest("[data-t]");if(!b)return;lpDone=false;lpX=e.clientX;lpY=e.clientY;clearTimeout(lpT);lpT=setTimeout(()=>{lpDone=true;menu(+b.dataset.t)},550)});
+  tabs.addEventListener("pointermove",e=>{if(Math.abs(e.clientX-lpX)>10||Math.abs(e.clientY-lpY)>10)clearTimeout(lpT)});
+  ["pointerup","pointercancel","pointerleave"].forEach(t=>tabs.addEventListener(t,()=>clearTimeout(lpT)));
+  tabs.addEventListener("click",e=>{if(lpDone){lpDone=false;e.stopImmediatePropagation();e.preventDefault()}},true);
+  tabs.addEventListener("contextmenu",e=>{const b=e.target.closest("[data-t]");if(!b)return;e.preventDefault();clearTimeout(lpT);menu(+b.dataset.t)});
 }
 
 /* 自選股詳細頁：點一檔才向 Cloudflare 的 /api/detail 抓那一檔（K 線、配息、EPS、本益比、河流圖） */
@@ -3455,4 +3471,8 @@ calc.dca=dcaCalc;
 let startPage="";
 try{startPage=sessionStorage.getItem("facai-page")||"";sessionStorage.removeItem("facai-page")}catch(_){}
 show(startPage||"home");
+// 手機把網站放在背景 10 分鐘以上，回來也直接回首頁（Luna 2026-11-18）
+let bgAt=0;document.addEventListener("visibilitychange",()=>{if(document.hidden){bgAt=Date.now();return}
+  if(bgAt&&Date.now()-bgAt>6e5){try{TAB_KEYS.forEach(k=>localStorage.removeItem(k))}catch(_){}watchTab=0;homeMode();show("home");window.scrollTo(0,0)}bgAt=0});
+window.addEventListener("pageshow",e=>{if(e.persisted){try{TAB_KEYS.forEach(k=>localStorage.removeItem(k))}catch(_){}watchTab=0;homeMode();show("home")}});
 </script>

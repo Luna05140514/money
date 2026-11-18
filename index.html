@@ -263,7 +263,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 /* 大盤高低指標：上方一張總覽，下面每項一張卡（數值、區間條、歷史走勢） */
 .mkt-sum{display:grid;gap:0;padding:6px 18px}
 .mkt-sum a{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
-.mkt-sum a:last-child{border-bottom:none}
+.mkt-sum a:last-child{border-bottom:none}#mkt .mcard:not(.mk-clone){display:none!important}#mk-pop{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}#mk-pop[hidden]{display:none}#mk-pop .mk-box{position:relative;width:min(560px,100%);max-height:86vh;overflow:auto;background:var(--bg);border-radius:18px;padding:44px 10px 4px;box-shadow:0 10px 40px rgba(0,0,0,.3)}#mk-pop .mk-x{position:absolute;top:8px;right:10px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;cursor:pointer}#mk-pop .mcard{margin:0 0 10px}
 .mkt-sum .v{font-family:var(--num);font-variant-numeric:tabular-nums}
 .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:500;white-space:nowrap}
 .pill.hot{background:var(--hot-bg);color:var(--hot)}
@@ -500,7 +500,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .wsimple .wrow>.ac.apv{cursor:pointer}
 .wsimple .wrow>.ac.apv .val{text-decoration:underline dotted;text-underline-offset:4px}
 .gl-card p{font-size:20px;line-height:1.7;margin:10px 0}
-.dd-h{font-size:22px;margin:22px 0 6px}.dd-avg{font-size:17px;margin:0 0 10px;color:var(--muted)}.dd-avg b{color:var(--ink)}.dd-now{font-size:19px;line-height:1.6}.dd-now .dd-pct,.dd-row .dd-pct{color:var(--down)}.dd-row{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:18px;line-height:1.6;font-family:var(--num)}.dd-row.on{border:2px solid var(--down)}.dd-top{display:flex;align-items:center;gap:10px}.dd-row .dd-pct{font-size:26px}.dd-tag{font-size:15px;font-weight:700;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor;color:var(--down)}.dd-h3{font-size:19px;margin:6px 0 6px}.dd-tb{width:100%;table-layout:fixed;border-collapse:collapse;font-size:16px;margin:0 0 4px;background:var(--surface);border-radius:12px;overflow:hidden}.dd-tb th{font-size:14px;color:var(--muted);font-weight:700;padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);line-height:1.3}.dd-tb td{white-space:normal;overflow-wrap:anywhere;padding:9px 4px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--num);line-height:1.35}.dd-tb td:first-child{text-align:left;padding-left:8px}.dd-tb td small{display:block;font-size:13px;color:var(--muted);white-space:normal;word-break:break-all}.dd-tb th:first-child{width:30%}.dd-tb td small.nb{word-break:keep-all;overflow-wrap:normal}.dd-tb tr.now td{background:var(--bg)}.dd-tb td:nth-child(3) b{color:var(--down)}.dd-tn{font-size:14px;color:var(--muted);margin:0 0 14px}.dd-nt{font-weight:700}.dd-nsf b.mt{color:var(--ink)}.dd-ns{font-size:14px;font-weight:400;color:var(--muted)}.dd-nsf b{color:var(--down)}.dd-nsf{font-size:17px;background:var(--bg);border-radius:10px;padding:6px 10px;margin:6px 0;line-height:1.55;font-family:var(--sans,inherit)}.dd-sub{color:var(--muted);font-size:16px}.dd-t{width:100%;table-layout:fixed;border-collapse:collapse;font-size:17px;margin:4px 0 12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-family:system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;font-variant-numeric:tabular-nums}.dd-t th{font-size:15px;color:var(--muted);font-weight:700;padding:8px 3px;border-bottom:1px solid var(--line);line-height:1.3;text-align:center}.dd-t th:first-child,.dd-t td:first-child{width:34%;text-align:left;padding-left:8px}.dd-t td{padding:10px 2px;border-bottom:1px solid var(--line);text-align:center;line-height:1.35;vertical-align:middle}.dd-t tr:last-child td{border-bottom:0}.dd-t small{display:block;font-size:12px;letter-spacing:-.02em;white-space:nowrap;color:var(--muted);font-weight:400}.dd-t .dd-pct{color:var(--down)}.dd-t tr.now td{background:var(--bg)}.dd-t .dd-on{color:var(--down);font-size:15px}.dd-e th:first-child,.dd-e td:first-child{width:40%}.dd-e small{white-space:normal}.dd-e tr.dd-gh td{background:var(--bg);font-weight:700;text-align:left;padding:8px 8px 6px;font-size:16px}.dd-e .dd-mt{color:var(--ink)}.dd-ev{margin:0 0 10px}.dd-evh{font-weight:700;font-size:17px;margin:12px 0 2px}.gl-ul{margin:10px 0;padding-left:1.2em;font-size:20px;line-height:1.55}.gl-ul li{margin:8px 0}.gl-card .ex{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:18px}
+.dd-h{font-size:22px;margin:22px 0 6px}.dd-avg{font-size:17px;margin:0 0 10px;color:var(--muted)}.dd-avg b{color:var(--ink)}.dd-now{font-size:19px;line-height:1.6}.dd-now .dd-pct,.dd-row .dd-pct{color:var(--down)}.dd-row{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:18px;line-height:1.6;font-family:var(--num)}.dd-row.on{border:2px solid var(--down)}.dd-top{display:flex;align-items:center;gap:10px}.dd-row .dd-pct{font-size:26px}.dd-tag{font-size:15px;font-weight:700;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor;color:var(--down)}.dd-h3{font-size:19px;margin:6px 0 6px}.dd-tb{width:100%;table-layout:fixed;border-collapse:collapse;font-size:16px;margin:0 0 4px;background:var(--surface);border-radius:12px;overflow:hidden}.dd-tb th{font-size:14px;color:var(--muted);font-weight:700;padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);line-height:1.3}.dd-tb td{white-space:normal;overflow-wrap:anywhere;padding:9px 4px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--num);line-height:1.35}.dd-tb td:first-child{text-align:left;padding-left:8px}.dd-tb td small{display:block;font-size:13px;color:var(--muted);white-space:normal;word-break:break-all}.dd-tb th:first-child{width:30%}.dd-tb td small.nb{word-break:keep-all;overflow-wrap:normal}.dd-tb tr.now td{background:var(--bg)}.dd-tb td:nth-child(3) b{color:var(--down)}.dd-tn{font-size:14px;color:var(--muted);margin:0 0 14px}.dd-nt{font-weight:700}.dd-nsf b.mt{color:var(--ink)}.dd-ns{font-size:14px;font-weight:400;color:var(--muted)}.dd-nsf b{color:var(--down)}.dd-nsf{font-size:17px;background:var(--bg);border-radius:10px;padding:6px 10px;margin:6px 0;line-height:1.55;font-family:var(--sans,inherit)}.dd-sub{color:var(--muted);font-size:16px}.dd-t{width:100%;table-layout:fixed;border-collapse:collapse;font-size:17px;margin:4px 0 12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-family:system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;font-variant-numeric:tabular-nums}.dd-t th{font-size:15px;color:var(--muted);font-weight:700;padding:8px 3px;border-bottom:1px solid var(--line);line-height:1.3;text-align:center}.dd-t th:first-child,.dd-t td:first-child{width:34%;text-align:left;padding-left:8px}.dd-t td{padding:10px 2px;border-bottom:1px solid var(--line);text-align:center;line-height:1.35;vertical-align:middle}.dd-t tr:last-child td{border-bottom:0}.dd-t small{display:block;font-size:12px;letter-spacing:-.02em;white-space:nowrap;color:var(--muted);font-weight:400}.dd-t .dd-pct{color:var(--down)}.dd-t tr.now td{background:var(--bg)}.dd-t .dd-on{color:var(--down);font-size:15px}.dd-e{font-size:14.5px;letter-spacing:-.02em}.dd-e b{white-space:nowrap}.dd-e th:first-child,.dd-e td:first-child{width:25%;padding-left:6px}.dd-e th{font-size:13px;padding:8px 1px}.dd-e td{padding:9px 1px}.dd-e small{white-space:normal;font-size:11.5px;line-height:1.25}.dd-e .dd-na{color:var(--muted);font-size:13px}.dd-ev{margin:0 0 10px}.dd-evh{font-weight:700;font-size:17px;margin:12px 0 2px}.gl-ul{margin:10px 0;padding-left:1.2em;font-size:20px;line-height:1.55}.gl-ul li{margin:8px 0}.gl-card .ex{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:18px}
 .hpie{display:flex;flex-direction:column;align-items:center;gap:10px}
 .hpie h2,.hdiv h2{align-self:stretch;margin:0 0 4px;font-size:22px}
 .hpie svg{width:210px;height:210px}
@@ -710,7 +710,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 14:05</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 14:40</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1749,11 +1749,12 @@ function mktInit(){
       ${def.key==="m1b"?'<div class="legend"><span><i style="background:var(--s2)"></i>M1B 年增率</span><span><i style="background:var(--s1)"></i>M2 年增率</span></div>':""}
       <p class="what">${def.what}</p></div>`;
   });
-  $("mkt-sum").innerHTML=sum;$("mkt-cards").innerHTML=cards;
+  $("mkt-sum").innerHTML=sum;$("mkt-cards").innerHTML=cards;stopSum();
   MKT_DEF.forEach(def=>{const s=MKT[def.key];if(!s||!s.length)return;
     if(NOW_ONLY.includes(def.key))return;
     mktChart($("mkt-ch-"+def.key),s,def.key==="m1b"?[{i:1,color:"var(--s2)"},{i:2,color:"var(--s1)"}]:[{i:1,color:"var(--red)"}],def.zones?def.zones.slice(0,-1).map(z=>z[0]):[0])});
-  if(!mktInit.bound)mktInit.bound=1,$("mkt-sum").addEventListener("click",e=>{const a=e.target.closest("[data-jump]");if(!a)return;e.preventDefault();$(a.dataset.jump).scrollIntoView({behavior:"smooth"})});
+  mktShow();
+  if(!mktInit.bound)mktInit.bound=1,$("mkt-sum").addEventListener("click",e=>{const a=e.target.closest("[data-jump]");if(!a)return;e.preventDefault();mktOpen=a.dataset.jump;mktShow()});
 }
 
 /* 全球大盤：IDX 由 data/index_intraday.py 嵌入；x 軸是交易時段（台股 9:00–13:30、台指期 8:45–13:45、美股美東 9:30–16:00） */
@@ -1962,6 +1963,16 @@ async function liveNav(){
 }
 // 止跌訊號（Luna 2026-11-04）：6 個指標各打勾或打叉，符合越多越可能止跌
 // 融資減幅 vs 大盤跌幅（Luna 2026-11-06）：融資減幅是大盤跌幅的幾倍；1.5 倍以上算籌碼洗得比較乾淨
+// 高低指標只留總表，下面的詳細卡片點了那一列才出現，再點一次收起（Luna 2026-11-18）
+let mktOpen=null;
+// 點了在畫面中間跳出小視窗（Luna 2026-11-18），點外面或 ✕ 關掉
+function mktShow(){const ids=mktOpen==="mkt-margin"?["mkt-margin","mkt-mgc"]:mktOpen?[mktOpen]:[];let pop=$("mk-pop");
+  if(!ids.length){if(pop)pop.hidden=true;return}
+  if(!pop){pop=document.createElement("div");pop.id="mk-pop";pop.innerHTML='<div class="mk-box" role="dialog" aria-modal="true"><button class="mk-x" aria-label="關閉">✕</button><div class="mk-in"></div></div>';$("mkt").append(pop);
+    pop.addEventListener("click",e=>{if(e.target===pop||e.target.closest(".mk-x")){mktOpen=null;mktShow()}})}
+  const cs=ids.map(id=>$(id)).filter(c=>c&&c.innerHTML.trim());if(!cs.length){pop.hidden=true;return}
+  const inn=pop.querySelector(".mk-in");inn.innerHTML="";cs.forEach(c=>{const k=c.cloneNode(true);k.removeAttribute("id");k.hidden=false;k.classList.add("mk-clone");k.querySelectorAll("[id]").forEach(x=>x.removeAttribute("id"));inn.append(k)});
+  const was=pop.hidden;pop.hidden=false;if(was)pop.querySelector(".mk-box").scrollTop=0}
 function mgcRender(d){const el=$("mkt-mgc");if(!el||!d||!d.rows||!d.rows.length)return;
   const f=v=>Math.round(v).toLocaleString("zh-TW"),pc=v=>(v>0?"+":"")+v.toFixed(1)+"%",dt=s=>(+s.slice(5,7))+"/"+(+s.slice(8,10));
   const verdict=x=>{if(x.ixp>=0)return["","大盤沒跌"];const r=x.mgp/x.ixp;return r>=1.5?["hot",`融資減 ${r.toFixed(1)} 倍，籌碼較乾淨`]:r>=1?["mid",`融資減 ${r.toFixed(1)} 倍，跟著減`]:["cold",`融資只減 ${Math.max(0,r).toFixed(1)} 倍，還沒退場`]};
@@ -1971,7 +1982,13 @@ function mgcRender(d){const el=$("mkt-mgc");if(!el||!d||!d.rows||!d.rows.length)
       <div class="mg-v"><span>大盤 <b class="${x.ixp<0?"down":"up"}">${pc(x.ixp)}</b></span><span>融資 <b class="${x.mgp<0?"down":"up"}">${pc(x.mgp)}</b></span></div>
       <span class="pill ${t}">${lab}</span></div>`}).join("")}
     <p class="what">大跌時，融資減少的幅度最好是大盤跌幅的 1.5 倍以上，表示散戶的融資已經退場，比較接近低點。</p>`;el.hidden=false}
-function stopRender(d){const el=$("mkt-stop");if(!el||!d||!d.s)return;const n=d.s.filter(x=>x.ok).length,[t,lab]=n>=5?["hot","止跌訊號明確"]:n>=3?["mid","出現止跌跡象"]:["cold","還沒止跌"];
+// 高低指標上面的總表也放一列止跌訊號，在散戶多空比下面（Luna 2026-11-18），點了跳到止跌訊號卡片
+let stopData=null;const stopLab=n=>n>=5?["hot","止跌訊號明確"]:n>=3?["mid","出現止跌跡象"]:["cold","還沒止跌"];
+function stopSum(){const box=$("mkt-sum"),d=stopData;if(!box||!d||!d.s)return;const old=box.querySelector('[data-jump="mkt-stop"]');if(old)old.remove();
+  const n=d.s.filter(x=>x.ok).length,[t,lab]=stopLab(n),a=document.createElement("a");a.href="#mkt-stop";a.dataset.jump="mkt-stop";
+  a.innerHTML=`<span>止跌訊號</span><span class="v">${n} / 6</span><span class="pill ${t}">${lab}</span>`;
+  const r=box.querySelector('[data-jump="mkt-retail"]');if(r)r.after(a);else box.append(a);mktShow()}
+function stopRender(d){const el=$("mkt-stop");if(!el||!d||!d.s)return;stopData=d;stopSum();const n=d.s.filter(x=>x.ok).length,[t,lab]=stopLab(n);
   el.innerHTML=`<h2>止跌訊號<i class="qm" data-term="止跌訊號" role="button" tabindex="0" aria-label="說明">?</i></h2>
     <div class="top"><span class="cnt">${n}<small style="font-size:16px;color:var(--muted)"> ／ 6 符合</small></span><span class="pill ${t}">${lab}</span><span class="asof">${d.d.replace(/-/g,"/")} 收盤後的資料</span></div>
     <ul>${d.s.map(x=>`<li><span class="ic ${x.ok?"y":"n"}">${x.ok?"✔":"✘"}</span><span><b>${x.k}</b>　<span class="rs">${x.r}</span></span><span class="vs">${x.v}</span></li>`).join("")}</ul>
@@ -2000,19 +2017,20 @@ function ddRender(d){
   const trow=x=>{const on=!x.back;return `<tr${on?' class="now"':""}><td><b>${dt(x.hd)}</b><small>${f(x.h)} → ${f(x.l)}</small></td><td><b class="dd-pct">${x.pct.toFixed(1)}%</b></td><td>${mon(x.hd,x.ld)}</td><td>${on?'<b class="dd-on">還沒漲回</b>':`${mon(x.ld,x.back)}<small>${dt(x.back)}</small>`}</td></tr>`};
   const table=a=>`<table class="dd-t"><thead><tr><th>高點日期<small>高點 → 低點</small></th><th>跌幅</th><th>跌多久</th><th>多久漲回</th></tr></thead><tbody>${a.map(trow).join("")}</tbody></table>`;
   // 限空令、國安基金整理成一個表格（Luna 2026-11-18）：每一波一組，左邊措施，右邊之前已跌、之後再跌
-  const evRows=x=>{const n=NSF[x.hd]&&nsfLive(x,NSF[x.hd]);const z=SSR[x.hd];let L=null;if(z){L=z[5]?nsfLive(x,[z[0],...z.slice(1,5),null,z[5]]):z.slice();if(z[5])L[0]=z[0]+"（11/6 宣布）"}
-    if(!L&&!n)return"";const pts=v=>v?`<small>${v} 點</small>`:"";
-    return `<tr class="dd-gh"><td colspan="3">${dt(x.hd)} 那一波（跌 ${x.pct.toFixed(1)}%）</td></tr>`
-      +(L?`<tr><td><b>🚫 限空令</b><small>${L[0]}</small>${pts(L[1])}</td><td><b class="dd-pct">${L[2]}</b></td><td><b class="dd-pct">${L[3]||"還不知道"}</b><small>${z[4]}</small></td></tr>`:"")
-      +(n?`<tr><td><b>🏛 國安基金</b><small>${n[0]}</small>${pts(n[1])}</td><td><b class="dd-pct">${n[2]}</b></td><td><b class="dd-pct">${n[3]||"還不知道"}</b>${n[4]?`<small>${n[4]}</small>`:""}<small class="dd-mt">融資維持率 ${n[5]}</small></td></tr>`:"")};
-  const evTable=a=>{const r=a.map(evRows).join("");return r?`<h3 class="dd-h3">限空令、國安基金進場前後</h3><table class="dd-t dd-e"><thead><tr><th>措施</th><th>之前已跌</th><th>之後再跌</th></tr></thead><tbody>${r}</tbody></table>`:""};
+  const evRows=x=>{const n=NSF[x.hd]&&nsfLive(x,NSF[x.hd]);const z=SSR[x.hd];let L=null;if(z){L=z[5]?nsfLive(x,[z[0],...z.slice(1,5),null,z[5]]):z.slice()}
+    if(!L&&!n)return"";const md=v=>String(v||"").replace(/^\d{4}\//,"").replace(/（.*$/,""),
+      c=(v,sm)=>`<td>${v?`<b class="dd-pct">${v}</b>`:'<span class="dd-na">未知</span>'}${sm?`<small>${sm}</small>`:""}</td>`,no='<td><span class="dd-na">無</span></td>';
+    return `<tr${x.back?"":' class="now"'}><td><b>${dt(x.hd)}</b><small>跌 ${x.pct.toFixed(1)}%</small></td>`
+      +(L?c(L[2],md(L[0])+" 實施")+c(L[3],z[4]):no+no)
+      +(n?c(n[2],md(n[0])+" 進場")+c(n[3],n[4]||""):no+no)+`</tr>`}; // 限空令、國安各兩欄（Luna 2026-11-18，照大跌紀錄表樣式；融資維持率不放）
+  const evTable=a=>{const r=a.map(evRows).join("");return r?`<h3 class="dd-h3">限空令、國安基金進場前後</h3><table class="dd-t dd-e"><thead><tr><th>高點日期<small>這波跌幅</small></th><th>限空令<br>進場前</th><th>限空令<br>之後跌</th><th>國安<br>進場前</th><th>國安<br>進場後</th></tr></thead><tbody>${r}</tbody></table>`:""};
   const avg=a=>{const z=a.filter(x=>x.back);if(!z.length)return"";const p=z.reduce((s,x)=>s+x.pct,0)/z.length,m=z.reduce((s,x)=>s+(Date.parse(x.back)-Date.parse(x.ld)),0)/z.length;return `<p class="dd-avg">過去 ${z.length} 次平均跌 <b>${p.toFixed(1)}%</b>，低點後平均 <b>${mon("2000-01-01",new Date(Date.parse("2000-01-01")+m).toISOString().slice(0,10))}</b> 漲回高點</p>`};
   const small=d.small.filter(x=>x.pct>-20);if(d.cur&&d.cur.pct<=-10&&d.cur.pct>-20&&!small.some(x=>x.hd===d.cur.hd))small.push(d.cur); // 跌 10～20% 一個區間，20% 以上不放（Luna 2026-11-06）
   const big=d.big;
   $("dd-body").innerHTML=`
-    <h2 class="dd-h">近 10 年跌 20% 以上：${big.length} 次</h2>${avg(big)}${table(big.slice().reverse())}${evTable(big.slice().reverse())}<p class="dd-tn">國安基金、限空令的已跌、再跌用收盤價算；融資維持率 2020～2025 取自新聞（鉅亨網、工商時報），現在這波用證交所資料算；過去不代表未來。</p>
     <h2 class="dd-h">近 5 年跌 10～20%：${small.length} 次</h2>${avg(small)}${table(small.slice().reverse())}
-    <p class="note">跌幅用加權指數的最高價、最低價算。跌 20% 以上：從高點算到再創新高為止；跌 10～20%：反彈 10% 就算一段結束，跌超過 20% 的放在上面那一區。</p>`}
+    <h2 class="dd-h">近 10 年跌 20% 以上：${big.length} 次</h2>${avg(big)}${table(big.slice().reverse())}${evTable(big.slice().reverse())}<p class="dd-tn">國安基金、限空令的已跌、再跌用收盤價算；過去不代表未來。</p>
+    <p class="note">跌幅用加權指數的最高價、最低價算。跌 20% 以上：從高點算到再創新高為止；跌 10～20%：反彈 10% 就算一段結束，跌超過 20% 的放在下面那一區。</p>`}
 async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1").then(mgcRender);
   const d=await api("/api/mkt");if(!d||!MKT)return;
   ["inst","vix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});

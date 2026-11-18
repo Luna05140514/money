@@ -254,7 +254,12 @@ function weeklyKd(ts, hi, lo, cl, n = 9) { // 台股慣用 9 週 KD，和 update
 // 歷史跌幅（Luna 2026-11-06）：加權指數 10 年日 K。跌 20% 以上＝從最高點算到再創新高；跌 10% 以上＝反彈 10% 才算一段結束（近 5 年）
 function ddBars(r){const q=r.indicators.quote[0],K=[];(r.timestamp||[]).forEach((t,i)=>{const h=q.high[i],l=q.low[i],c=q.close[i];if(h==null||l==null||c==null||!(l>0))return;K.push([new Date((t+8*3600)*1000).toISOString().slice(0,10),h,l,c])});return K}
 // 歷史以來（Luna 2026-11-18）：Yahoo 加權指數從 1997/7 開始；10 年前用週 K、近 10 年用日 K
-function ddCalc(K){
+// 週 MACD（12,26,9）：[日期, 收盤, DIF, OSC, DEA]；每次大跌快線 DIF（ox）、慢線 DEA（dx）往下穿越 0 軸之後還跌多少（Luna 2026-11-18）
+function ddMacd(W){const e=n=>{const k=2/(n+1);let v=null;return W.map(x=>v=v==null?x[3]:x[3]*k+v*(1-k))};const a=e(12),b=e(26),dif=a.map((x,i)=>x-b[i]);let s=null;const dea=dif.map(x=>s=s==null?x:x*.2+s*.8);return W.map((x,i)=>[x[0],x[3],dif[i],dif[i]-dea[i],dea[i]])}
+function ddCross(M,hd,ld,j){const st=new Date(Date.parse(hd)-6*864e5).toISOString().slice(0,10);let i0=M.findIndex(x=>x[0]>=st);if(i0<1)return null;
+  if(M[i0][j]<0){for(let i=i0;i>Math.max(0,i0-8);i--)if(M[i-1][j]>=0&&M[i][j]<0)return {d:M[i][0],c:Math.round(M[i][1]*100)/100};return {pre:1}}
+  for(let i=i0+1;i<M.length&&M[i][0]<=ld;i++)if(M[i-1][j]>=0&&M[i][j]<0)return {d:M[i][0],c:Math.round(M[i][1]*100)/100};return null}
+function ddCalc(K,W){
   const n=K.length,r0=v=>Math.round(v*100)/100;
   // 跌 20% 以上：從高點算，創新高才算結束；中途從低點反彈 30% 以上也算一段結束（像 2008 年和 2000 年分開算）
   const big=[];let pk=0,lo=-1,inW=false;
@@ -272,13 +277,14 @@ function ddCalc(K){
   const back=(p,from)=>{for(let j=from+1;j<n;j++)if(K[j][1]>K[p][1])return K[j][0];return null};
   const row=([p,l])=>({hd:K[p][0],h:r0(K[p][1]),ld:K[l][0],l:r0(K[l][2]),pct:r0((K[l][2]/K[p][1]-1)*100),back:back(p,l)});
   const last=K[n-1];
-  return {big:big.map(row),small:sm.map(row).filter(x=>x.hd>=K[n-1][0].replace(/^\d{4}/,y=>y-5)),cur:cur?{...row(cur),last:r0(last[3]),date:last[0]}:null,from:K[0][0]};
+  const M=W&&W.length>40?ddMacd(W):null,brow=x=>{const r=row(x);if(M){r.ox=ddCross(M,r.hd,r.ld,2);r.dx=ddCross(M,r.hd,r.ld,4)}return r};
+  return {big:big.map(brow),small:sm.map(row).filter(x=>x.hd>=K[n-1][0].replace(/^\d{4}/,y=>y-5)),cur:cur?{...row(cur),last:r0(last[3]),date:last[0]}:null,from:K[0][0]};
 }
 async function ddHist() {
   const get=async q=>{for (const host of ["query1", "query2"]) {try {const j = await (await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/%5ETWII?${q}`, { headers: { "User-Agent": UA } })).json();const r = j.chart && j.chart.result && j.chart.result[0];if (r && (r.timestamp || []).length > 500) return ddBars(r);} catch (_) {}}return null};
   const [W,D]=await Promise.all([get(`period1=0&period2=${Math.floor(Date.now()/1000)}&interval=1wk`),get("range=10y&interval=1d")]);
   if(!D||D.length<1000)throw new Error("no data");
-  return ddCalc([...(W||[]).filter(x=>x[0]<D[0][0]),...D]);
+  return ddCalc([...(W||[]).filter(x=>x[0]<D[0][0]),...D],W);
 }
 async function chart(sym) {
   for (const host of ["query1", "query2", "query1"]) {

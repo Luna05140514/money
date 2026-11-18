@@ -1004,6 +1004,29 @@ async function monthOne(sym) {
   }
   return null;
 }
+// 10 年最大跌幅（Luna 2026-11-18）：10 年日收盤（還原價）從前高跌到最低的最大幅度；一次只算一檔（CPU 限制），一天內共用
+async function mddOne(sym) {
+  let pts = [];
+  if (sym === "^TWOII") {
+    const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TPEx&start_date=${new Date().getUTCFullYear() - 10}-01-01`)).json();
+    pts = (j.data || []).filter(x => x.close > 0).map(x => [x.date, x.close]);
+  } else {
+    for (const host of ["query1", "query2"]) {
+      try {
+        const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=10y&interval=1d`, { headers: { "User-Agent": UA } });
+        if (!r.ok) continue;
+        const res = (await r.json()).chart?.result?.[0]; if (!res) return null;
+        const cl = res.indicators.adjclose?.[0]?.adjclose || res.indicators.quote[0].close || [];
+        (res.timestamp || []).forEach((t, i) => { if (cl[i] > 0) pts.push([new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), cl[i]]); });
+        break;
+      } catch (_) {}
+    }
+  }
+  if (pts.length < 20) return null;
+  let pk = pts[0], best = { d: 0 };
+  for (const p of pts) { if (p[1] > pk[1]) pk = p; const d = (p[1] / pk[1] - 1) * 100; if (d < best.d) best = { d, pk: pk[0], tr: p[0] }; }
+  return { d: Math.round(best.d * 10) / 10, pk: best.pk || null, tr: best.tr || null, from: pts[0][0] };
+}
 async function monthList(tw, us, ks) {
   const ixs = { twii: "^TWII", txf: "^TWII", txfn: "^TWII", otc: "^TWOII", 2330: "2330.TW" };
   const jobs = [...tw.map(c => [c, async () => (await monthOne(c + ".TW")) || monthOne(c + ".TWO")]), ...us.map(c => [c, () => monthOne(c)]),
@@ -1513,6 +1536,17 @@ export default {
         if (k === "pe") return cached(request, ctx, 10800, marketPe);
         if (k === "mg") return cached(request, ctx, 10800, marginRatio);
         return new Response("{}", { status: 400 });
+      }
+      case "/api/mdd": {
+        // ?c=2330 或 ?us=NVDA 或 ?k=twii → 一檔的 10 年最大跌幅
+        const c = url.searchParams.get("c") || "", us = url.searchParams.get("us") || "", k = url.searchParams.get("k") || "";
+        const ixs = { twii: "^TWII", txf: "^TWII", txfn: "^TWII", otc: "^TWOII", 2330: "2330.TW" };
+        let job = null;
+        if (/^[0-9A-Z]{4,7}$/.test(c)) job = async () => (await mddOne(c + ".TW")) || mddOne(c + ".TWO");
+        else if (/^[A-Z.]{1,6}$/.test(us)) job = () => mddOne(us);
+        else if ((IXKEY.test(k) || k === "txfn") && !/-TWD$|=X$/.test(k)) job = () => mddOne(ixs[k] || ixSym(k));
+        if (!job) return new Response("{}", { status: 400 });
+        return cached(request, ctx, 86400, async () => { const m = await job(); if (!m) throw new Error("no data"); return { m }; }); // 沒抓到不快取，下次再抓
       }
       case "/api/mk": {
         // ?c=2330&us=NVDA&k=twii,BTC-USDT → 每檔的月 MACD，最多 20 檔，1 小時內共用

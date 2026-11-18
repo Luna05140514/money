@@ -290,10 +290,10 @@ async function ddHist() {
   if(!D||D.length<1000)throw new Error("no data");
   return ddCalc([...(W||[]).filter(x=>x[0]<D[0][0]),...D],W);
 }
-async function chart(sym) {
+async function chart(sym, range = "5y") {
   for (const host of ["query1", "query2", "query1"]) {
     try {
-      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=5y&interval=1d&events=div`, { headers: { "User-Agent": UA } });
+      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?${typeof range === "number" ? `period1=${range}&period2=${Math.floor(Date.now() / 1000)}` : "range=" + range}&interval=1d&events=div`, { headers: { "User-Agent": UA } });
       if (!r.ok) continue;
       const j = await r.json(), res = j.chart && j.chart.result && j.chart.result[0];
       if (res) return res;
@@ -512,12 +512,12 @@ async function twLive(codes) {
 // 自選股「回測」（Luna 2026-10-25）：5 年含息還原日線 OHLC，給頁面自己算 1～3 年的存股／價差回測
 async function btBars(code, us) {
   for (const sym of us ? [code] : [code + ".TW", code + ".TWO"]) {
-    const d = await chart(sym);
+    const cut = Math.floor(Date.now() / 1000 - 6.1 * 365.25 * 86400), d = await chart(sym, cut); // 回測加 5 年（Luna 2026-11-18）：抓 6 年多（多 1 年給 KD、MACD 暖身）
     if (!d || !(d.timestamp || []).length) continue;
     const q = d.indicators.quote[0], adj = (d.indicators.adjclose || [{}])[0].adjclose || q.close, out = { d: [], o: [], h: [], l: [], c: [] };
     d.timestamp.forEach((t, i) => {
       const c = q.close[i], a = adj[i];
-      if (c == null || a == null || q.open[i] == null || q.high[i] == null || q.low[i] == null || (!us && !(q.volume[i] > 0))) return;
+      if (t < cut || c == null || a == null || q.open[i] == null || q.high[i] == null || q.low[i] == null || (!us && !(q.volume[i] > 0))) return;
       const f = a / c;
       out.d.push(ymdOff(t, us ? -4 : 8)); out.o.push(rp(q.open[i] * f)); out.h.push(rp(q.high[i] * f)); out.l.push(rp(q.low[i] * f)); out.c.push(rp(a));
     });

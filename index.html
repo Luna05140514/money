@@ -389,6 +389,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 /* 回測和「往左滑看分析」同一行（Luna 2026-11-18） */
 .wtip-row{display:flex;align-items:center;gap:10px}.wtip-row .swipe-tip{margin:0 2px 0 auto}
 .wedit2{margin-left:0}
+.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;display:inline-block;margin:10px 2px 0;padding:6px 16px;border:2px solid #fff;border-radius:999px;font-size:19px;font-weight:600;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}.twii-bar small{font-size:15px;margin-left:auto}
 /* 編輯按鈕固定浮在右下角，往下滑也不會跑掉（Luna 2026-11-18） */
 #watch-edit.wfab{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;margin:0;width:60px;height:60px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;background:rgba(84,118,128,.45);color:#fff;border:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 #watch-edit.wfab[aria-pressed="true"]{background:rgba(201,151,40,.92);color:#2a1714}
@@ -682,9 +683,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
   <section id="home">
     <div class="bar home-bar"><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
-      <div class="eyebrow">理財工具箱</div>
       <h1>賺大錢發發發</h1>
-      <p>常用的投資試算與查詢工具，輸入數字就能看到結果。</p>
       <div class="hmode" id="home-mode" role="group" aria-label="切換版本"><button data-hm="simple">簡易版</button><button data-hm="full">完整版</button></div>
     </header>
     <div class="watch-tabs" id="home-stabs" role="tablist" hidden><button role="tab" data-hst="1">股票</button><button role="tab" data-hst="2">工具</button></div>
@@ -709,7 +708,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 11:00</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 12:05</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1934,7 +1933,8 @@ async function liveHits(){
   let id="";try{id=localStorage.getItem("facai-vid")||"";if(!id){id=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem("facai-vid",id)}}catch(_){}
   const d=await api("/api/hit?id="+encodeURIComponent(id));if(!d||d.total==null)return;
   const n=v=>Number(v).toLocaleString("zh-TW");
-  $("hits").innerHTML=`<span>今天使用 ${n(d.today)} 人</span><span>總使用 ${n(d.total)} 人</span>`;$("hits").hidden=false}
+  // 只寫數字（Luna 2026-11-18）；今天的人數從 10 起跳，總人數 worker 已經從 10000 起跳
+  $("hits").innerHTML=`<span>${n((+d.today||0)+10)}</span><span>${n(d.total)}</span>`;$("hits").hidden=false}
 async function liveIdx(){
   // 抓到的即時報價存在手機裡；下次抓不到（資料來源忙）就先用這份，不要退回網頁內建的舊價格（Luna 2026-10-26）
   let d=await api("/api/idx");
@@ -1943,7 +1943,7 @@ async function liveIdx(){
   const by=Object.fromEntries(d.items.map(x=>[x.key,x]));
   IDX.items=[...d.items,...IDX.items.filter(y=>!by[y.key])];
   IDX.updated=d.updated+LIVE;if(d.adr)IDX.adr=d.adr;
-  idxInit();if(homeCoin())coinInit();if(curPage()==="home"&&!$("hc-hold").hidden)choldRender();if(navInit.refresh)navInit.refresh();
+  idxInit();twiiBar();if(homeCoin())coinInit();if(curPage()==="home"&&!$("hc-hold").hidden)choldRender();if(navInit.refresh)navInit.refresh();
   liveIdx.done=true;liveIdx.at=Date.now();
 }
 async function liveNav(){
@@ -2535,7 +2535,14 @@ async function watchValLoad(){
     // 沒抓到，或非金融股卻缺預估 EPS（台積電曾因此改顯示股淨比）：不要存一整天，5 分鐘後再抓（伺服器那邊有快取，很快）
     const v=watchVal[c];if(!d||!v||!(v.eps||v.eps1)&&!/^(28|58)\d\d$/.test(c))watchValAt[c]=Date.now()-VAL_TTL+3e5});watchValSave();
   if(ch&&curPage()==="watch")watchRender()}
-function watchRender(){
+// 自選股頁上方（全球大盤那排分頁下面）顯示加權指數，寫「大盤 24,000」不寫加權指數（Luna 2026-11-18），點了到全球大盤
+function twiiBar(){const sec=$("watch"),nav=sec&&sec.querySelector("nav.pg-tabs");if(!nav)return;let el=$("watch-twii");
+  if(!el){el=document.createElement("button");el.id="watch-twii";el.className="twii-bar";el.dataset.go="idx";}
+  if(el.previousElementSibling!==nav)nav.after(el);
+  const it=IDX&&IDX.items&&IDX.items.find(x=>x.key==="twii");if(!it||!it.pts||!it.pts.length||!(it.prev>0)){el.hidden=true;return}
+  const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",f=v=>v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
+  el.hidden=false;el.dataset.dir=cls;el.textContent=`大盤 ${d>0?"▲ +":d<0?"▼ −":""}${f(Math.abs(d))}`} // 照 Luna 截圖（2026-11-18）：膠囊框「大盤 ▼ −140.48」，跌綠底、漲紅底、白字白框
+function watchRender(){twiiBar();
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("")+`<button class="wt-add" id="wt-plus" aria-label="新增分頁">＋</button>`;{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}
   const g=watchGroups[watchTab]||watchGroups[0];
@@ -2575,7 +2582,7 @@ function ixLivePatch(){
     if(bg){bg.className="big "+cls;bg.textContent=f2(c)}
     if(ch){ch.className="chg "+cls;ch.textContent=`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}}
   if($("wd-k"))wdKDraw()}
-setInterval(()=>{if(ON_CF&&!document.hidden&&(curPage()==="idx"||homeCoin()||curPage()==="home"&&!$("hc-hold").hidden||curPage()==="wdetail"&&wdK.ix))liveIdx().then(ixLivePatch)},60000);
+setInterval(()=>{if(ON_CF&&!document.hidden&&(curPage()==="idx"||curPage()==="watch"||homeCoin()||curPage()==="home"&&!$("hc-hold").hidden||curPage()==="wdetail"&&wdK.ix))liveIdx().then(ixLivePatch)},60000);
 // 虛擬幣頁
 let coinKdAt=0;
 async function coinKdLoad(items){

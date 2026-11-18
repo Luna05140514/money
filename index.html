@@ -710,7 +710,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 13:40</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 13:50</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1774,7 +1774,7 @@ function idxSvg(it,big){
     ${big?ticks.map((t,k)=>`<text x="${x(t)}" y="${H-4}" text-anchor="${k===0?"start":k===ticks.length-1?"end":"middle"}">${t}</text>`).join(""):""}</svg>`;
 }
 let idxItems=[];
-const idxShow=it=>it.pts&&it.pts.length&&!it.cr&&it.key!=="TSM"&&it.key!=="TSMX"; // Luna：大盤不放 TSM、TSMX（仍抓來算 ADR 溢價）
+const idxShow=it=>it.pts&&it.pts.length&&!it.cr&&it.key!=="TSM"&&it.key!=="TSMX"&&it.key!=="2330"; // 台積電也不放（Luna 2026-11-18）；Luna：大盤不放 TSM、TSMX（仍抓來算 ADR 溢價）
 // 台股固定順序：加權、台指期、夜指期、櫃買、台積電；美股照原順序
 const IDX_ORD=["twii","txf","txfn","otc","2330"],idxOi=it=>{const i=IDX_ORD.indexOf(it.key);return i<0?99:i};
 // 分頁：0 台股、1 美股、2 日韓（Luna 2026-10-23 加日經、韓股；時間是台灣時間）
@@ -2002,7 +2002,7 @@ function ddRender(d){
   const avg=a=>{const z=a.filter(x=>x.back);if(!z.length)return"";const p=z.reduce((s,x)=>s+x.pct,0)/z.length,m=z.reduce((s,x)=>s+(Date.parse(x.back)-Date.parse(x.ld)),0)/z.length;return `<p class="dd-avg">過去 ${z.length} 次平均跌 <b>${p.toFixed(1)}%</b>，低點後平均 <b>${mon("2000-01-01",new Date(Date.parse("2000-01-01")+m).toISOString().slice(0,10))}</b> 漲回高點</p>`};
   const small=d.small.filter(x=>x.pct>-20);if(d.cur&&d.cur.pct<=-10&&d.cur.pct>-20&&!small.some(x=>x.hd===d.cur.hd))small.push(d.cur); // 跌 10～20% 一個區間，20% 以上不放（Luna 2026-11-06）
   const big=d.big;
-  $("dd-body").innerHTML=`${d.cur?`<div class="panel dd-now">現在加權指數 <b>${f(d.cur.last)}</b>，比高點 ${dt(d.cur.hd)} 的 ${f(d.cur.h)} 跌了 <b class="dd-pct">${((d.cur.last/d.cur.h-1)*100).toFixed(1)}%</b></div>`:""}
+  $("dd-body").innerHTML=`
     <h2 class="dd-h">近 10 年跌 20% 以上：${big.length} 次</h2>${avg(big)}${big.slice().reverse().map(x=>card(x,1)).join("")}<p class="dd-tn">國安基金、限空令的已跌、再跌用收盤價算；融資維持率 2020～2025 取自新聞（鉅亨網、工商時報），現在這波用證交所資料算；過去不代表未來。</p>
     <h2 class="dd-h">近 5 年跌 10～20%：${small.length} 次</h2>${avg(small)}${small.slice().reverse().map(x=>card(x)).join("")}
     <p class="note">跌幅用加權指數的最高價、最低價算。跌 20% 以上：從高點算到再創新高為止；跌 10～20%：反彈 10% 就算一段結束，跌超過 20% 的放在上面那一區。</p>`}

@@ -386,9 +386,11 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .swipe-tip{display:none}
 .wsimple .swipe-tip{display:block;text-align:right;font-size:15px;color:var(--muted);margin:6px 2px 0}
 @media (min-width:900px){.swipe-tip{display:none!important}}
+/* 回測和「往左滑看分析」同一行（Luna 2026-11-18） */
+.wtip-row{display:flex;align-items:center;gap:10px}.wtip-row .swipe-tip{margin:0 2px 0 auto}
 .wedit2{margin-left:0}
 /* 編輯按鈕固定浮在右下角，往下滑也不會跑掉（Luna 2026-11-18） */
-#watch-edit.wfab{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;margin:0;width:60px;height:60px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;background:rgba(208,2,27,.82);color:#fff;border:none;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#watch-edit.wfab{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;margin:0;width:60px;height:60px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;background:rgba(208,2,27,.5);color:#fff;border:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 #watch-edit.wfab[aria-pressed="true"]{background:rgba(201,151,40,.92);color:#2a1714}
 #watch .src{padding-bottom:64px}
 .watch-top{flex-wrap:wrap}
@@ -707,7 +709,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:35</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:45</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -825,10 +827,10 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>自選股</h1>
     <div class="watch">
-      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-bt">📊 回測</button><button class="wedit wedit2 wfab" id="watch-edit" aria-pressed="false" aria-label="編輯"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="M14.5 5.5l3 3"/></svg></button></div>
+      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2 wfab" id="watch-edit" aria-pressed="false" aria-label="編輯"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="M14.5 5.5l3 3"/></svg></button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
-      <p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="watch-cards"></div>
+      <div class="wtip-row"><button class="wedit wedit2" id="watch-bt">📊 回測</button><p class="swipe-tip">👈 往左滑看分析</p></div><div class="wlist" id="watch-cards"></div>
     </div>
     <p class="src">資料來源：Yahoo 奇摩股市（台股即時報價）、Yahoo Finance（美股報價、K 線）、FinMind（台股股價、EPS、本益比、股淨比、配息）、鉅亨網（FactSet 分析師預估 EPS）、Nasdaq（美股配息）。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
   </section>

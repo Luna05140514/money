@@ -387,6 +387,10 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wsimple .swipe-tip{display:block;text-align:right;font-size:15px;color:var(--muted);margin:6px 2px 0}
 @media (min-width:900px){.swipe-tip{display:none!important}}
 .wedit2{margin-left:0}
+/* 編輯按鈕固定浮在右下角，往下滑也不會跑掉（Luna 2026-11-18） */
+#watch-edit.wfab{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;margin:0;width:60px;height:60px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;background:rgba(208,2,27,.82);color:#fff;border:none;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#watch-edit.wfab[aria-pressed="true"]{background:rgba(201,151,40,.92);color:#2a1714}
+#watch .src{padding-bottom:64px}
 .watch-top{flex-wrap:wrap}
 .bt-card h2{font-size:22px;margin:0 30px 6px 0}.bt-s{color:var(--muted);font-size:16px;margin:6px 0}
 .bt-k .bt-kb{font-style:normal;font-size:13px;font-weight:700;background:#f2c94c;color:#3a2a00;border-radius:8px;padding:1px 6px;margin-left:6px;vertical-align:2px}
@@ -703,7 +707,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:25</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:35</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -821,7 +825,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>自選股</h1>
     <div class="watch">
-      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-bt">📊 回測</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false" style="margin-left:auto">編輯</button></div>
+      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-bt">📊 回測</button><button class="wedit wedit2 wfab" id="watch-edit" aria-pressed="false" aria-label="編輯"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="M14.5 5.5l3 3"/></svg></button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="watch-cards"></div>
@@ -2531,7 +2535,7 @@ async function watchValLoad(){
   if(ch&&curPage()==="watch")watchRender()}
 function watchRender(){
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
-  $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("")+`<button class="wt-add" id="watch-add" aria-label="新增分頁">＋</button>`;{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}
+  $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("")+`<button class="wt-add" id="wt-plus" aria-label="新增分頁">＋</button>`;{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}
   const g=watchGroups[watchTab]||watchGroups[0];
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
@@ -2633,7 +2637,7 @@ function watchInit(){
   $("watch-time").textContent=ON_CF?"":`資料 ${STOCK.updated}`;
   watchRender();watchLoad();
   $("watch-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;watchTab=+b.dataset.t;try{localStorage.setItem("facai-watch-tab",watchTab)}catch(_){}watchRender();watchKdLoad();watchValLoad()});
-  $("watch-edit").addEventListener("click",()=>{watchEdit=!watchEdit;$("watch-edit").setAttribute("aria-pressed",watchEdit);$("watch-edit").textContent=watchEdit?"完成":"編輯";$("watch-add").hidden=!watchEdit;if(!watchEdit){$("watch-q").value="";$("watch-sug").hidden=true}watchRender()});
+  $("watch-edit").addEventListener("click",()=>{watchEdit=!watchEdit;$("watch-edit").setAttribute("aria-pressed",watchEdit);$("watch-edit").innerHTML=watchEdit?"完成":'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="M14.5 5.5l3 3"/></svg>';$("watch-edit").setAttribute("aria-label",watchEdit?"完成":"編輯");$("watch-add").hidden=!watchEdit;if(!watchEdit){$("watch-q").value="";$("watch-sug").hidden=true}watchRender()});
   $("watch-cards").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;
     if(!watchEdit){wdOpen(b.dataset.c);return}
     // 編輯：▲▼ 移動順序、✕ 移除（Luna 2026-11-17）；按名字不會誤刪
@@ -2673,7 +2677,7 @@ function watchInit(){
   const own=()=>{try{localStorage.setItem("facai-watch-own","1")}catch(_){}},go=i=>{watchTab=i;try{localStorage.setItem("facai-watch-tab",i)}catch(_){}watchRender();watchLoad()};
   const ren=()=>{const g=watchGroups[watchTab];if(!g)return;const n=(prompt("這一頁要改成什麼名字？",g.name)||"").trim();if(!n)return;g.name=n.slice(0,10);own();watchSave();watchRender()};
   // 新增、刪除分頁（Luna 2026-11-18）：新增的分頁是空的，加在最後；刪除要確認，至少留一頁
-  $("watch-tabs").addEventListener("click",e=>{if(!e.target.closest("#watch-add"))return;const n=(prompt("新分頁的名字？","新分頁")||"").trim();if(!n)return;watchGroups.push({name:n.slice(0,10),list:[]});own();watchSave();go(watchGroups.length-1)});
+  $("watch-tabs").addEventListener("click",e=>{if(!e.target.closest("#wt-plus"))return;const n=(prompt("新分頁的名字？","新分頁")||"").trim();if(!n)return;watchGroups.push({name:n.slice(0,10),list:[]});own();watchSave();go(watchGroups.length-1)});
   const del=()=>{const g=watchGroups[watchTab];if(!g)return;if(watchGroups.length<=1){alert("至少要留一個分頁。");return}
     if(!confirm(`確定要刪除「${g.name}」這個分頁嗎？${g.list.length?`\n裡面的 ${g.list.length} 檔股票也會一起移除。`:""}\n（按「取消」就不會刪除）`))return;
     watchGroups.splice(watchTab,1);own();watchSave();go(Math.max(0,watchTab-1))};

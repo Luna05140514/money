@@ -281,7 +281,7 @@ function ddCalc(K,W){
   const back=(p,from)=>{for(let j=from+1;j<n;j++)if(K[j][1]>K[p][1])return K[j][0];return null};
   const row=([p,l])=>({hd:K[p][0],h:r0(K[p][1]),ld:K[l][0],l:r0(K[l][2]),pct:r0((K[l][2]/K[p][1]-1)*100),back:back(p,l)});
   const last=K[n-1];
-  const M=W&&W.length>40?ddMacd(W):null,brow=x=>{const r=row(x);if(M){r.ox=ddCross(M,r.hd,r.ld,2);r.dc=ddDc(M,r.ox);r.gc=ddGc(M,r.ld,r.back);r.dx=ddCross(M,r.hd,r.ld,4)}return r};
+  const M=W&&W.length>40?ddMacd(W):null,brow=x=>{const r=row(x);if(M){r.ox=ddCross(M,r.hd,r.ld,2);r.dc=ddDc(M,r.ox);if(!r.dc&&!r.back&&!r.ox){const z=ddDc(M,{d:M[M.length-1][0]});if(z)r.dc={d:z.d,now:1}}r.gc=ddGc(M,r.ld,r.back);r.dx=ddCross(M,r.hd,r.ld,4)}return r};
   return {big:big.map(brow),small:sm.map(row).filter(x=>x.hd>=K[n-1][0].replace(/^\d{4}/,y=>y-5)),cur:cur?{...row(cur),last:r0(last[3]),date:last[0]}:null,from:K[0][0]};
 }
 async function ddHist() {

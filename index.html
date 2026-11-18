@@ -712,7 +712,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 17:15</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 17:20</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2010,7 +2010,7 @@ async function ddLoad(){
   if(!ON_CF){$("dd-body").innerHTML='<p>歷史跌幅要用你的網站（Cloudflare 版）打開才看得到。</p>';return}
   if(!ddNsf&&new Date().toISOString().slice(0,10)>="2026-11-09")api("/api/nsf?d=2026-11-09").then(v=>{if(v&&v.d){ddNsf=v;if(ddData)ddRender(ddData)}});
   if(!ddMg)api("/api/mval?k=mg&v=4").then(m=>{const a=m&&m.margin;if(a&&a.length){ddMg=a[a.length-1];if(ddData)ddRender(ddData)}});
-  if(!ddData){const d=await api("/api/dd?v=6");if(!d||!d.big){$("dd-body").innerHTML='<p>暫時抓不到資料，請稍後按右上角「重新整理」。</p>';return}ddData=d}
+  if(!ddData){const d=await api("/api/dd?v=7");if(!d||!d.big){$("dd-body").innerHTML='<p>暫時抓不到資料，請稍後按右上角「重新整理」。</p>';return}ddData=d}
   ddRender(ddData)}
 // 歷次大跌原因（Luna 2026-11-18），依波段高點日期；不確定的寫「無」
 function ddDot(e){const l=e.scrollLeft,c=e.clientWidth,p=Math.min(2,Math.round(l/(c*.6))),d=e.nextElementSibling;if(d)d.querySelectorAll("i").forEach((x,i)=>x.classList.toggle("on",i==p))}
@@ -2024,7 +2024,7 @@ function ddRender(d){
   // 限空令、國安基金整理成一個表格（Luna 2026-11-18）：每一波一組，左邊措施，右邊之前已跌、之後再跌
   // 快線、慢線往下穿越 0 軸後還跌幾 %（週線，Luna 2026-11-18）
   const mxCell=(z,x)=>!z?`<td><span class="dd-na">${x.back?"沒跌破":"還沒跌破"}</span></td>`:z.pre?'<td><span class="dd-na">高點前<br>已在 0 軸下</span></td>':`<td><b class="dd-pct">${((x.l/z.c-1)*100).toFixed(1)}%</b><small>${dt(z.d)}</small></td>`;
-  const dcCell=x=>{const z=x.dc;if(!z)return `<td><span class="dd-na">無</span></td>`.repeat(2);const w=z.w,t=w>=9?`約 ${Math.round(w/4.35)} 個月`:`${w} 週`;return `<td><b class="dd-dt">${dt(z.d)}</b></td><td><b>${t}</b><small>後跌破</small></td>`};
+  const dcCell=x=>{const z=x.dc;if(!z)return `<td><span class="dd-na">無</span></td>`.repeat(2);if(z.now)return `<td><b class="dd-dt">${dt(z.d)}</b></td><td><span class="dd-na">還沒跌破</span></td>`;const w=z.w,t=w>=9?`約 ${Math.round(w/4.35)} 個月`:`${w} 週`;return `<td><b class="dd-dt">${dt(z.d)}</b></td><td><b>${t}</b><small>後跌破</small></td>`};
   const gcCell=x=>{const z=x.gc;if(!z)return `<td><span class="dd-na">${x.back?"無":"還沒金叉"}</span></td>`;return `<td><b class="dd-dt">${dt(z.d)}</b><small>${x.back?mon(z.d,x.back)+"後漲回":"還沒漲回"}</small></td>`}; // 0 軸下金叉後多久回到高點（Luna 2026-11-18）
   const mxTable=a=>a.some(x=>x.ox!==undefined)?`<h3 class="dd-h3">DIF 跌破 0 軸後還跌幾 %</h3><table class="dd-t dd-m"><thead><tr><th>原因／高點日期<small>這波跌幅</small></th><th>DIF<small>跌破後再跌<br>（跌破那週）</small></th></tr></thead><tbody>${a.map(x=>{const w=DD_WHY[x.hd];return `<tr${x.back?"":' class="now"'}><td>${w!==undefined?`<span class="dd-why">${w||"無"}</span>`:""}<b>${dt(x.hd)}</b><small>跌 ${x.pct.toFixed(1)}%</small></td>${mxCell(x.ox,x)}</tr>`}).join("")}</tbody></table><p class="dd-tn">用加權指數週線算（MACD 12、26、9）。DIF 是 MACD 的快線；再跌＝從跌破那週的收盤價算到這波最低點。</p>`:"";
   const evRows=x=>{const n=NSF[x.hd]&&nsfLive(x,NSF[x.hd]);const z=SSR[x.hd];let L=null;if(z){L=z[5]?nsfLive(x,[z[0],...z.slice(1,5),null,z[5]]):z.slice()}

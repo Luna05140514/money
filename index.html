@@ -703,7 +703,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:15</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:25</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -821,7 +821,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>自選股</h1>
     <div class="watch">
-      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-edit" aria-pressed="false">編輯</button><button class="wedit wedit2" id="watch-bt">📊 回測</button></div>
+      <div class="watch-top"><span class="watch-time" id="watch-time"></span><button class="wedit wedit2" id="watch-bt">📊 回測</button><button class="wedit wedit2" id="watch-edit" aria-pressed="false" style="margin-left:auto">編輯</button></div>
       <div class="watch-tabs" role="tablist" id="watch-tabs"></div>
       <div class="search" id="watch-add" hidden><input id="watch-q" type="search" placeholder="輸入代號或名字，加到目前這一頁" autocomplete="off" aria-label="加入自選股"><ul id="watch-sug" role="listbox" hidden></ul></div>
       <p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="watch-cards"></div>
@@ -1789,10 +1789,10 @@ function hiDrop(hi,last){if(!(hi>0)||!(last>0))return "";const p=(last/hi-1)*100
   return `<span class="tlr hdr"><span class="nw">一年高點 <b>${f(Math.max(hi,last))}</b></span><span class="nw">高點跌幅 <b class="${p<=-20?"hdB":p<=-10?"hdM":""}">${p>=0?"0%（創新高）":p.toFixed(1)+"%"}</b></span></span>`}
 // 列表上的天龍地虎（Luna 2026-11-01）：只看日 K，worker /api/kd、/api/ixkd 的 day.tl = [龍, 虎]
 // 表格往左滑的分析欄（Luna 2026-11-17）：日KD、週KD、壓力線、支撐線、價值（自選股）
-function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span class="snp">漲跌</span>${val?`<span>${val===true?"價位":val}</span>`:""}<span class="snp">日KD</span><span>週KD</span><span class="snp h2l">週<br>MACD</span><span class="h2l">月<br>MACD</span><span class="snp">壓力線</span><span>支撐線</span><span class="snp h2l">一年高<br>跌幅</span><span class="h2l" style="font-size:13px;padding:0 2px">10年<br>最大跌幅</span></div>`}
+function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span class="snp">漲跌</span>${val?`<span>${val===true?"價位":val}</span>`:""}<span class="snp">壓力線</span><span>支撐線</span><span class="snp">日KD</span><span>週KD</span><span class="snp h2l">週<br>MACD</span><span class="h2l">月<br>MACD</span><span class="snp h2l">一年高<br>跌幅</span><span class="h2l" style="font-size:13px;padding:0 2px">10年<br>最大跌幅</span></div>`}
 function anaCells(dy,wk,tl,val,last,mo,mk){const kd=(o,L)=>{if(!o||o.k==null)return `<i class="sg na">—</i>`;const m=SG_LOGIC[L][sgHit(o)];return `<i class="sg ${m[1]}">${m[2]}</i>`};
   const f=v=>v==null?"—":v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
-  return (val===undefined?"":typeof val==="string"?`<span class="ac">${val}</span>`:val&&val[1]?`<span class="ac apv" data-pe="${esc(val[2])}" role="button" tabindex="0" aria-label="看便宜、合理、昂貴的價錢"><b class="val ${val[0]}">${val[1]}</b></span>`:`<span class="ac">—</span>`)+`<span class="ac">${kd(dy,"短線")}</span><span class="ac">${kd(wk,"長線")}</span><span class="ac">${macCell(wk&&wk.mac)}</span><span class="ac">${macCell(moState(mo)?mo:null)}</span><span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span>${hiCell(dy&&dy.hi,last)}${mddCell(mk)}`}
+  return (val===undefined?"":typeof val==="string"?`<span class="ac">${val}</span>`:val&&val[1]?`<span class="ac apv" data-pe="${esc(val[2])}" role="button" tabindex="0" aria-label="看便宜、合理、昂貴的價錢"><b class="val ${val[0]}">${val[1]}</b></span>`:`<span class="ac">—</span>`)+`<span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span><span class="ac">${kd(dy,"短線")}</span><span class="ac">${kd(wk,"長線")}</span><span class="ac">${macCell(wk&&wk.mac)}</span><span class="ac">${macCell(moState(mo)?mo:null)}</span>${hiCell(dy&&dy.hi,last)}${mddCell(mk)}`}
 // 10 年最大跌幅（Luna 2026-11-18）：worker /api/mdd 一次一檔，手機存一天；下面小字是跌到最低的年月
 const MDD_KEY="facai-mdd";let mddData=null;const mddBusy={};
 function mddCell(k){const x=k&&mddData&&mddData[k]&&mddData[k].m;if(!x||x.d==null)return `<span class="ac">—</span>`;

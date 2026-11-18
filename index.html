@@ -41,7 +41,7 @@ button,input,select{font:inherit;color:inherit}
 /* 首頁 */
 .hero{background:var(--red);color:#fff7e6;border-radius:6px;padding:40px 28px 34px;position:relative;overflow:hidden}
 .hero::after{content:"發";position:absolute;right:-10px;bottom:-60px;font-family:var(--display);font-weight:900;font-size:220px;line-height:1;color:rgba(255,215,120,.16);pointer-events:none}
-.hero .eyebrow{font-size:13px;letter-spacing:.2em;color:#ffd98a}.hmrow{display:flex;align-items:center;gap:10px;margin-top:14px;position:relative;z-index:1}.hmrow .hmode{margin:0 0 0 auto;flex:none}.hmrow .hmode button{white-space:nowrap;padding:6px 10px;font-size:15px}
+.hero .eyebrow{font-size:13px;letter-spacing:.2em;color:#ffd98a}.hmrow{display:flex;align-items:center;gap:10px;margin:0 0 22px;position:relative;z-index:1}.hmrow .hmode{margin:0 0 0 auto;flex:none}.hmrow .hmode button{white-space:nowrap;padding:6px 10px;font-size:15px}.hmrow .hmode button[aria-pressed="true"]{display:none}.hmrow .hmode button{padding:6px 14px}
 .twii-bar.twii-home[data-dir="up"]{background:#8a0010}.twii-bar.twii-home{position:relative;z-index:1;transform:none;font-size:13px;padding:4px 9px;flex:none;display:inline-block}
 .hmode{display:inline-flex;margin-top:14px;border:1.5px solid #ffd98a;border-radius:999px;overflow:hidden;position:relative;z-index:1}.hmode button{font:inherit;font-size:17px;font-weight:700;padding:7px 20px;border:0;background:transparent;color:#ffe3a3;cursor:pointer}.hmode button[aria-pressed="true"]{background:#ffd98a;color:#7a1010}
 .hero h1{font-family:var(--display);font-weight:900;font-size:clamp(40px,9vw,76px);line-height:1.1;margin:6px 0 10px;letter-spacing:.06em;text-wrap:balance;color:#ffe3a3}
@@ -685,9 +685,8 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
   <section id="home">
     <div class="bar home-bar"><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
-      <button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button>
+      <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易或完整"><button data-hm="simple">簡易</button><button data-hm="full">完整</button></div></div>
       <h1>賺大錢發發發</h1>
-      <div class="hmrow"><div class="hmode" id="home-mode" role="group" aria-label="切換版本"><button data-hm="simple">簡易版</button><button data-hm="full">完整版</button></div></div>
     </header>
     <div class="watch-tabs" id="home-stabs" role="tablist" hidden><button role="tab" data-hst="1">股票</button><button role="tab" data-hst="2">工具</button></div>
     <div class="watch-tabs" id="home-tabs" role="tablist"><button role="tab" data-ht="stk" aria-selected="true">股市</button><button role="tab" data-ht="coin" aria-selected="false">虛擬幣</button><button role="tab" data-ht="calc" aria-selected="false">財務計算機</button></div>
@@ -711,7 +710,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 12:30</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 12:50</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 

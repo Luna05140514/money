@@ -711,7 +711,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 15:40</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 15:45</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2028,9 +2028,9 @@ function ddRender(d){
   const evTable=a=>{const r=a.map(evRows).join("");return r?`<h3 class="dd-h3">限空令、國安基金進場前後</h3><table class="dd-t dd-e"><thead><tr><th>高點日期<small>這波跌幅</small></th><th>限空令<small>進場前／之後跌</small></th><th>國安基金<small>進場前／之後跌</small></th></tr></thead><tbody>${r}</tbody></table>`:""};
   const avg=a=>{const z=a.filter(x=>x.back);if(!z.length)return"";const p=z.reduce((s,x)=>s+x.pct,0)/z.length,m=z.reduce((s,x)=>s+(Date.parse(x.back)-Date.parse(x.ld)),0)/z.length;return `<p class="dd-avg">過去 ${z.length} 次平均跌 <b>${p.toFixed(1)}%</b>，低點後平均 <b>${mon("2000-01-01",new Date(Date.parse("2000-01-01")+m).toISOString().slice(0,10))}</b> 漲回高點</p>`};
   const small=d.small.filter(x=>x.pct>-20);if(d.cur&&d.cur.pct<=-10&&d.cur.pct>-20&&!small.some(x=>x.hd===d.cur.hd))small.push(d.cur); // 跌 10～20% 一個區間，20% 以上不放（Luna 2026-11-06）
-  const big=d.big.filter(x=>x.hd>="2004-01-01"); // 只列 2004 年以後（Luna 2026-11-18）
+  const big=d.big.filter(x=>+x.hd.slice(0,4)>=new Date().getFullYear()-25); // 只列近 25 年（Luna 2026-11-18）
   $("dd-body").innerHTML=`
-    <h2 class="dd-h">2004 年以來跌 20% 以上：${big.length} 次</h2>${avg(big)}${table(big.slice().reverse())}${evTable(big.slice().reverse())}<p class="dd-tn">國安基金、限空令的已跌、再跌用收盤價算；過去不代表未來。</p>
+    <h2 class="dd-h">近 25 年跌 20% 以上：${big.length} 次</h2>${avg(big)}${table(big.slice().reverse())}${evTable(big.slice().reverse())}<p class="dd-tn">國安基金、限空令的已跌、再跌用收盤價算；過去不代表未來。</p>
     <p class="note">跌幅用加權指數的最高價、最低價算，從高點算到再創新高為止（中途從低點反彈 30% 以上也算一段結束）。10 年前的用每週高低點，日期是那一週。</p>`}
 async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1").then(mgcRender);
   const d=await api("/api/mkt");if(!d||!MKT)return;

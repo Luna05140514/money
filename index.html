@@ -689,7 +689,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     </header>
     <div class="watch-tabs" id="home-stabs" role="tablist" hidden><button role="tab" data-hst="1">股票</button><button role="tab" data-hst="2">工具</button></div>
     <div class="watch-tabs" id="home-tabs" role="tablist"><button role="tab" data-ht="stk" aria-selected="true">股市</button><button role="tab" data-ht="coin" aria-selected="false">虛擬幣</button><button role="tab" data-ht="calc" aria-selected="false">財務計算機</button></div>
-    <div class="watch-tabs" id="home-sub" role="tablist"><button role="tab" data-hs="1" aria-selected="true">看盤</button><button role="tab" data-hs="2" aria-selected="false">持股</button><button role="tab" data-hs="3" aria-selected="false">工具</button></div>
+    <div class="watch-tabs" id="home-sub" role="tablist"><button role="tab" data-hs="1" aria-selected="true">看盤</button><button role="tab" data-hs="3" aria-selected="false">工具</button></div>
     <div class="watch-tabs" id="home-csub" role="tablist" hidden><button role="tab" data-hc="1" aria-selected="true">虛擬幣</button><button role="tab" data-hc="3" aria-selected="false">穩定幣</button><button role="tab" data-hc="2" aria-selected="false">持有</button></div>
     <div id="hc-rows" class="wsimple" hidden><p class="swipe-tip">👈 往左滑看分析</p><div class="wlist" id="coin-cards"></div><p class="lead" id="coin-lead" style="margin-top:10px"></p>
       <p class="src">資料來源：幣安 Binance 公開行情（抓不到時改用 OKX）；換算台幣用 Yahoo Finance 的美元匯率；USDT、USDC 的台幣價格來自 MAX 交易所。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p></div>
@@ -699,17 +699,17 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="watch" data-cat="stk" data-sub="1"><span class="glyph">選</span><div><h2>自選股</h2><p>看價格、當天漲跌和短線／長線 KD 訊號</p></div><span class="go">›</span></button>
       <button class="entry" data-go="mkt" data-cat="stk" data-sub="1"><span class="glyph">指</span><div><h2>大盤高低指標</h2><p>景氣燈號、M1B、恐慌指數、三大法人、散戶多空比一次看</p></div><span class="go">›</span></button>
       <button class="entry" data-go="dd" data-cat="stk" data-sub="1"><span class="glyph">跌</span><div><h2>歷史跌幅</h2><p>大盤過去跌 20% 以上、10～20% 的紀錄，多久漲回來</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="hold" data-cat="stk" data-sub="2"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="hold" data-cat="stk" data-sub="3"><span class="glyph">賺</span><div><h2>我的持股損益</h2><p>輸入股數，看今天漲跌多少、賺賠多少錢</p></div><span class="go">›</span></button>
       <button class="entry" data-go="pledge" data-cat="calc"><span class="glyph">押</span><div><h2>質押維持率</h2><p>輸入質押的股票、張數和借款，看維持率和追繳線</p></div><span class="go">›</span></button>
       <button class="entry" data-go="debt" data-cat="calc"><span class="glyph">債</span><div><h2>總資產負債比</h2><p>股票、存款、房子和各種借款加起來，看負債佔資產多少</p></div><span class="go">›</span></button>
-      <button class="entry" data-go="divc" data-cat="stk" data-sub="2"><span class="glyph">息</span><div><h2>除權息行事曆</h2><p>自選股和持股這個月哪天除息、每股配多少</p></div><span class="go">›</span></button>
+      <button class="entry" data-go="divc" data-cat="stk" data-sub="3"><span class="glyph">息</span><div><h2>除權息行事曆</h2><p>自選股和持股這個月哪天除息、每股配多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="stock" data-cat="stk" data-sub="3"><span class="glyph">比</span><div><h2>股票報酬比較</h2><p>ETF 與個股的含息報酬走勢、殖利率、費用並排比較</p></div><span class="go">›</span></button>
       <button class="entry" data-go="dca" data-cat="stk" data-sub="3"><span class="glyph">測</span><div><h2>回測報酬率</h2><p>用真實含息股價回測定期定額，看每月投入到現在賺多少</p></div><span class="go">›</span></button>
       <button class="entry" data-go="fire" data-cat="calc"><span class="glyph">由</span><div><h2>財務自由計算機</h2><p>算出需要多少錢、還要幾年才能財務自由</p></div><span class="go">›</span></button>
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 10:50</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 11:00</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -818,7 +818,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <h1>除權息行事曆</h1>
     <p class="lead" id="divc-lead">自選股和我的持股，這個月哪天除權息、每股配多少。</p>
     <div id="divc-body"></div>
-    <p class="note">資料來自證交所、櫃買中心的除權息預告表和除權息結果。「待公告」是公司已排好日期、金額還沒公布。有在「我的持股」的會算出大約可領多少。美股的配息請到自選股點進那一檔看「配息」。</p>
+    <p class="note">資料來自證交所、櫃買中心的除權息預告表和除權息結果。「待公告」是公司已排好日期、金額還沒公布。<span class="dv-hold">有在「我的持股」的會算出大約可領多少。</span>美股的配息請到自選股點進那一檔看「配息」。</p>
     <p class="src">資料來源：臺灣證券交易所、證券櫃檯買賣中心（除權息預告表、除權息結果）。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
   </section>
 
@@ -1069,9 +1069,9 @@ function show(p){
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // 看盤這組頁面頂端的分頁列（全球大盤／大盤高低指標／自選股），不用回首頁就能切換
 const PG_SHORT={mkt:"高低指標",dd:"歷史跌幅",corp:"公司買賣",hold:"持股損益",divc:"除權息",stock:"報酬比較",pledge:"質押",debt:"負債比",fire:"財務自由",compound:"複利"};
-const PG_GROUPS=[["idx","watch","mkt","dd"],["hold","divc"],["stock","dca"],["pledge","debt","fire","compound"]];
+const PG_GROUPS=[["idx","watch","mkt","dd"],["hold","divc","stock","dca"],["pledge","debt","fire","compound"]];
 // 簡易版（Luna 2026-11-01）：頁面上面的分頁也跟著換成簡易版的兩組
-const PG_SIMPLE=[["idx","watch","mkt","dd"],["stock","dca"]];
+const PG_SIMPLE=[["idx","watch","mkt","dd"],["divc","stock","dca"]];
 function pgBuild(simple){document.querySelectorAll("nav.pg-tabs").forEach(n=>n.remove());
 const G=simple?[...PG_SIMPLE,...PG_GROUPS.filter(g=>!g.some(x=>PG_SIMPLE.flat().includes(x)))]:PG_GROUPS;
 G.forEach(g=>g.forEach(id=>{const sec=$(id),bar=sec&&sec.querySelector(".bar");if(!bar)return;
@@ -1147,7 +1147,7 @@ const TAB_KEYS=["facai-home-tab","facai-home-sub","facai-home-csub","facai-home-
 try{if(!sessionStorage.getItem("facai-page"))TAB_KEYS.forEach(k=>localStorage.removeItem(k))}catch(_){}
 function homeTab(k){if(!["stk","coin","calc"].includes(k))k="stk";try{localStorage.setItem("facai-home-tab",k)}catch(_){}
   document.querySelectorAll("#home-tabs [data-ht]").forEach(b=>b.setAttribute("aria-selected",b.dataset.ht===k));
-  let s="1";try{s=localStorage.getItem("facai-home-sub")||"1"}catch(_){}if(!["1","2","3"].includes(s))s="1";
+  let s="1";try{s=localStorage.getItem("facai-home-sub")||"1"}catch(_){}if(!["1","3"].includes(s))s="1"; // 持股併到工具（Luna 2026-11-18）
   $("home-sub").hidden=k!=="stk";document.querySelectorAll("#home-sub [data-hs]").forEach(b=>b.setAttribute("aria-selected",b.dataset.hs===s));
   document.querySelectorAll("#home-grid [data-cat]").forEach(b=>{b.hidden=b.dataset.cat!==k||(k==="stk"&&b.dataset.sub!==s)});
   // 虛擬幣分頁（Luna 2026-10-24）：小分頁「虛擬幣」直接列出價格、「持有」直接顯示持有的幣換算台幣和匯差
@@ -3298,8 +3298,10 @@ async function divcInit(){
 function divcRender(){
   const body=$("divc-body");
   if(!divData){body.innerHTML='<p class="wempty">除權息資料還沒載入。</p>';return}
-  const hm=holdMain();
-  const mine=new Set([...watchAll(),...holdAllCodes()].filter(c=>idxOf[c]&&!idxOf[c][4]));
+  // 簡易版只看自選股，不連到我的持股、不算約領（Luna 2026-11-18）
+  let simple=false;try{simple=localStorage.getItem("facai-home-mode")==="simple"}catch(_){}
+  const hm=simple?[]:holdMain();
+  const mine=new Set([...watchAll(),...(simple?[]:holdAllCodes())].filter(c=>idxOf[c]&&!idxOf[c][4]));
   const sh={};hm.forEach(h=>sh[h.c]=(sh[h.c]||0)+h.n);
   const now=new Date(Date.now()+8*3600e3).toISOString().slice(0,10),ym=now.slice(0,7);
   const wk="日一二三四五六",rows=divData.items.filter(r=>mine.has(r[0])&&r[2]>=ym+"-01");
@@ -3307,9 +3309,10 @@ function divcRender(){
     const amt=r[4]!=null?`每股 ${r[4].toLocaleString("zh-TW",{maximumFractionDigits:4})} 元`:r[3]==="權"?"配股":"金額待公告";
     return `<div class="dvrow${past?" past":""}"><span class="d">${+r[2].slice(5,7)}/${+r[2].slice(8)}<small>星期${wk[dd.getUTCDay()]}${r[2]===now?"・今天":""}</small></span><span class="nm"><b>${esc((idxOf[r[0]]||[])[1]||r[1])}</b><small>${esc(r[0])}　${past?"已"+word:word}</small></span><span class="amt">${amt}</span>${n&&r[4]!=null?`<span class="get">你有 ${n%1000===0?n/1000+" 張":n.toLocaleString("zh-TW")+" 股"}，約領 ${Math.round(n*r[4]).toLocaleString("zh-TW")} 元</span>`:""}</div>`};
   const thisM=rows.filter(r=>r[2].slice(0,7)===ym),later=rows.filter(r=>r[2].slice(0,7)>ym);
-  body.innerHTML=`<h2 class="dvh">${+ym.slice(5)} 月</h2>`+(thisM.length?`<div class="wlist">${thisM.map(row).join("")}</div>`:String(divData.updated||"").slice(0,7)<ym?'<p class="wempty">這個月的除權息資料還沒抓到，請等一下按「↻ 重新整理」。</p>':'<p class="wempty">這個月自選股和持股沒有除權息。</p>')
+  body.innerHTML=`<h2 class="dvh">${+ym.slice(5)} 月</h2>`+(thisM.length?`<div class="wlist">${thisM.map(row).join("")}</div>`:String(divData.updated||"").slice(0,7)<ym?'<p class="wempty">這個月的除權息資料還沒抓到，請等一下按「↻ 重新整理」。</p>':`<p class="wempty">這個月自選股${simple?"":"和持股"}沒有除權息。</p>`)
     +(later.length?`<h2 class="dvh">之後已公布</h2><div class="wlist">${later.map(row).join("")}</div>`:"");
-  $("divc-lead").textContent=`自選股和我的持股（台股），這個月哪天除權息、每股配多少。資料更新於 ${divData.updated}。`;
+  document.querySelectorAll("#divc .dv-hold").forEach(e=>e.hidden=simple);
+  $("divc-lead").textContent=`${simple?"自選股":"自選股和我的持股"}（台股），這個月哪天除權息、每股配多少。資料更新於 ${divData.updated}。`;
 }
 calc.divc=divcInit;
 // 公司買賣股票（Luna 2026-11-01：獨立頁，目前只放龍巖、寶島科）

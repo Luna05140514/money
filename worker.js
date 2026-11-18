@@ -261,6 +261,8 @@ function ddCross(M,hd,ld,j){const st=new Date(Date.parse(hd)-6*864e5).toISOStrin
   for(let i=i0+1;i<M.length&&M[i][0]<=ld;i++)if(M[i-1][j]>=0&&M[i][j]<0)return {d:M[i][0],c:Math.round(M[i][1]*100)/100};return null}
 // 0 軸上死叉（DIF 往下穿 MACD，兩條都在 0 軸上）到 DIF 跌破 0 軸隔幾週（Luna 2026-11-18）
 function ddDc(M,z){if(!z||!z.d)return null;const i=M.findIndex(x=>x[0]==z.d);if(i<1)return null;for(let k=i;k>=Math.max(1,i-104);k--)if(M[k][3]<0&&M[k-1][3]>=0&&M[k][2]>0&&M[k][4]>0)return {d:M[k][0],w:i-k};return null}
+// 低點後第一次 0 軸下金叉（DIF 往上穿 MACD，兩條都在 0 軸下）（Luna 2026-11-18）
+function ddGc(M,ld,bk){const st=new Date(Date.parse(ld)-6*864e5).toISOString().slice(0,10);let i=M.findIndex(x=>x[0]>=st);if(i<1)return null;for(;i<M.length&&!(bk&&M[i][0]>bk);i++)if(M[i][3]>=0&&M[i-1][3]<0&&M[i][2]<0&&M[i][4]<0)return {d:M[i][0]};return null}
 function ddCalc(K,W){
   const n=K.length,r0=v=>Math.round(v*100)/100;
   // 跌 20% 以上：從高點算，創新高才算結束；中途從低點反彈 30% 以上也算一段結束（像 2008 年和 2000 年分開算）
@@ -279,7 +281,7 @@ function ddCalc(K,W){
   const back=(p,from)=>{for(let j=from+1;j<n;j++)if(K[j][1]>K[p][1])return K[j][0];return null};
   const row=([p,l])=>({hd:K[p][0],h:r0(K[p][1]),ld:K[l][0],l:r0(K[l][2]),pct:r0((K[l][2]/K[p][1]-1)*100),back:back(p,l)});
   const last=K[n-1];
-  const M=W&&W.length>40?ddMacd(W):null,brow=x=>{const r=row(x);if(M){r.ox=ddCross(M,r.hd,r.ld,2);r.dc=ddDc(M,r.ox);r.dx=ddCross(M,r.hd,r.ld,4)}return r};
+  const M=W&&W.length>40?ddMacd(W):null,brow=x=>{const r=row(x);if(M){r.ox=ddCross(M,r.hd,r.ld,2);r.dc=ddDc(M,r.ox);r.gc=ddGc(M,r.ld,r.back);r.dx=ddCross(M,r.hd,r.ld,4)}return r};
   return {big:big.map(brow),small:sm.map(row).filter(x=>x.hd>=K[n-1][0].replace(/^\d{4}/,y=>y-5)),cur:cur?{...row(cur),last:r0(last[3]),date:last[0]}:null,from:K[0][0]};
 }
 async function ddHist() {

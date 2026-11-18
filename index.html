@@ -336,8 +336,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wmb:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 /* 表格（Luna 2026-11-17 照片）：商品／成交固定不動，往左滑看漲跌和分析 */
 .wrow>.ac{display:none}
-.wsimple{--c1:84px;--c2:88px;--gc:var(--c1) var(--c2) 86px repeat(8,88px)}
-#idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) 86px repeat(7,88px)}
+.wsimple{--c1:84px;--c2:88px;--gc:var(--c1) var(--c2) 86px repeat(9,88px)}
+#idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) 86px repeat(8,88px)}
 @media (min-width:701px){.wsimple{--c1:190px;--c2:130px}}
 .wsimple .wlist{overflow-x:auto;-webkit-overflow-scrolling:touch}
 /* 往左滑像翻頁，一次跳一欄（Luna 2026-11-17） */
@@ -348,8 +348,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
   .wsimple{--c2:96px}
   .wsimple .wrow:not(.wed)>.px{font-size:15px!important;letter-spacing:-.02em}
   .wsimple{--cw:calc((100vw - 50px - var(--c1) - var(--c2)) / 2)}
-  .wsimple{--gc:var(--c1) var(--c2) repeat(9,var(--cw))}
-  #idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) calc(var(--cw) * 2) repeat(7,var(--cw))}
+  .wsimple{--gc:var(--c1) var(--c2) repeat(10,var(--cw))}
+  #idx.wsimple,#hc-rows.wsimple{--gc:var(--c1) var(--c2) calc(var(--cw) * 2) repeat(8,var(--cw))}
   #idx.wsimple .wrow:not(.wed)>.chg,#hc-rows.wsimple .wrow:not(.wed)>.chg{align-items:center}
   #idx.wsimple .wthead span:nth-child(3),#hc-rows.wsimple .wthead span:nth-child(3){text-align:center}
   .wsimple .wrow:not(.wed)>.chg,.wsimple .wrow:not(.wed)>.ac{padding-left:3px;padding-right:3px}
@@ -700,7 +700,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 07:45</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">2026/11/18 08:35</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1781,10 +1781,19 @@ function hiDrop(hi,last){if(!(hi>0)||!(last>0))return "";const p=(last/hi-1)*100
   return `<span class="tlr hdr"><span class="nw">一年高點 <b>${f(Math.max(hi,last))}</b></span><span class="nw">高點跌幅 <b class="${p<=-20?"hdB":p<=-10?"hdM":""}">${p>=0?"0%（創新高）":p.toFixed(1)+"%"}</b></span></span>`}
 // 列表上的天龍地虎（Luna 2026-11-01）：只看日 K，worker /api/kd、/api/ixkd 的 day.tl = [龍, 虎]
 // 表格往左滑的分析欄（Luna 2026-11-17）：日KD、週KD、壓力線、支撐線、價值（自選股）
-function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span class="snp">漲跌</span>${val?`<span>${val===true?"價位":val}</span>`:""}<span class="snp">日KD</span><span>週KD</span><span class="snp h2l">週<br>MACD</span><span class="h2l">月<br>MACD</span><span class="snp">壓力線</span><span>支撐線</span><span class="snp h2l">一年高<br>跌幅</span></div>`}
-function anaCells(dy,wk,tl,val,last,mo){const kd=(o,L)=>{if(!o||o.k==null)return `<i class="sg na">—</i>`;const m=SG_LOGIC[L][sgHit(o)];return `<i class="sg ${m[1]}">${m[2]}</i>`};
+function anaHead(val){return `<div class="wthead" aria-hidden="true"><span>商品</span><span>成交</span><span class="snp">漲跌</span>${val?`<span>${val===true?"價位":val}</span>`:""}<span class="snp">日KD</span><span>週KD</span><span class="snp h2l">週<br>MACD</span><span class="h2l">月<br>MACD</span><span class="snp">壓力線</span><span>支撐線</span><span class="snp h2l">一年高<br>跌幅</span><span class="h2l" style="font-size:13px;padding:0 2px">10年<br>最大跌幅</span></div>`}
+function anaCells(dy,wk,tl,val,last,mo,mk){const kd=(o,L)=>{if(!o||o.k==null)return `<i class="sg na">—</i>`;const m=SG_LOGIC[L][sgHit(o)];return `<i class="sg ${m[1]}">${m[2]}</i>`};
   const f=v=>v==null?"—":v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
-  return (val===undefined?"":typeof val==="string"?`<span class="ac">${val}</span>`:val&&val[1]?`<span class="ac apv" data-pe="${esc(val[2])}" role="button" tabindex="0" aria-label="看便宜、合理、昂貴的價錢"><b class="val ${val[0]}">${val[1]}</b></span>`:`<span class="ac">—</span>`)+`<span class="ac">${kd(dy,"短線")}</span><span class="ac">${kd(wk,"長線")}</span><span class="ac">${macCell(wk&&wk.mac)}</span><span class="ac">${macCell(moState(mo)?mo:null)}</span><span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span>${hiCell(dy&&dy.hi,last)}`}
+  return (val===undefined?"":typeof val==="string"?`<span class="ac">${val}</span>`:val&&val[1]?`<span class="ac apv" data-pe="${esc(val[2])}" role="button" tabindex="0" aria-label="看便宜、合理、昂貴的價錢"><b class="val ${val[0]}">${val[1]}</b></span>`:`<span class="ac">—</span>`)+`<span class="ac">${kd(dy,"短線")}</span><span class="ac">${kd(wk,"長線")}</span><span class="ac">${macCell(wk&&wk.mac)}</span><span class="ac">${macCell(moState(mo)?mo:null)}</span><span class="ac"><b class="tlD">${f(tl&&tl[0])}</b></span><span class="ac"><b class="tlT">${f(tl&&tl[1])}</b></span>${hiCell(dy&&dy.hi,last)}${mddCell(mk)}`}
+// 10 年最大跌幅（Luna 2026-11-18）：worker /api/mdd 一次一檔，手機存一天；下面小字是跌到最低的年月
+const MDD_KEY="facai-mdd";let mddData=null;const mddBusy={};
+function mddCell(k){const x=k&&mddData&&mddData[k]&&mddData[k].m;if(!x||x.d==null)return `<span class="ac">—</span>`;
+  return `<span class="ac hdr"><b class="${x.d<=-20?"hdB":x.d<=-10?"hdM":""}" style="display:flex;flex-direction:column;align-items:center;line-height:1.2"><span>${x.d.toFixed(1)}%</span>${x.tr?`<small style="font-size:.75em;color:var(--muted)">${x.tr.slice(0,4)}/${+x.tr.slice(5,7)}</small>`:""}</b></span>`}
+async function mddLoad(keys,after){if(!ON_CF)return;if(!mddData){try{mddData=JSON.parse(localStorage.getItem(MDD_KEY))||{}}catch(_){mddData={}}}
+  const now=Date.now(),need=[...new Set(keys)].filter(k=>k&&!mddBusy[k]&&!(mddData[k]&&now-mddData[k].t<864e5));if(!need.length)return;need.forEach(k=>mddBusy[k]=1);
+  const q={c:"c",u:"us",k:"k"},one=async k=>{const d=await api(`/api/mdd?${q[k[0]]}=${encodeURIComponent(k.slice(2))}&v=1`);delete mddBusy[k];if(d&&"m" in d){mddData[k]={m:d.m,t:Date.now()};try{localStorage.setItem(MDD_KEY,JSON.stringify(mddData))}catch(_){}return 1}};
+  let i=0,got=0;await Promise.all([0,1,2].map(async()=>{while(i<need.length){if(await one(need[i++]))got++}}));if(got&&after)after()}
+const mddKeyIx=it=>it.fx||it.tw?null:"k:"+it.key;
 // 週 MACD、月 MACD（Luna 2026-11-18：放在日週 KD 下一頁，判斷和技術分析框一樣：多頭／空頭＋向上／向下＋減緩）
 function macCell(x){if(!x||x.osc==null)return `<i class="sg na">—</i>`;const bull=x.dif!=null?+x.dif>=0:+x.osc>=0,gx=+x.osc>=0,o=+x.osc,po=+x.posc,slow=gx?o<po:o>po;
   return `<i class="sg ${gx?(slow?"high":"buy"):(slow?"low":"sell")}">${bull?"多頭":"空頭"}${gx?"向上":"向下"}${slow?"減緩":""}</i>`}
@@ -1798,27 +1807,30 @@ function premCell(c){const n=STOCK&&STOCK.nav&&STOCK.nav[c],x=n?n[3]:null;if(x==
   const amt=n[1]!=null&&n[2]!=null?n[1]-n[2]:null,sg=v=>v>0?"+":v<0?"−":"";
   // 0.5% 以內用一般字色，溢價 0.5% 以上紅、折價 0.5% 以上綠（Luna 2026-11-18）
   return `<b class="${x>=0.5?"up":x<=-0.5?"down":""}" style="color:${x>=0.5||x<=-0.5?"":"var(--ink)"};display:flex;flex-direction:column;align-items:center;line-height:1.2">${amt!=null?`<span>${sg(amt)}${Math.abs(amt).toFixed(2)}</span>`:""}<small style="font-size:.8em">${sg(x)}${Math.abs(x).toFixed(2)}%</small></b>`}
-function peMini(c,last){const v=watchVal[c];if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜",c]:x>=v.hi?["hi","昂貴",c]:["mid","合理",c]}
+// 適用股淨比的（金融股、景氣循環、沒有法人預估 EPS）價位改用股淨比看（Luna 2026-11-18），規則和自選股價值投資一樣
+function valUsePb(c,v){const hasPb=v&&v.pb&&v.pb.bps&&v.pb.lo>0&&v.pb.hi>0;return !!(hasPb&&(/^(28|58)\d\d$/.test(c)||v.cyc||!(v.eps>0||v.eps1>0)))}
+function peMini(c,last){const v=watchVal[c];if(v&&last>0&&valUsePb(c,v)){const x=last/v.pb.bps;return x<=v.pb.lo?["lo","便宜",c]:x>=v.pb.hi?["hi","昂貴",c]:["mid","合理",c]}if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜",c]:x>=v.hi?["hi","昂貴",c]:["mid","合理",c]}
 // 點「價位」跳出小視窗（Luna 2026-11-17）：今年、明年的本益比和便宜／合理／昂貴價
 function pePop(c){const v=watchVal[c],it=watchItem(c);if(!v||!it)return;const last=it.last;
   const f=x=>x>=100?Math.round(x).toLocaleString():x.toFixed(x>=10?1:2);
-  const e0=v.eps>0?v.eps:null,e1=v.eps1>0?v.eps1:null,cell=(m,e)=>e?f(m*e):"—";
-  const rows=[["lo","便宜",v.lo],["mid","合理",v.avg],["hi","昂貴",v.hi]].map(([k,t,m])=>`<tr><td><b class="val ${k}">${t}</b></td><td>${cell(m,e0)}</td><td>${cell(m,e1)}</td></tr>`).join("");
+  const e0=v.eps>0?v.eps:null,e1=v.eps1>0?v.eps1:null,cell=(m,e)=>e?f(m*e):"—",pbM=valUsePb(c,v);
+  const rows=pbM?[["lo","便宜",v.pb.lo],["mid","合理",v.pb.avg],["hi","昂貴",v.pb.hi]].map(([k,t,m])=>`<tr><td><b class="val ${k}">${t}</b></td><td>${f(m*v.pb.bps)}</td></tr>`).join(""):[["lo","便宜",v.lo],["mid","合理",v.avg],["hi","昂貴",v.hi]].map(([k,t,m])=>`<tr><td><b class="val ${k}">${t}</b></td><td>${cell(m,e0)}</td><td>${cell(m,e1)}</td></tr>`).join("");
   let box=$("pe-pop");if(!box){box=document.createElement("div");box.id="pe-pop";box.className="sg-pop";document.body.appendChild(box);
     box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
-  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${esc(it.name)} 價位"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(it.name)}　現在 ${f(last)}</h2><table class="pe-t"><tr><th></th><th>今年</th><th>明年</th></tr>${rows}</table></div>`;box.hidden=false}
+  box.innerHTML=`<div class="sg-card gl-card" role="dialog" aria-label="${esc(it.name)} 價位"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(it.name)}　現在 ${f(last)}</h2><table class="pe-t">${pbM?"<tr><th>股淨比</th><th>價格</th></tr>":"<tr><th>本益比</th><th>今年</th><th>明年</th></tr>"}${rows}</table></div>`;box.hidden=false}
 window.addEventListener("click",e=>{const b=e.target.closest("[data-pe]");if(!b)return;e.preventDefault();e.stopPropagation();pePop(b.dataset.pe)},true);
 window.addEventListener("hashchange",()=>{const b=$("pe-pop");if(b)b.hidden=true});
 function tlRow(tl,ex=""){if(!tl||(tl[0]==null&&tl[1]==null))return ex?`<span class="tlr">${ex}</span>`:"";const f=v=>v.toLocaleString("zh-TW",{maximumFractionDigits:v>=1000?0:2});
   return `<span class="tlr"><span class="nw">${tl[0]!=null?`壓力線 <b class="tlD">${f(tl[0])}</b>`:"創新高"}</span>${tl[1]!=null?`<span class="nw">支撐線 <b class="tlT">${f(tl[1])}</b></span>`:""}${ex}</span>`}
 function ixRow(it,attr){const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",dg=ixDg(it),n=it.name.replace(/（.*）/,""),pct=(d/it.prev*100).toFixed(2);
-  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br><small class="pc">${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</small></span>${(()=>{const q=ON_CF&&!it.fx&&!it.tw&&idxKd[it.key];return anaCells(q&&q.day,q&&q.week,q&&q.day&&q.day.tl,undefined,last,ON_CF&&!it.fx&&!it.tw?mkData[it.key]:null)})()}${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl)+hiDrop(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.hi,last):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
+  return `<button class="wrow" ${attr} aria-label="查看 ${esc(n)}"><span class="nm"><b>${esc(n)}</b><small>${esc(ixUnit(it))}</small></span><span class="px ${cls}">${ixFmt(last,dg)}</span><span class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${ixFmt(Math.abs(d),dg)}<br><small class="pc">${d>0?"+":d<0?"−":""}${pct.replace("-","")}%</small></span>${(()=>{const q=ON_CF&&!it.fx&&!it.tw&&idxKd[it.key];return anaCells(q&&q.day,q&&q.week,q&&q.day&&q.day.tl,undefined,last,ON_CF&&!it.fx&&!it.tw?mkData[it.key]:null,mddKeyIx(it))})()}${ixExtra(it)}${ON_CF&&!it.fx&&!it.tw?tlRow(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.tl)+hiDrop(idxKd[it.key]&&idxKd[it.key].day&&idxKd[it.key].day.hi,last):""}${ON_CF&&!it.fx&&!it.tw?kdBoxes(idxKd[it.key]&&idxKd[it.key].day,idxKd[it.key]&&idxKd[it.key].week,n,mkData[it.key],it.cr?"nohead":""):""}</button>`}
 const idxList=()=>(IDX&&IDX.items||[]).filter(idxShow).sort((a,b)=>idxRg(a)-idxRg(b)||(idxRg(a)?0:idxOi(a)-idxOi(b)));
 // 大盤每一列的短線（日 KD）、長線（週 KD），10 分鐘重抓一次
 let idxKd={},idxKdAt=0,idxKdBusy=0,idxKdKeys="";
 async function idxKdLoad(){
   const keys=idxItems.map(it=>encodeURIComponent(it.key)).join(",");
   mkLoad([],[],idxItems.map(it=>it.key),()=>{if(curPage()==="idx")idxInit()});
+  mddLoad(idxItems.map(mddKeyIx),()=>{if(curPage()==="idx")idxInit()});
   if(!ON_CF||idxKdBusy||!keys||(keys===idxKdKeys&&idxKdAt>Date.now()-6e5))return;idxKdBusy=1;idxKdKeys=keys;idxKdAt=Date.now();
   // 一檔一個請求，各自計算比較不會超過網站的運算時間上限
   // 夜指期和台指期是同一個合約，KD 沿用台指期的日 K
@@ -2461,7 +2473,7 @@ async function watchKdLoad(){
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
   const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=15`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
-function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
+function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mddLoad(L.map(c=>(idxOf[c][4]?"u:":"c:")+c),()=>{if(curPage()==="watch")watchRender()});mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
 const watchVal={},watchValAt={};
 // 本益比區間、預估 EPS、每股淨值變化很慢（Luna 2026-10-23：不用常抓）：存在手機裡，一天才重抓一次；股價還是即時的
@@ -2512,7 +2524,7 @@ function watchRender(){
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br><small class="pc">${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%</small>`;
-    const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):peMini(c,it.last),it.last,mkData[c]);
+    const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):peMini(c,it.last),it.last,mkData[c],(idxOf[c][4]?"u:":"c:")+c);
     if(watchEdit)return `<div class="wrow wed" data-c="${esc(c)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="wmv"><span class="wmb wdrag" aria-label="按住拖動 ${esc(it.name)}，可用上下鍵移動" role="button" tabindex="0">☰</span><span class="wmb wdx" data-rm="1" role="button" tabindex="0" aria-label="移除 ${esc(it.name)}">✕</span></span></div>`;
     return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows?(watchEdit?"":anaHead((()=>{const e=g.list.filter(c=>idxOf[c]).map(c=>!!idxOf[c][2]);return e.length&&e.every(x=>x)?"折溢價":e.some(x=>x)?"價位<br>折溢價":true})()))+rows:'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
@@ -2550,6 +2562,7 @@ setInterval(()=>{if(ON_CF&&!document.hidden&&(curPage()==="idx"||homeCoin()||cur
 let coinKdAt=0;
 async function coinKdLoad(items){
   mkLoad([],[],items.map(it=>it.key),()=>{if(homeCoin())coinInit()});
+  mddLoad(items.map(mddKeyIx),()=>{if(homeCoin())coinInit()});
   if(!ON_CF||coinKdAt>Date.now()-6e5)return;coinKdAt=Date.now();
   const got=await Promise.all(items.map(it=>api(`/api/ixkd?k=${encodeURIComponent(it.key)}&v=15`)));
   const d=Object.assign({},...got.filter(Boolean));if(!Object.keys(d).length){coinKdAt=0;return}Object.assign(idxKd,d);if(homeCoin())coinInit()}

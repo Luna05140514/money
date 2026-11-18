@@ -712,7 +712,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">A1</span></p>
+    <p class="foot" id="ver">網頁版本 <span id="ver-n">A2</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -1827,6 +1827,11 @@ function premCell(c){const n=STOCK&&STOCK.nav&&STOCK.nav[c],x=n?n[3]:null;if(x==
   const amt=n[1]!=null&&n[2]!=null?n[1]-n[2]:null,sg=v=>v>0?"+":v<0?"−":"";
   // 0.5% 以內用一般字色，溢價 0.5% 以上紅、折價 0.5% 以上綠（Luna 2026-11-18）
   return `<b class="${x>=0.5?"up":x<=-0.5?"down":""}" style="color:${x>=0.5||x<=-0.5?"":"var(--ink)"};display:flex;flex-direction:column;align-items:center;line-height:1.2">${amt!=null?`<span>${sg(amt)}${Math.abs(amt).toFixed(2)}</span>`:""}<small style="font-size:.8em">${sg(x)}${Math.abs(x).toFixed(2)}%</small></b>`}
+// 台積電 ADR（TSM）不看合理價，改顯示 ADR 溢價（Luna 2026-11-18）：1 股 ADR = 5 股台積電，台股換算價 = 2330 × 5 ÷ 美元匯率
+function adrCell(last){const ix=k=>{const x=IDX&&(IDX.items||[]).find(y=>y.key===k);return x&&x.pts&&x.pts.length?x.pts[x.pts.length-1][1]:null};
+  const w=typeof watchItem==="function"&&idxOf["2330"]?watchItem("2330"):null,tw=w&&w.last>0?w.last:ix("2330")||(IDX&&IDX.adr&&IDX.adr.tw),fx=usdTwd();
+  if(!(last>0&&tw>0&&fx>0))return "—";const x=(last/(tw*5/fx)-1)*100;
+  return `<b class="${x>=0?"up":"down"}" style="display:flex;flex-direction:column;align-items:center;line-height:1.2"><small style="font-size:.75em;color:var(--muted)">ADR 溢價</small><span>${x>=0?"+":"−"}${Math.abs(x).toFixed(1)}%</span></b>`}
 // 適用股淨比的（金融股、景氣循環、沒有法人預估 EPS）價位改用股淨比看（Luna 2026-11-18），規則和自選股價值投資一樣
 function valUsePb(c,v){const hasPb=v&&v.pb&&v.pb.bps&&v.pb.lo>0&&v.pb.hi>0;return !!(hasPb&&(/^(28|58)\d\d$/.test(c)||v.cyc||!(v.eps>0||v.eps1>0)))}
 function peMini(c,last){const v=watchVal[c];if(v&&last>0&&valUsePb(c,v)){const x=last/v.pb.bps;return x<=v.pb.lo?["lo","便宜",c]:x>=v.pb.hi?["hi","昂貴",c]:["mid","合理",c]}if(!v||!(v.eps>0)||!(last>0)||!(v.lo>0&&v.hi>0))return null;const x=last/v.eps;return x<=v.lo?["lo","便宜",c]:x>=v.hi?["hi","昂貴",c]:["mid","合理",c]}
@@ -2610,7 +2615,7 @@ function watchRender(){twiiBar();
   const rows=g.list.map(c=>{const it=watchItem(c);if(!it)return"";
     const d=it.last!=null&&it.prev?it.last-it.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat";
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br><small class="pc">${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%</small>`;
-    const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):peMini(c,it.last),it.last,mkData[c],(idxOf[c][4]?"u:":"c:")+c);
+    const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):c==="TSM"?adrCell(it.last):peMini(c,it.last),it.last,mkData[c],(idxOf[c][4]?"u:":"c:")+c);
     if(watchEdit)return `<div class="wrow wed" data-c="${esc(c)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="wmv"><span class="wmb wdrag" aria-label="按住拖動 ${esc(it.name)}，可用上下鍵移動" role="button" tabindex="0">☰</span><span class="wmb wdx" data-rm="1" role="button" tabindex="0" aria-label="移除 ${esc(it.name)}">✕</span></span></div>`;
     return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows?(watchEdit?"":anaHead((()=>{const e=g.list.filter(c=>idxOf[c]).map(c=>!!idxOf[c][2]);return e.length&&e.every(x=>x)?"折溢價":e.some(x=>x)?"價位<br>折溢價":true})()))+rows:'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';

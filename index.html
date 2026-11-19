@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">C2</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">C3</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2141,10 +2141,8 @@ function fcRender(o){o=o||{d:fcData,K:fcK,dd:fcDd,el:"fc-body",nm:"加權指數"
   // 總結論（Luna 2026-11-19 同意，10 年回測挑出來的規則）：三塊都紅燈＝考慮減碼；紅燈剩 1 個以下＝可以分批買；其他＝觀望
   const WH=wenHtml(o.K,o.us?null:live,it&&it.pts,o.dp),bm=WH.match(/<b>(綠燈|紅燈|黃燈)/);let SUM="";
   if(bm){const cW=lt,cB=bm[1]==="綠燈"?"🟢":bm[1]==="紅燈"?"🔴":"🟡",cP=k>=4?"🟢":k>=2?"🟡":"🔴",nR=[cW,cB,cP].filter(x=>x==="🔴").length;
-    const [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","可以分批買"]:["🟡","觀望"];
-    SUM=`<div class="fc-light fc-s3"><div class="fc-lt"><span class="fc-dot">${sd}</span><b>總結論：${sx} ${qm("回測比較")}</b></div>
-      <p class="fc-s3l"><span>大方向 ${cW}</span><span>可不可以買 ${cB}</span><span>預測價格 ${cP}</span></p>
-      <p class="dd-tn" style="margin:4px 0 0">3 個都紅燈＝考慮減碼；紅燈剩 1 個以下＝可以分批買；其他＝觀望。回測（大盤近 10 年）：照這樣做賺 352%，一直抱著 329%；最大回檔 −22%，一直抱著 −32%。但不能每次都避開大跌（10 年 8 次跌 10% 以上，只提早避開 3 次）。${o.dp?"這是大盤的回測，個股只能參考。":""}</p></div>`}
+    const [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","考慮加碼"]:["🟡","觀望"];
+    SUM=`<div class="fc-light fc-s3"><div class="fc-lt"><span class="fc-dot">${sd}</span><b>總結論：${sx} ${qm("回測比較")}</b></div></div>`}
   const TB=[["大方向穩不穩",`<p class="fc-sum">站上 ${k} ／ ${R.length} 條均線：<span class="${cls}">${lab}</span></p>
     <p class="fc-now">${esc(o.nm)} <b>${f(px)}</b>${live>0?"（即時）":""}</p>
     <div class="fc-light"><div class="fc-lt"><span class="fc-dot">${lt}</span><b class="${ltc}">${ltx}</b></div>

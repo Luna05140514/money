@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">B4</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">B5</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2067,9 +2067,9 @@ function wenHtml(K,live,pts,dp){
   const L4=bull&&red&&grow?["🟢","多方控盤，紅柱變長，正在攻擊"]:bull&&!red&&!grow?["🟢","多方控盤，綠柱縮短，整理快結束"]:bull?["🟡",red?"多方控盤，紅柱縮短，攻擊變弱":"多方控盤，綠柱變長，正在整理"]:!red&&!grow?["🟡","空方控盤，綠柱縮短，跌勢變慢"]:["🔴","空方控盤（DIF、MACD 在 0 軸下）"];
   const rows=[["長期","黃綠紅三線",L1,`黃線 ${f(y)}／綠線 ${f(g)}／紅線 ${f(r)}`],["中期","一目均衡表",L2,`轉換線 ${f(tk)}／雲 ${f(cb)}～${f(ct)}`],["短期","布林整理箱",L3,bt==null?"":`箱子 ${f(bb)}～${f(bt)}`],["攻擊","MACD",L4,`DIF ${dif.toFixed(dp?2:0)}／MACD ${dea.toFixed(dp?2:0)}`]];
   const ng=rows.filter(x=>x[2][0]==="🟢").length,nr=rows.filter(x=>x[2][0]==="🔴").length;
-  return `<h3 class="dd-h3">溫老師：長、中、短期＋攻擊訊號（日線）</h3><div class="fc-light"><div class="fc-lt"><span class="fc-dot">${ng===4?"🟢":nr>=2?"🔴":"🟡"}</span><b>${ng} ／ 4 個綠燈${ng===4?"：訊號對了，可以出手":nr>=2?"：先不要出手":"：還要再等等"}</b></div>
+  return `<h3 class="dd-h3">溫老師：長、中、短期＋攻擊訊號（日線）</h3><div class="fc-light"><div class="fc-lt"><span class="fc-dot">${ng===4?"🟢":nr>=2?"🔴":"🟡"}</span><b>${ng===4?"綠燈：可以出手":nr>=2?"紅燈：不可以出手":"黃燈：觀望"}<small style="display:block;font-size:15px;color:var(--muted);font-weight:600">4 項裡有 ${ng} 個綠燈、${nr} 個紅燈</small></b></div>
     <ul class="fc-wen">${rows.map(x=>`<li><span>${x[2][0]}</span><b>${x[0]}・${x[1]}</b>：${x[2][1]}<small>${x[3]}</small></li>`).join("")}</ul>
-    <p class="dd-tn" style="margin:4px 0 0">溫老師說：訊號對了再出手，長、中、短期都綠燈，再加上攻擊訊號，勝率比較高。只是參考，不是保證。</p></div>`}
+    <p class="dd-tn" style="margin:4px 0 0">4 項都綠燈＝可以出手；2 項以上紅燈＝不可以出手；其他＝觀望。溫老師說：訊號對了再出手。只是參考，不是保證。</p></div>`}
 const FC_MA=[[4,"月線"],[13,"季線"],[26,"半年線"],[52,"年線"],[156,"3 年線"]];let fcData=null,fcDd=null,fcK=null,fcTab=0;try{fcTab=Math.min(2,+localStorage.getItem("facai-fc-tab")||0)}catch(_){}
 // 大盤預測分三塊（Luna 2026-11-19）：1 大方向穩不穩（週線紅綠燈）2 可不可以買（溫老師 4 項）3 預測價格
 document.addEventListener("click",e=>{const b=e.target.closest("[data-fct]");if(!b)return;fcTab=+b.dataset.fct;try{localStorage.setItem("facai-fc-tab",fcTab)}catch(_){}curPage()==="sfc"?sfcRender():fcRender()});

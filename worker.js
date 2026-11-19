@@ -346,7 +346,7 @@ async function sfcHist(code, us) {
 }
 // 個股回測查詢（Luna 2026-11-19）：2015/9 起的還原日 K，頁面自己算 3 個燈和回測
 async function sfcBtK(code, us) {
-  const syms = us ? [code] : [code + ".TW", code + ".TWO"];
+  const syms = code === "TWII" && !us ? ["^TWII"] : us ? [code] : [code + ".TW", code + ".TWO"];
   for (const sym of syms) {
     const d = await chart(sym, Math.floor(Date.UTC(2015, 8, 1) / 1000)), D = [];
     if (!d || !d.timestamp) continue;

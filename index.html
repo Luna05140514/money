@@ -91,7 +91,7 @@ button,input,select{font:inherit;color:inherit}
 .reload{all:unset;cursor:pointer;font-size:13.5px;color:var(--red);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px}
 .reload:hover{border-color:var(--gold)}
 .reload:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.home-bar{display:flex;justify-content:flex-end;margin-bottom:10px}
+.home-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.hver{font-size:15px;color:var(--muted);font-weight:700} /* 版本號在左上，和重新整理同一排（Luna 2026-11-19） */
 /* 質押維持率 */
 .pl-res{text-align:center}
 .pl-res .big{font-family:var(--num);font-size:48px;font-weight:800;line-height:1.15}
@@ -346,7 +346,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 @media (min-width:701px){.wsimple{--c1:190px;--c2:130px}}
 .wsimple .wlist{overflow-x:auto;-webkit-overflow-scrolling:touch}
 /* 往左滑像翻頁，一次跳一欄（Luna 2026-11-17） */
-.wsimple .wlist{touch-action:pan-y;scroll-snap-type:x mandatory;scroll-padding-left:calc(var(--c1) + var(--c2));overscroll-behavior-x:contain}
+.wsimple .wlist{touch-action:pan-y;overscroll-behavior-x:none}
 .wsimple .wthead span.snp{scroll-snap-align:start;scroll-snap-stop:always}
 /* 手機：右邊剛好兩欄一頁，往左滑翻到下一頁 */
 @media (max-width:700px){
@@ -375,6 +375,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wsimple .wrow:not(.wed)>.nm{grid-row:auto!important;grid-column:1!important;position:sticky;left:0;z-index:1;background:var(--surface);flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding-left:8px;padding-right:2px}
 .wsimple .wrow:not(.wed)>.nm b{white-space:normal!important;overflow:hidden;max-width:100%;font-size:17px;line-height:1.25;word-break:normal;overflow-wrap:anywhere}
 .wsimple .wrow:not(.wed)>.nm small{display:none}
+.wlt{font-style:normal;font-size:14px;font-weight:700;color:var(--muted);margin-top:3px;white-space:nowrap;cursor:pointer}
 .wsimple .wrow:not(.wed)>.px{grid-column:2!important;overflow:hidden;min-width:0;position:sticky;left:var(--c1);z-index:1;background:var(--surface);justify-content:flex-end;padding-right:6px;font-size:clamp(15px,4.3vw,21px);line-height:1.2;box-shadow:4px 0 6px -4px rgba(0,0,0,.18)}
 .wsimple .wrow:not(.wed)>.chg{grid-column:3!important;flex-direction:column;align-items:flex-end;justify-content:center;font-size:clamp(15px,4.2vw,19px);line-height:1.2;min-width:0}
 .wsimple .wrow:not(.wed)>.chg br{display:none!important}
@@ -505,7 +506,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .fc-sum{font-size:22px;font-weight:800;margin:6px 0 2px}.fc-sum .up{color:var(--up)}.fc-sum .down{color:var(--down)}.fc-sum .mid{color:var(--gold,#c99a2e)}
 .fc-now{font-size:16px;color:var(--muted);margin:0 0 12px}.fc-now b{color:var(--ink);font-size:19px}
 .fc-t td small{display:block}.fc-t .ok{color:var(--up);font-weight:700}.fc-t .no{color:var(--down);font-weight:700}
-.fc-light{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 14px}.fc-lt{display:flex;align-items:center;gap:10px;font-size:22px}.fc-dot{font-size:34px;line-height:1}.fc-lt .mid{color:var(--gold,#c99a2e)}.fc-light ul{list-style:none;margin:8px 0 0;padding:0;font-size:16px;line-height:1.7}.fc-light li span{display:inline-block;width:24px;font-weight:800}.fc-light .ok{color:var(--ink)}.fc-light .no{color:var(--muted)}
+.fc-light{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 14px}.fc-lt{display:flex;align-items:center;gap:10px;font-size:22px}.fc-dot{font-size:34px;line-height:1}.fc-lt .mid{color:var(--gold,#c99a2e)}.fc-light ul{list-style:none;margin:8px 0 0;padding:0;font-size:16px;line-height:1.7}.fc-light li span{display:inline-block;width:24px;font-weight:800}.fc-light .ok{color:var(--ink)}.fc-light .no{color:var(--muted)}.fc-wen li{display:block;margin:6px 0}.fc-wen li small{display:block;margin-left:24px;color:var(--muted);font-size:14px}
 .fc-lv{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 8px}
 .fc-lv .k{font-size:16px;font-weight:700}.fc-lv .k small{display:block;font-size:13px;font-weight:400;color:var(--muted)}.fc-lv .p{font-size:22px;font-weight:800;text-align:right;white-space:nowrap}.fc-lv .p small{display:block;font-size:13px;font-weight:600;color:var(--muted)}
 .fc-rg{font-size:18px;line-height:1.6;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 12px}
@@ -693,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">A8</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -721,7 +722,6 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
       <button class="entry" data-go="compound" data-cat="calc"><span class="glyph">複</span><div><h2>複利計算機</h2><p>本金加上複利，看錢怎麼滾出錢</p></div><span class="go">›</span></button>
     </div>
     <p class="foot">所有試算皆為估算，報酬率為假設值，不代表未來表現，也不構成投資建議。<br>各頁的資料來源寫在那一頁最下面；數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
-    <p class="foot" id="ver">網頁版本 <span id="ver-n">A4</span></p>
     <div class="hits" id="hits" hidden></div>
   </section>
 
@@ -2030,11 +2030,41 @@ const nsfLive=(x,n)=>{if(!n[6])return n;const f=v=>Math.round(v).toLocaleString(
 const NSF={"2020-01-03":["2020/3/20","9,234","-24.3%","約 -4%","3 天後見底","約 136%"],"2022-01-05":["2022/7/13","14,325","-23.1%","-11.8%","3.5 個月後見底","約 140%"],"2024-07-11":["2025/4/9","17,392","-28.8%","-0.5%","當天見底","126%<small class=\"dd-ns\">（隔天 118%，史上最低）</small>"],"2026-10-06":["2026/11/9","",null,null,"",null,"2026-11-09"]};
 // 大盤預測（Luna 2026-11-19）：週線的月線（4 週）、季線（13 週）、半年線（26 週）、年線（52 週）、3 年線（156 週）
 // 上面的均線當可能漲到的壓力、下面的當可能跌到的支撐；機率＝2001 年起，跟現在一樣站上幾條均線的那些週，之後 3 個月（13 週）有碰到那個點位的比例
-const FC_MA=[[4,"月線"],[13,"季線"],[26,"半年線"],[52,"年線"],[156,"3 年線"]];let fcData=null,fcDd=null;
+// 溫老師「長、中、短期＋1 個攻擊訊號」（Luna 2026-11-19，CMoney 文章截圖）：加權指數日線
+// 長期 EMA50 黃／120 綠／240 紅；中期 一目均衡表 9/26/52；短期 布林 20 整理箱；攻擊 MACD 12/26/9
+function wenHtml(K,live,pts){
+  if(!K||K.length<300)return"";K=K.map(r=>r.slice());
+  const today=new Date(Date.now()+8*36e5).toISOString().slice(0,10),L=K[K.length-1];
+  if(live>0){const hi=pts&&pts.length?Math.max(...pts.map(p=>p[1])):live,lo=pts&&pts.length?Math.min(...pts.map(p=>p[1])):live;
+    if(L[0]===today){L[4]=live;L[2]=Math.max(L[2],hi);L[3]=Math.min(L[3],lo)}else if(L[0]<today&&new Date(Date.now()+8*36e5).getUTCDay()%6)K.push([today,live,hi,lo,live,0])}
+  const C=K.map(r=>r[4]),H=K.map(r=>r[2]),Lo=K.map(r=>r[3]),n=C.length,px=C[n-1],f=v=>Math.round(v).toLocaleString("zh-TW");
+  const ema=N=>{const a=[];let e=C[0];C.forEach((c,i)=>{e=i?e+(c-e)*2/(N+1):c;a.push(e)});return a};
+  // ① 黃綠紅
+  const y=ema(50)[n-1],g=ema(120)[n-1],r=ema(240)[n-1],al=y>g&&g>r;
+  const L1=px<y?["🔴","跌破黃線，先停損"]:al?["🟢","多頭排列，站在黃線上"]:["🟡","站上黃線，但還不是多頭排列"];
+  // ② 一目均衡表：轉換線 9、基準線 26、雲（先行帶 A、B 往後推 26 天）
+  const mid=(N,e)=>{const h=H.slice(e-N+1,e+1),l=Lo.slice(e-N+1,e+1);return(Math.max(...h)+Math.min(...l))/2};
+  const tk=mid(9,n-1),e2=n-1-26,sa=(mid(9,e2)+mid(26,e2))/2,sb=mid(52,e2),ct=Math.max(sa,sb),cb=Math.min(sa,sb);
+  const L2=px<tk?["🔴","跌破轉換線，先出場觀望"]:px>ct?["🟢","突破雲層，波段發動"]:["🟡",px>=cb?"在雲裡面整理":"在雲下面，還沒突破"];
+  // ③ 布林整理箱：最後一根碰到上軌的最高價，到之後第一根碰到下軌的最低價
+  const up=[],dn=[];for(let i=19;i<n;i++){const a=C.slice(i-19,i+1),m=a.reduce((s,v)=>s+v,0)/20,sd=Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/20);up[i]=m+2*sd;dn[i]=m-2*sd}
+  let bt=null,bb=null;for(let i=n-2;i>=n-250&&i>=19&&bt==null;i--)if(H[i]>=up[i]){for(let j=i+1;j<n-1;j++)if(Lo[j]<=dn[j]){bt=H[i];bb=Lo[j];break}}
+  const L3=bt==null?["🟡","最近沒有整理箱"]:px>bt?["🟢","突破整理箱上緣，可以找進場點"]:px<bb?["🔴","跌破整理箱下緣"]:["🟡","在整理箱裡，短期整理，先不要進場"];
+  // ④ MACD
+  let e12=C[0],e26=C[0],dea=0;const os=[];let dif=0;C.forEach((c,i)=>{e12+=(c-e12)*2/13;e26+=(c-e26)*2/27;dif=e12-e26;if(i)dea+=(dif-dea)*2/10;os.push(dif-dea)});
+  const o=os[n-1],po=os[n-2],bull=dif>0&&dea>0,red=o>0,grow=Math.abs(o)>Math.abs(po);
+  const L4=bull&&red&&grow?["🟢","多方控盤，紅柱變長，正在攻擊"]:bull&&!red&&!grow?["🟢","多方控盤，綠柱縮短，整理快結束"]:bull?["🟡",red?"多方控盤，紅柱縮短，攻擊變弱":"多方控盤，綠柱變長，正在整理"]:!red&&!grow?["🟡","空方控盤，綠柱縮短，跌勢變慢"]:["🔴","空方控盤（DIF、MACD 在 0 軸下）"];
+  const rows=[["長期","黃綠紅三線",L1,`黃線 ${f(y)}／綠線 ${f(g)}／紅線 ${f(r)}`],["中期","一目均衡表",L2,`轉換線 ${f(tk)}／雲 ${f(cb)}～${f(ct)}`],["短期","布林整理箱",L3,bt==null?"":`箱子 ${f(bb)}～${f(bt)}`],["攻擊","MACD",L4,`DIF ${dif.toFixed(0)}／MACD ${dea.toFixed(0)}`]];
+  const ng=rows.filter(x=>x[2][0]==="🟢").length,nr=rows.filter(x=>x[2][0]==="🔴").length;
+  return `<h3 class="dd-h3">長、中、短期＋攻擊訊號（日線）</h3><div class="fc-light"><div class="fc-lt"><span class="fc-dot">${ng===4?"🟢":nr>=2?"🔴":"🟡"}</span><b>${ng} ／ 4 個綠燈${ng===4?"：訊號對了，可以出手":nr>=2?"：先不要出手":"：還要再等等"}</b></div>
+    <ul class="fc-wen">${rows.map(x=>`<li><span>${x[2][0]}</span><b>${x[0]}・${x[1]}</b>：${x[2][1]}<small>${x[3]}</small></li>`).join("")}</ul>
+    <p class="dd-tn" style="margin:4px 0 0">溫老師說：訊號對了再出手，長、中、短期都綠燈，再加上攻擊訊號，勝率比較高。只是參考，不是保證。</p></div>`}
+const FC_MA=[[4,"月線"],[13,"季線"],[26,"半年線"],[52,"年線"],[156,"3 年線"]];let fcData=null,fcDd=null,fcK=null;
 calc.fc=()=>fcLoad();
 async function fcLoad(){
   if(!ON_CF){$("fc-body").innerHTML='<p>大盤預測要用你的網站（Cloudflare 版）打開才看得到。</p>';return}
   if(!fcDd)api("/api/dd?v=7").then(d=>{if(d&&d.big){fcDd=d;if(fcData)fcRender()}});
+  if(!fcK)api("/api/ixk?k=twii&v=1").then(d=>{if(d&&d.kline){fcK=d.kline;if(fcData)fcRender()}});
   if(!fcData){const d=await api("/api/ma13?v=8");if(!d||!d.w){$("fc-body").innerHTML='<p>暫時抓不到資料，請稍後按右上角「重新整理」。</p>';return}fcData=d}
   fcRender()}
 function fcRender(){const d=fcData;if(!d)return;
@@ -2067,6 +2097,7 @@ function fcRender(){const d=fcData;if(!d)return;
     <div class="fc-light"><div class="fc-lt"><span class="fc-dot">${lt}</span><b class="${ltc}">${ltx}</b></div>
       <ul>${CK.map(([ok,t])=>`<li><span class="${ok?"ok":"no"}">${ok?"✔":"✘"}</span>${t}</li>`).join("")}</ul>
       <p class="dd-tn" style="margin:4px 0 0">4 個都符合是綠燈；有站上但還沒全部符合是黃燈；收盤沒站上三條線是紅燈。</p></div>
+    ${wenHtml(fcK,live,it&&it.pts)}
     ${F.length?`<h3 class="dd-h3">接下來 3 個月大概的範圍</h3><div class="fc-rg">一般會漲到 <b class="up">${f(px*(1+mu/100))}</b>（${pc(mu)}）<br>一般會跌到 <b class="down">${f(px*(1+md/100))}</b>（${pc(md)}）<br><small style="color:var(--muted)">比較好時漲到 ${f(px*(1+u75/100))}，比較差時跌到 ${f(px*(1+d25/100))}（各 1/4 機率）</small></div>`:""}
     <h3 class="dd-h3">往上可能漲到（壓力）</h3>${ups.length?ups.map(card).join(""):'<p class="dd-tn">已經站上所有均線，上面沒有均線壓力。</p>'}
     <h3 class="dd-h3">往下可能跌到（支撐）</h3>${dns.length?dns.map(card).join(""):'<p class="dd-tn">已經跌破所有均線。</p>'}
@@ -2087,7 +2118,13 @@ async function ddLoad(){
 (function(){const SEL=".wsimple .wlist,.dd-sw";let st=null;
   document.addEventListener("touchstart",e=>{const el=e.target.closest(SEL);st=el&&e.touches.length===1?{el,x:e.touches[0].clientX,y:e.touches[0].clientY}:null},{passive:true});
   document.addEventListener("touchend",e=>{if(!st)return;const t=e.changedTouches[0],dx=t.clientX-st.x,dy=t.clientY-st.y,el=st.el;st=null;
-    if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)*1.5)return;el.scrollBy({left:(dx<0?1:-1)*el.clientWidth*0.5,behavior:"smooth"})},{passive:true})})();
+    if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)*1.5)return;const mx=Math.max(0,el.scrollWidth-el.clientWidth),cur=el.scrollLeft,dir=dx<0?1:-1;let to;
+    const sn=[...el.querySelectorAll(".snp")].filter(x=>x.offsetParent);
+    if(el.matches(".wlist")&&sn.length){const b0=sn[0].offsetLeft,ps=[...new Set(sn.map(x=>Math.min(mx,Math.max(0,x.offsetLeft-b0))))].sort((p,q)=>p-q);
+      to=dir>0?(ps.find(p=>p>cur+4)??mx):([...ps].reverse().find(p=>p<cur-4)??0)}
+    else to=cur+dir*el.clientWidth*0.5;
+    to=Math.min(mx,Math.max(0,Math.round(to)));if(to!==cur)el.scrollTo({left:to,behavior:"smooth"})},{passive:true});
+  document.addEventListener("scroll",e=>{const el=e.target;if(el&&el.matches&&el.matches(SEL)){const mx=Math.max(0,el.scrollWidth-el.clientWidth);if(el.scrollLeft<0)el.scrollLeft=0;else if(el.scrollLeft>mx)el.scrollLeft=mx}},{capture:true,passive:true})})();
 function ddDot(e){const l=e.scrollLeft,c=e.clientWidth,p=Math.min(2,Math.round(l/(c*.6))),d=e.nextElementSibling;if(d)d.querySelectorAll("i").forEach((x,i)=>x.classList.toggle("on",i==p))}
 const DD_WHY={"1997-08-25":"亞洲金融風暴","1998-02-23":"亞洲金融風暴、地雷股","1999-06-28":"兩國論","2000-02-14":"網路泡沫","2001-02-12":"網路泡沫、911","2002-04-22":"美股熊市","2003-01-20":"SARS 疫情","2004-03-01":"319 槍擊案","2007-10-29":"金融海嘯","2011-02-07":"歐債危機","2015-04-27":"中國股災","2020-01-03":"新冠疫情","2022-01-05":"美國升息","2024-07-11":"日圓套利、川普關稅","2026-10-06":""};
 function ddRender(d){
@@ -2609,7 +2646,7 @@ async function watchMgrLoad(){
 async function watchKdLoad(){
   if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;watchMkLoad();watchMgrLoad();
   const need=g.list.filter(c=>idxOf[c]&&!(watchKdAt[c]>Date.now()-6e5));if(!need.length)return;
-  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=15`);
+  const d=await api(`/api/kd?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}&v=16`);
   if(!d)return;Object.assign(watchKd,d);need.forEach(c=>watchKdAt[c]=Date.now());if(curPage()==="watch")watchRender()}
 function watchMkLoad(){const g=watchGroups[watchTab];if(!g)return;const L=g.list.filter(c=>idxOf[c]);mddLoad(L.map(c=>(idxOf[c][4]?"u:":"c:")+c),()=>{if(curPage()==="watch")watchRender()});mkLoad(L.filter(c=>!idxOf[c][4]),L.filter(c=>idxOf[c][4]),[],()=>{if(curPage()==="watch")watchRender()})}
 // 便宜／合理／昂貴（Luna 2026-10-22）：今年本益比＝即時股價 ÷ 今年法人預估 EPS，和近 5 年本益比區間比（跟詳細頁同一套）；ETF 沒有
@@ -2672,6 +2709,15 @@ function twiiBar(){const h1=$("watch-time");if(!h1)return;let el=$("watch-twii")
   all.forEach(x=>{if(!x)return;x.hidden=false;x.dataset.dir=cls;x.textContent=txt})} // 照 Luna 截圖（2026-11-18）：膠囊框「大盤 ▼ −140.48」，跌綠底、漲紅底、白字白框
 // 各頁標題移到上排原本「賺大錢發發發」的位置（Luna 2026-11-18）
 document.querySelectorAll("section.page").forEach(s=>{const h=s.querySelector(":scope>h1"),b=s.querySelector(".bar .brand");if(h&&b){b.textContent=h.textContent;b.classList.add("pgt")}});
+// 自選股紅綠燈（Luna 2026-11-19）：每一檔用週線月線、季線、半年線，和大盤預測同一套 4 個條件；worker /api/kd week.lt
+const LT_CK=["收盤站上月線、季線、半年線","連續 3 週收盤都沒跌破","多頭排列（月線＞季線＞半年線）而且都往上","拉回碰到月線沒跌破，而且量縮"];
+function ltOf(c){const k=watchKd[c],l=k&&k.week&&k.week.lt;if(!l)return null;const n=l.filter(x=>x).length;return !l[0]?["🔴","紅燈","還沒站穩",l]:n===4?["🟢","綠燈","真站穩",l]:["🟡","黃燈","站上了，還沒確認",l]}
+function ltTag(c,nm){const x=ltOf(c);return x?`<i class="wlt" data-lt="${esc(c)}" data-nm="${esc(nm)}" role="button" tabindex="0" aria-label="${x[1]}，看說明">${x[0]}${x[1]}</i>`:""}
+document.addEventListener("click",e=>{const g=e.target.closest(".wlt[data-lt]");if(!g)return;e.preventDefault();e.stopPropagation();const x=ltOf(g.dataset.lt);if(!x)return;let box=$("sg-pop");
+  if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
+  box.innerHTML=`<div class="sg-card" role="dialog" aria-label="紅綠燈"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(g.dataset.nm)} 紅綠燈</h2><p class="sg-res">結果：<b>${x[0]} ${x[1]}：${x[2]}</b></p>
+    <div class="fc-light"><ul>${LT_CK.map((t,i)=>`<li class="${x[3][i]?"ok":"no"}"><span>${x[3][i]?"✔":"✘"}</span>${t}</li>`).join("")}</ul></div>
+    <p class="muted">用週線看。4 條都符合是綠燈；第 1 條沒有是紅燈；其他是黃燈。只是參考，不是保證。</p></div>`;box.hidden=false},true);
 function watchRender(){twiiBar();
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("")+`<button class="wt-add" id="wt-plus" aria-label="新增分頁">＋</button>`;{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}
@@ -2681,7 +2727,7 @@ function watchRender(){twiiBar();
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br><small class="pc">${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%</small>`;
     const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):c==="TSM"?adrCell(it.last):peMini(c,it.last),it.last,mkData[c],(idxOf[c][4]?"u:":"c:")+c);
     if(watchEdit)return `<div class="wrow wed" data-c="${esc(c)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="wmv"><span class="wmb wdrag" aria-label="按住拖動 ${esc(it.name)}，可用上下鍵移動" role="button" tabindex="0">☰</span><span class="wmb wdx" data-rm="1" role="button" tabindex="0" aria-label="移除 ${esc(it.name)}">✕</span></span></div>`;
-    return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
+    return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small>${ltTag(c,it.name)}</span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows?(watchEdit?"":anaHead((()=>{const e=g.list.filter(c=>idxOf[c]).map(c=>!!idxOf[c][2]);return e.length&&e.every(x=>x)?"折溢價":e.some(x=>x)?"價位<br>折溢價":true})()))+rows:'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
   watchFit();
 }

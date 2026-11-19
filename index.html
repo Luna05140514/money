@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">D1</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">D2</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1924,17 +1924,17 @@ function idxInit(){
 const ON_CF=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
 async function api(path){if(!ON_CF)return null;try{const r=await fetch(path,{cache:"no-store"});if(!r.ok)return null;const d=await r.json();return d&&!d.error?d:null}catch(_){return null}}
 /* 名詞小幫手（Luna 2026-10-23）：名詞旁邊的「？」，點了用白話解釋 */
-const GL_BT=(()=>{const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],D={"3 年":[[124,29,"0/3"],[69,16,"3/3"],[87,25,"3/3"],[137,22,"1/3"],[137,22,"1/3"]],"5 年":[[117,32,"0/4"],[87,16,"4/4"],[81,25,"3/4"],[137,22,"1/4"],[137,22,"1/4"]],"10 年":[[324,32,"0/6"],[172,16,"6/6"],[191,25,"4/6"],[332,22,"3/6"],[342,22,"2/6"]]};
-  return `<p>近幾年回測（加權指數）：</p><div class="fc-tabs gl-pt">${Object.keys(D).map((p,i)=>`<button data-glp="${i}" aria-selected="${i===2}">${p}</button>`).join("")}</div>`+Object.entries(D).map(([p,R],i)=>`<table class="fc-ct gl-bt" data-glt="${i}"${i===2?"":" hidden"}><tr><th>方法</th><th>賺</th><th>最多跌</th><th>躲掉大跌</th></tr>${R.map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}</td><td>${r[0]}%</td><td>${r[1]}%</td><td>${r[2]}</td></tr>`).join("")}</table>`).join("")+`<p class="gl-nt">單一個燈和 3 個一起：紅燈賣、黃燈或綠燈就買回。大跌＝從高點跌 15% 以上，「躲掉」＝跌到 15% 前就賣掉。3 個一起就是網站的總結論。</p>`})();
+const GL_BT=(()=>{const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],D={"3 年":[[124,29,"0/3"],[69,16,"3/3"],[87,25,"3/3"],[137,22,"1/3"],[142,22,"1/3"]],"5 年":[[117,32,"0/4"],[87,16,"4/4"],[81,25,"3/4"],[137,22,"1/4"],[168,22,"1/4"]],"10 年":[[324,32,"0/6"],[172,16,"6/6"],[191,25,"4/6"],[332,22,"3/6"],[408,22,"3/6"]]};
+  return `<p>近幾年回測（加權指數）：</p><div class="fc-tabs gl-pt">${Object.keys(D).map((p,i)=>`<button data-glp="${i}" aria-selected="${i===2}">${p}</button>`).join("")}</div>`+Object.entries(D).map(([p,R],i)=>`<table class="fc-ct gl-bt" data-glt="${i}"${i===2?"":" hidden"}><tr><th>方法</th><th>賺</th><th>最多跌</th><th>躲掉大跌</th></tr>${R.map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}</td><td>${r[0]}%</td><td>${r[1]}%</td><td>${r[2]}</td></tr>`).join("")}</table>`).join("")+`<p class="gl-nt">單一個燈：紅燈賣、黃燈或綠燈就買回。3 個一起：3 個都紅燈賣、收盤站回 20 日線就買回。大跌＝從高點跌 15% 以上，「躲掉」＝跌到 15% 前就賣掉。3 個一起就是網站的總結論。</p>`})();
 const GL_SBT=(()=>{const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],P=["3 年","5 年","10 年"],
-  S={"00878":[[[94,22,"0/1"],[89,8,"1/1"],[59,15,"1/1"],[97,13,"1/1"],[97,13,"1/1"]],[[141,22,"0/2"],[137,9,"2/2"],[96,15,"2/2"],[156,13,"2/2"],[158,13,"2/2"]],[[146,22,"0/2"],[142,9,"2/2"],[101,15,"2/2"],[162,13,"2/2"],[164,13,"2/2"],"上市較晚，從 2021/11 開始算"]],"00894":[[[192,34,"0/4"],[78,24,"4/4"],[174,26,"3/4"],[189,31,"1/4"],[189,31,"1/4"]],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[241,31,"1/4"],"上市較晚，從 2022/11 開始算"],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[241,31,"1/4"],"上市較晚，從 2022/11 開始算"]],"0050":[[[195,27,"0/4"],[112,18,"4/4"],[174,16,"4/4"],[220,23,"1/4"],[220,23,"1/4"]],[[192,34,"0/5"],[121,18,"5/5"],[180,16,"4/5"],[238,23,"1/5"],[248,23,"1/5"]],[[600,34,"0/7"],[288,18,"7/7"],[395,18,"6/7"],[571,28,"2/7"],[619,26,"2/7"]]],"00685L":[[[277,55,"0/5"],[136,30,"5/5"],[179,43,"1/5"],[384,40,"0/5"],[384,40,"0/5"]],[[296,55,"0/6"],[187,30,"6/6"],[172,43,"1/6"],[453,40,"0/6"],[453,40,"0/6"]],[[1272,55,"0/10"],[600,30,"10/10"],[731,43,"4/10"],[2200,40,"2/10"],[2224,40,"1/10"],"上市較晚，從 2018/7 開始算"]]},
+  S={"00878":[[[94,22,"0/1"],[89,8,"1/1"],[59,15,"1/1"],[97,13,"1/1"],[94,13,"1/1"]],[[141,22,"0/2"],[137,9,"2/2"],[96,15,"2/2"],[156,13,"2/2"],[159,13,"2/2"]],[[146,22,"0/2"],[142,9,"2/2"],[101,15,"2/2"],[162,13,"2/2"],[166,13,"2/2"],"上市較晚，從 2021/11 開始算"]],"00894":[[[192,34,"0/4"],[78,24,"4/4"],[174,26,"3/4"],[189,31,"1/4"],[192,31,"1/4"]],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[229,31,"1/4"],"上市較晚，從 2022/11 開始算"],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[229,31,"1/4"],"上市較晚，從 2022/11 開始算"]],"0050":[[[195,27,"0/4"],[112,18,"4/4"],[174,16,"4/4"],[220,23,"1/4"],[222,23,"1/4"]],[[192,34,"0/5"],[121,18,"5/5"],[180,16,"4/5"],[238,23,"1/5"],[262,23,"1/5"]],[[600,34,"0/7"],[288,18,"7/7"],[395,18,"6/7"],[571,28,"2/7"],[666,23,"3/7"]]],"00685L":[[[277,55,"0/5"],[136,30,"5/5"],[179,43,"1/5"],[384,40,"0/5"],[435,38,"0/5"]],[[296,55,"0/6"],[187,30,"6/6"],[172,43,"1/6"],[453,40,"0/6"],[662,38,"0/6"]],[[1272,55,"0/10"],[600,30,"10/10"],[731,43,"4/10"],[2200,40,"2/10"],[3249,38,"1/10"],"上市較晚，從 2018/7 開始算"]]},
   tb=(R,k)=>`<div data-glt="${k}"${k==="0,2"?"":" hidden"}>${R[5]?`<p class="gl-nt">${R[5]}</p>`:""}<table class="fc-ct gl-bt"><tr><th>方法</th><th>賺</th><th>最多跌</th><th>躲掉大跌</th></tr>${R.slice(0,5).map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}</td><td>${r[0]}%</td><td>${r[1]}%</td><td>${r[2]}</td></tr>`).join("")}</table></div>`;
-  return `<p>個股回測（還原權息）：</p><div class="fc-tabs gl-pt gl-st">${Object.keys(S).map((s,i)=>`<button data-gls="${i}" aria-selected="${i===0}">${s}</button>`).join("")}</div><div class="fc-tabs gl-pt">${P.map((p,i)=>`<button data-glp="${i}" aria-selected="${i===2}">${p}</button>`).join("")}</div>`+Object.values(S).map((A,i)=>A.map((R,j)=>tb(R,i+","+j)).join("")).join("")+`<p class="gl-nt">每檔都是用那檔自己的 3 個燈算：紅燈賣、黃燈或綠燈就買回。大跌＝從高點跌 15% 以上，「躲掉」＝跌到 15% 前就賣掉。</p>`})();
+  return `<p>個股回測（還原權息）：</p><div class="fc-tabs gl-pt gl-st">${Object.keys(S).map((s,i)=>`<button data-gls="${i}" aria-selected="${i===0}">${s}</button>`).join("")}</div><div class="fc-tabs gl-pt">${P.map((p,i)=>`<button data-glp="${i}" aria-selected="${i===2}">${p}</button>`).join("")}</div>`+Object.values(S).map((A,i)=>A.map((R,j)=>tb(R,i+","+j)).join("")).join("")+`<p class="gl-nt">每檔都是用那檔自己的 3 個燈算。單一個燈：紅燈賣、黃燈或綠燈就買回；3 個一起：3 個都紅燈賣、收盤站回 20 日線就買回。大跌＝從高點跌 15% 以上，「躲掉」＝跌到 15% 前就賣掉。</p>`})();
 document.addEventListener("click",e=>{const b=e.target.closest("[data-glp],[data-gls]");if(!b)return;const c=b.closest(".gl-card");if(!c)return;b.parentNode.querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
   const sb=c.querySelector("[data-gls][aria-selected=true]"),pb=c.querySelector("[data-glp][aria-selected=true]"),k=(sb?sb.dataset.gls+",":"")+pb.dataset.glp;c.querySelectorAll("[data-glt]").forEach(t=>t.hidden=t.dataset.glt!==k)});
 const GLOSS={
-  "個股回測":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","3 個都紅燈 → 🔴 考慮減碼","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱，減碼的可以買回"],GL_SBT,"算到 2026/11/19，用每天收盤算，沒算手續費和稅；未來不保證。","總結論怎麼看"],
-  "回測比較":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","3 個都紅燈 → 🔴 考慮減碼","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱，減碼的可以買回"],GL_BT,"算到 2026/11/19，用每天收盤算，沒算手續費和稅；未來不保證。","總結論怎麼看"],
+  "個股回測":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","3 個都紅燈 → 🔴 考慮減碼","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱","減碼之後，收盤站回 20 日線 → 可以買回"],GL_SBT,"算到 2026/11/19，用每天收盤算，沒算手續費和稅；未來不保證。","總結論怎麼看"],
+  "回測比較":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","3 個都紅燈 → 🔴 考慮減碼","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱","減碼之後，收盤站回 20 日線 → 可以買回"],GL_BT,"算到 2026/11/19，用每天收盤算，沒算手續費和稅；未來不保證。","總結論怎麼看"],
   BT1:["① 每年一開始整筆買、不賣", ["每年第一天，把一年的錢一次買進","一直抱著，不賣"], "", "", "操作流程：每年一開始整筆買、不賣"],
   BT2:["② 每個月固定買", ["每月第一個交易日買進","一直抱著，不賣"], "", "", "操作流程：每個月固定買"],
   BT3:["③ 固定買＋低點加碼", ["每月一半的錢固定買","另一半先存著","日 K 或週 K 跌破 30，存的錢全買","一直抱著，不賣"], "", "", "操作流程：固定買＋低點加碼"],
@@ -2134,9 +2134,9 @@ async function fcBtSig(K,dp,prog){const wk=s=>{const x=new Date(s+"T00:00:00Z");
 function fcBtEval(K,sig,from){const n=K.length,C=K.map(r=>r[4]);let S=K.findIndex(r=>r[0]>=from);if(S<0)return null;while(S<n&&!sig[S])S++;if(S>=n-20)return null;
   const E=[];{let p=S,inE=false,tr=S;for(let t=S;t<n;t++){if(C[t]>=C[p]){if(inE)E.push([p,tr]);inE=false;p=t;tr=t;continue}if(C[t]<C[tr])tr=t;if(C[t]<=C[p]*.85)inE=true}if(inE)E.push([p,tr])}
   let pk=C[S],mdd=0;for(let t=S;t<n;t++){pk=Math.max(pk,C[t]);mdd=Math.min(mdd,C[t]/pk-1)}
-  const cnt=s=>["W","B","P"].filter(k=>s[k]==="R").length,RU=[[s=>s.W==="R",s=>s.W!=="R"],[s=>s.B==="R",s=>s.B!=="R"],[s=>s.P==="R",s=>s.P!=="R"],[s=>cnt(s)===3,s=>cnt(s)<=2]];
+  const cnt=s=>["W","B","P"].filter(k=>s[k]==="R").length,RU=[[s=>s.W==="R",s=>s.W!=="R"],[s=>s.B==="R",s=>s.B!=="R"],[s=>s.P==="R",s=>s.P!=="R"],[s=>cnt(s)===3,(s,t)=>t>=19&&C[t]>C.slice(t-19,t+1).reduce((a,b)=>a+b,0)/20]];
   const rows=[[Math.round((C[n-1]/C[S]-1)*100),Math.round(-mdd*100),`0/${E.length}`]];
-  for(const [ex,en] of RU){let on=true,v=1,pv=1,md=0;const out=[];for(let t=S;t<n;t++){if(t>S&&!out[t-1])v*=C[t]/C[t-1];pv=Math.max(pv,v);md=Math.min(md,v/pv-1);const s=sig[t];if(s){if(on&&ex(s))on=false;else if(!on&&en(s))on=true}out[t]=!on}
+  for(const [ex,en] of RU){let on=true,v=1,pv=1,md=0;const out=[];for(let t=S;t<n;t++){if(t>S&&!out[t-1])v*=C[t]/C[t-1];pv=Math.max(pv,v);md=Math.min(md,v/pv-1);const s=sig[t];if(s){if(on&&ex(s))on=false;else if(!on&&en(s,t))on=true}out[t]=!on}
     let av=0;for(const [p,tr] of E){for(let t=p;t<=tr;t++){if(out[t]&&C[t]>C[p]*.85){let st=true;for(let u=t;u<=tr;u++)if(!out[u]){st=false;break}if(st){av++;break}}}}
     rows.push([Math.round((v-1)*100),Math.round(-md*100),`${av}/${E.length}`])}
   return {start:K[S][0],rows}}
@@ -2147,7 +2147,7 @@ function sfcBtShow(){const el=$("sfc-bt");if(!el)return;const k=(sfcUs?"u:":"c:"
   const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],P=["3 年","5 年","10 年"],T=R.p[sfcBtP];
   el.innerHTML=`<h3 class="dd-h3">${esc(sfcName())} 回測</h3><div class="fc-tabs">${P.map((p,i)=>`<button data-sbp="${i}" aria-selected="${i===sfcBtP}">${p}</button>`).join("")}</div>`+
     (T?`${T.note?`<p class="gl-nt">${T.note}</p>`:""}<table class="fc-ct gl-bt"><tr><th>方法</th><th>賺</th><th>最多跌</th><th>躲掉大跌</th></tr>${T.rows.map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}</td><td>${r[0]}%</td><td>${r[1]}%</td><td>${r[2]}</td></tr>`).join("")}</table>`:`<p class="dd-tn">資料不夠，算不出來。</p>`)+
-    `<p class="dd-tn" style="margin-bottom:18px">用這檔自己的 3 個燈算（還原權息、每天收盤）：紅燈賣、黃燈或綠燈就買回；3 個一起＝網站的總結論。大跌＝從高點跌 15% 以上，「躲掉」＝跌到 15% 前就賣掉。沒算手續費和稅，過去不代表未來。</p>`}
+    `<p class="dd-tn" style="margin-bottom:18px">用這檔自己的 3 個燈算（還原權息、每天收盤）：單一個燈＝紅燈賣、黃燈或綠燈就買回；3 個一起＝網站的總結論（3 個都紅燈賣、收盤站回 20 日線買回）。大跌＝從高點跌 15% 以上，「躲掉」＝跌到 15% 前就賣掉。沒算手續費和稅，過去不代表未來。</p>`}
 async function sfcBtRun(){const k=(sfcUs?"u:":"c:")+sfcCode,c=sfcCode,us=sfcUs,el=$("sfc-bt");if(sfcBtBusy)return;sfcBtBusy=k;el.innerHTML=`<p class="sfc-btw">回測計算中…</p>`;
   try{const d=await api(`/api/sfcbt?${us?"us":"c"}=${encodeURIComponent(c)}&v=1`);if(!d||!d.K||d.K.length<400)throw new Error("少");
     const sig=await fcBtSig(d.K,1,p=>{if(sfcBtBusy===k&&curPage()==="sfc"&&sfcCode===c)el.innerHTML=`<p class="sfc-btw">回測計算中… ${Math.max(0,Math.min(99,p))}%</p>`});
@@ -2191,7 +2191,7 @@ function fcRender(o){o=o||{d:fcData,K:fcK,dd:fcDd,el:"fc-body",nm:"加權指數"
   // 總結論（Luna 2026-11-19 同意，10 年回測挑出來的規則）：三塊都紅燈＝考慮減碼；紅燈剩 1 個以下＝可以分批買；其他＝觀望
   const WH=wenHtml(o.K,o.us?null:live,it&&it.pts,o.dp),bm=WH.match(/<b>(綠燈|紅燈|黃燈)/);let SUM="";
   if(bm){const cW=lt,cB=bm[1]==="綠燈"?"🟢":bm[1]==="紅燈"?"🔴":"🟡",cP=k>=4?"🟢":k>=2?"🟡":"🔴",nR=[cW,cB,cP].filter(x=>x==="🔴").length;
-    const [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","考慮加碼"]:["🟡","續抱，減碼的可以買回"];
+    const [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","考慮加碼"]:["🟡","續抱"];
     // 總結論是從什麼燈轉過來的（Luna 2026-11-19：紅轉黃、綠轉黃意思不同）
     let ch="";try{const K0=o.K,lv=o.us?null:live,L0=K0[K0.length-1],cur=lv>0&&L0[0]<today&&new Date(Date.now()+8*36e5).getUTCDay()%6?K0.length:K0.length-1;
       const sumAt=e=>{const Kp=K0.slice(0,e+1),pd=Kp[Kp.length-1],pw=wk(pd[0]),dw=Kp.filter(r=>wk(r[0])===pw);
@@ -2203,8 +2203,13 @@ function fcRender(o){o=o||{d:fcData,K:fcK,dd:fcDd,el:"fc-body",nm:"加權指數"
         const pW=!e1?"🔴":[e1,e2,e3,e4].every(x=>x)?"🟢":"🟡",kk=FC_MA.filter(([N])=>{const m=m2(N,n2-1);return m!=null&&C2[n2-1]>m}).length,pP=kk>=4?"🟢":kk>=2?"🟡":"🔴";
         const pm=wenHtml(Kp,null,null,o.dp).match(/<b>(綠燈|紅燈|黃燈)/);if(!pm)return null;const pB=pm[1]==="綠燈"?"🟢":pm[1]==="紅燈"?"🔴":"🟡",pR=[pW,pB,pP].filter(x=>x==="🔴").length;return pR===3?"🔴":pR<=1?"🟢":"🟡"};
       let e=cur-1,ps=null,since=cur<K0.length?today:K0[cur][0];for(;e>=Math.max(300,cur-120);e--){const v=sumAt(e);if(!v)break;if(v!==sd){ps=v;break}since=K0[e][0]}
-      const cn={"🔴":"紅","🟡":"黃","🟢":"綠"},TIP={"🔴🟡":"減碼的可以先買回","🟢🟡":"先不動，續抱","🔴🟢":"考慮加碼","🟡🟢":"考慮加碼","🟢🔴":"考慮減碼","🟡🔴":"考慮減碼"};
-      if(ps)ch=`<p class="fc-ch"><b>${cn[ps]}轉${cn[sd]}：${TIP[ps+sd]}</b><br>${since.slice(5).replace("-","/")} 從${cn[ps]}燈變${cn[sd]}燈${since===(cur<K0.length?today:K0[cur][0])?"（今天剛變）":""}</p>`}catch(e){}
+      const cn={"🔴":"紅","🟡":"黃","🟢":"綠"},TIP={"🔴🟡":"續抱","🟢🟡":"先不動，續抱","🔴🟢":"考慮加碼","🟡🟢":"考慮加碼","🟢🔴":"考慮減碼","🟡🔴":"考慮減碼"};
+      if(ps)ch=`<p class="fc-ch"><b>${cn[ps]}轉${cn[sd]}：${TIP[ps+sd]}</b><br>${since.slice(5).replace("-","/")} 從${cn[ps]}燈變${cn[sd]}燈${since===(cur<K0.length?today:K0[cur][0])?"（今天剛變）":""}</p>`
+      // 買回看 20 日線（Luna 2026-11-19：抓低點買點，回測比等黃燈早）
+      const cl=i=>i<K0.length?(i===K0.length-1&&lv>0&&L0[0]===today?lv:K0[i][4]):lv,m20=i=>{let s=0;for(let j=i-19;j<=i;j++)s+=cl(j);return s/20},dt=i=>(i<K0.length?K0[i][0]:today).slice(5).replace("-","/");
+      let lr=sd==="🔴"?cur:null;if(lr==null)for(let e2=cur-1;e2>=Math.max(300,cur-120);e2--){const v=e2>e&&e2<cur?sd:sumAt(e2);if(v==="🔴"){lr=e2;break}}
+      if(lr!=null){let up=-1;for(let t=lr+1;t<=cur;t++)if(cl(t)>m20(t)){up=t;break}
+        ch+=sd==="🔴"?`<p class="fc-ch"><b>減碼之後，等收盤站回 20 日線（現在 ${f(m20(cur))}）再買回</b></p>`:up>=0?(cur-up>20?"":`<p class="fc-ch"><b>${dt(up)} 已站回 20 日線，減碼的可以買回</b></p>`):`<p class="fc-ch"><b>還沒站回 20 日線（${f(m20(cur))}），減碼的先別買回</b></p>`}}catch(e){}
     SUM=`<div class="fc-light fc-s3"><div class="fc-lt"><span class="fc-dot">${sd}</span><b>總結論：${sx} ${qm(o.el==="sfc-body"?"個股回測":"回測比較")}</b></div>${ch}</div>`}
   const TB=[["大方向穩不穩",`<p class="fc-sum">站上 ${k} ／ ${R.length} 條均線：<span class="${cls}">${lab}</span></p>
     <p class="fc-now">${esc(o.nm)} <b>${f(px)}</b>${live>0?"（即時）":""}</p>

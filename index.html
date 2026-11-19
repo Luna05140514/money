@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">E4</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">E6</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1929,18 +1929,18 @@ function idxInit(){
 const ON_CF=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
 async function api(path){if(!ON_CF)return null;try{const r=await fetch(path,{cache:"no-store"});if(!r.ok)return null;const d=await r.json();return d&&!d.error?d:null}catch(_){return null}}
 /* 名詞小幫手（Luna 2026-10-23）：名詞旁邊的「？」，點了用白話解釋 */
-const GL_BT=(()=>{const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],D={"3 年":[[123,29,"0/3"],[69,16,"3/3"],[87,25,"3/3"],[136,23,"1/3"],[141,23,"1/3"]],"5 年":[[116,32,"0/4"],[87,16,"4/4"],[81,25,"3/4"],[136,23,"1/4"],[167,23,"1/4"]],"10 年":[[321,32,"0/6"],[172,16,"6/6"],[191,25,"4/6"],[329,23,"3/6"],[405,23,"3/6"]]};
+const GL_BT=(()=>{const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],D={"3 年":[[123,29,"0/3"],[69,16,"3/3"],[87,25,"3/3"],[136,23,"1/3"],[147,23,"1/3"]],"5 年":[[116,32,"0/4"],[87,16,"4/4"],[81,25,"3/4"],[136,23,"1/4"],[201,23,"1/4"]],"10 年":[[321,32,"0/6"],[172,16,"6/6"],[191,25,"4/6"],[329,23,"3/6"],[406,25,"2/6"]]};
   return `<p>近幾年回測（加權指數）：</p><div class="fc-tabs gl-pt">${Object.keys(D).map((p,i)=>`<button data-glp="${i}" aria-selected="${i===2}">${p}</button>`).join("")}</div>`+Object.entries(D).map(([p,R],i)=>`<table class="fc-ct gl-bt" data-glt="${i}"${i===2?"":" hidden"}><tr><th>方法</th><th>賺</th><th>最多跌</th><th>躲掉大跌</th></tr>${R.map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}</td><td>${r[0]}%</td><td>${r[1]}%</td><td>${r[2]}</td></tr>`).join("")}</table>`).join("")+`<ol class="gl-nt gl-ol"><li>3 個一起＝網站的總結論：3 個都紅燈賣，收盤站回 20 日線就買回</li><li>單一個燈：紅燈賣，黃燈或綠燈就買回</li><li>大跌＝從高點跌 15% 以上</li><li>躲掉＝跌到 15% 前就賣掉</li></ol>`})();
 const GL_SBT=(()=>{const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],P=["3 年","5 年","10 年"],
-  S={"00878":[[[94,22,"0/1"],[89,8,"1/1"],[59,15,"1/1"],[97,13,"1/1"],[94,13,"1/1"]],[[141,22,"0/2"],[137,9,"2/2"],[96,15,"2/2"],[156,13,"2/2"],[159,13,"2/2"]],[[146,22,"0/2"],[142,9,"2/2"],[101,15,"2/2"],[162,13,"2/2"],[166,13,"2/2"],"上市較晚，從 2021/11 開始算"]],"00894":[[[192,34,"0/4"],[78,24,"4/4"],[174,26,"3/4"],[189,31,"1/4"],[192,31,"1/4"]],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[229,31,"1/4"],"上市較晚，從 2022/11 開始算"],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[229,31,"1/4"],"上市較晚，從 2022/11 開始算"]],"0050":[[[195,27,"0/4"],[112,18,"4/4"],[174,16,"4/4"],[220,23,"1/4"],[222,23,"1/4"]],[[192,34,"0/5"],[121,18,"5/5"],[180,16,"4/5"],[238,23,"1/5"],[262,23,"1/5"]],[[600,34,"0/7"],[288,18,"7/7"],[395,18,"6/7"],[571,28,"2/7"],[666,23,"3/7"]]],"00685L":[[[277,55,"0/5"],[136,30,"5/5"],[179,43,"1/5"],[384,40,"0/5"],[435,38,"0/5"]],[[296,55,"0/6"],[187,30,"6/6"],[172,43,"1/6"],[453,40,"0/6"],[662,38,"0/6"]],[[1272,55,"0/10"],[600,30,"10/10"],[731,43,"4/10"],[2200,40,"2/10"],[3249,38,"1/10"],"上市較晚，從 2018/7 開始算"]]},
+  S={"00878":[[[94,22,"0/1"],[89,8,"1/1"],[59,15,"1/1"],[97,13,"1/1"],[79,18,"0/1"]],[[141,22,"0/2"],[137,9,"2/2"],[96,15,"2/2"],[156,13,"2/2"],[121,18,"1/2"]],[[146,22,"0/2"],[142,9,"2/2"],[101,15,"2/2"],[162,13,"2/2"],[127,18,"1/2"],"上市較晚，從 2021/11 開始算"]],"00894":[[[192,34,"0/4"],[78,24,"4/4"],[174,26,"3/4"],[189,31,"1/4"],[222,33,"1/4"]],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[313,33,"1/4"],"上市較晚，從 2022/11 開始算"],[[274,34,"0/4"],[111,24,"4/4"],[194,26,"3/4"],[241,31,"1/4"],[313,33,"1/4"],"上市較晚，從 2022/11 開始算"]],"0050":[[[195,27,"0/4"],[112,18,"4/4"],[174,16,"4/4"],[220,23,"1/4"],[213,23,"1/4"]],[[192,34,"0/5"],[121,18,"5/5"],[180,16,"4/5"],[238,23,"1/5"],[234,23,"1/5"]],[[600,34,"0/7"],[288,18,"7/7"],[395,18,"6/7"],[571,28,"2/7"],[546,24,"2/7"]]],"00685L":[[[277,55,"0/5"],[136,30,"5/5"],[179,43,"1/5"],[384,40,"0/5"],[356,43,"0/5"]],[[296,55,"0/6"],[187,30,"6/6"],[172,43,"1/6"],[453,40,"0/6"],[579,43,"0/6"]],[[1272,55,"0/10"],[600,30,"10/10"],[731,43,"4/10"],[2200,40,"2/10"],[3061,43,"1/10"],"上市較晚，從 2018/07 開始算"]]},
   tb=(R,k)=>`<div data-glt="${k}"${k==="0,2"?"":" hidden"}>${R[5]?`<p class="gl-nt">${R[5]}</p>`:""}<table class="fc-ct gl-bt"><tr><th>方法</th><th>賺</th><th>最多跌</th><th>躲掉大跌</th></tr>${R.slice(0,5).map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}</td><td>${r[0]}%</td><td>${r[1]}%</td><td>${r[2]}</td></tr>`).join("")}</table></div>`;
   return `<p>個股回測（還原權息）：</p><div class="fc-tabs gl-pt gl-st">${Object.keys(S).map((s,i)=>`<button data-gls="${i}" aria-selected="${i===0}">${s}</button>`).join("")}</div><div class="fc-tabs gl-pt">${P.map((p,i)=>`<button data-glp="${i}" aria-selected="${i===2}">${p}</button>`).join("")}</div>`+Object.values(S).map((A,i)=>A.map((R,j)=>tb(R,i+","+j)).join("")).join("")+`<ol class="gl-nt gl-ol"><li>每檔都用那檔自己的 3 個燈算</li><li>3 個一起＝網站的總結論：3 個都紅燈賣，收盤站回 20 日線就買回</li><li>單一個燈：紅燈賣，黃燈或綠燈就買回</li><li>大跌＝從高點跌 15% 以上</li><li>躲掉＝跌到 15% 前就賣掉</li></ol>`})();
 document.addEventListener("click",e=>{const b=e.target.closest("[data-glp],[data-gls]");if(!b)return;const c=b.closest(".gl-card");if(!c)return;b.parentNode.querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
   const sb=c.querySelector("[data-gls][aria-selected=true]"),pb=c.querySelector("[data-glp][aria-selected=true]"),k=(sb?sb.dataset.gls+",":"")+pb.dataset.glp;c.querySelectorAll("[data-glt]").forEach(t=>t.hidden=t.dataset.glt!==k)});
 const GLOSS={
-  "個股回測":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","黃燈分兩種：紅黃燈＝紅燈變黃燈、綠黃燈＝綠燈變黃燈","3 個都紅燈 → 🔴 考慮減碼","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱；紅黃燈（紅燈變黃燈）→ 可以先買回一半","減碼之後，收盤站回 20 日線 → 可以買回"],GL_SBT,["算到 2026/11/19，用每天收盤算","沒算手續費和稅","過去不代表未來"],"總結論怎麼看"],
+  "個股回測":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","黃燈分兩種：紅黃燈＝紅燈變黃燈、綠黃燈＝綠燈變黃燈","3 個都紅燈連續 5 天 → 🔴 考慮減碼（剛變紅先不動）","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱；紅黃燈（紅燈變黃燈）→ 可以先買回一半","減碼之後，收盤站回 20 日線 → 可以買回"],GL_SBT,["算到 2026/11/19，用每天收盤算","沒算手續費和稅","過去不代表未來"],"總結論怎麼看"],
   "預測燈號":["預測價格",["站上 4～5 條均線 → 🟢 綠燈","站上 2～3 條均線 → 🟡 黃燈","站上 0～1 條均線 → 🔴 紅燈"],"均線：月線、季線、半年線、年線、3 年線（都用週收盤算）",["機率是看 2001 年（或上市）以來、跟現在站上一樣多條均線的那些週，之後 3 個月最高、最低到哪裡","「大概的範圍」只看最近 5 年","大盤過去一年回測：「一般會跌到」54% 真的跌到；「一般會漲到」86% 被超過；「3 個月內碰到」說 80% 以上的，實際 89% 碰到","過去不代表未來，只能參考"],"預測價格怎麼看"],
-  "回測比較":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","黃燈分兩種：紅黃燈＝紅燈變黃燈、綠黃燈＝綠燈變黃燈","3 個都紅燈 → 🔴 考慮減碼","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱；紅黃燈（紅燈變黃燈）→ 可以先買回一半","減碼之後，收盤站回 20 日線 → 可以買回"],GL_BT,["算到 2026/11/19，用每天收盤算","沒算手續費和稅","過去不代表未來"],"總結論怎麼看"],
+  "回測比較":["總結論",["3 塊（大方向、可不可以買、預測價格）一起看","黃燈分兩種：紅黃燈＝紅燈變黃燈、綠黃燈＝綠燈變黃燈","3 個都紅燈連續 5 天 → 🔴 考慮減碼（剛變紅先不動）","紅燈只有 0～1 個 → 🟢 考慮加碼","紅燈 2 個 → 🟡 續抱；紅黃燈（紅燈變黃燈）→ 可以先買回一半","減碼之後，收盤站回 20 日線 → 可以買回"],GL_BT,["算到 2026/11/19，用每天收盤算","沒算手續費和稅","過去不代表未來"],"總結論怎麼看"],
   BT1:["① 每年一開始整筆買、不賣", ["每年第一天，把一年的錢一次買進","一直抱著，不賣"], "", "", "操作流程：每年一開始整筆買、不賣"],
   BT2:["② 每個月固定買", ["每月第一個交易日買進","一直抱著，不賣"], "", "", "操作流程：每個月固定買"],
   BT3:["③ 固定買＋低點加碼", ["每月一半的錢固定買","另一半先存著","日 K 或週 K 跌破 30，存的錢全買","一直抱著，不賣"], "", "", "操作流程：固定買＋低點加碼"],
@@ -2137,12 +2137,14 @@ async function fcBtSig(K,dp,prog){const wk=s=>{const x=new Date(s+"T00:00:00Z");
     const [W,P]=wL(WC,WL,WV),mm=wenHtml(K.slice(Math.max(0,t-700),t+1),null,null,dp).match(/<b>(綠燈|紅燈|黃燈)/);sig.push(mm?{W,P,B:mm[1]==="綠燈"?"G":mm[1]==="紅燈"?"R":"Y"}:null);
     if(t%60===0){prog(Math.round((t-START)/(n-START)*100));await new Promise(r=>setTimeout(r,0))}}
   return sig}
+const FC_R5=5;
 function fcBtEval(K,sig,from){const n=K.length,C=K.map(r=>r[4]);let S=K.findIndex(r=>r[0]>=from);if(S<0)return null;while(S<n&&!sig[S])S++;if(S>=n-20)return null;
   const E=[];{let p=S,inE=false,tr=S;for(let t=S;t<n;t++){if(C[t]>=C[p]){if(inE)E.push([p,tr]);inE=false;p=t;tr=t;continue}if(C[t]<C[tr])tr=t;if(C[t]<=C[p]*.85)inE=true}if(inE)E.push([p,tr])}
   let pk=C[S],mdd=0;for(let t=S;t<n;t++){pk=Math.max(pk,C[t]);mdd=Math.min(mdd,C[t]/pk-1)}
-  const cnt=s=>["W","B","P"].filter(k=>s[k]==="R").length,RU=[[s=>s.W==="R",s=>s.W!=="R"],[s=>s.B==="R",s=>s.B!=="R"],[s=>s.P==="R",s=>s.P!=="R"],[s=>cnt(s)===3,(s,t)=>t>=19&&C[t]>C.slice(t-19,t+1).reduce((a,b)=>a+b,0)/20]];
+  const cnt=s=>["W","B","P"].filter(k=>s[k]==="R").length,r5=[];for(let t=0,c=0;t<n;t++){c=sig[t]&&cnt(sig[t])===3?c+1:0;r5[t]=c>=FC_R5} // 3 紅連續 5 天才賣（Luna 2026-11-19）
+  const RU=[[s=>s.W==="R",s=>s.W!=="R"],[s=>s.B==="R",s=>s.B!=="R"],[s=>s.P==="R",s=>s.P!=="R"],[(s,t)=>r5[t],(s,t)=>t>=19&&C[t]>C.slice(t-19,t+1).reduce((a,b)=>a+b,0)/20]];
   const rows=[[Math.round((C[n-1]/C[S]-1)*100),Math.round(-mdd*100),`0/${E.length}`]];
-  for(const [ex,en] of RU){let on=true,v=1,pv=1,md=0;const out=[];for(let t=S;t<n;t++){if(t>S&&!out[t-1])v*=C[t]/C[t-1];pv=Math.max(pv,v);md=Math.min(md,v/pv-1);const s=sig[t];if(s){if(on&&ex(s))on=false;else if(!on&&en(s,t))on=true}out[t]=!on}
+  for(const [ex,en] of RU){let on=true,v=1,pv=1,md=0;const out=[];for(let t=S;t<n;t++){if(t>S&&!out[t-1])v*=C[t]/C[t-1];pv=Math.max(pv,v);md=Math.min(md,v/pv-1);const s=sig[t];if(s){if(on&&ex(s,t))on=false;else if(!on&&en(s,t))on=true}out[t]=!on}
     let av=0;for(const [p,tr] of E){for(let t=p;t<=tr;t++){if(out[t]&&C[t]>C[p]*.85){let st=true;for(let u=t;u<=tr;u++)if(!out[u]){st=false;break}if(st){av++;break}}}}
     rows.push([Math.round((v-1)*100),Math.round(-md*100),`${av}/${E.length}`])}
   return {start:K[S][0],rows}}
@@ -2151,22 +2153,22 @@ function halfDot(a,b,z){const C={"🔴":"#e8453c","🟡":"#f6c431","🟢":"#5bb0
 function btCtx(w){return w==="fc"?{w,el:"fc-bt",k:"c:TWII",c:"TWII",us:false,nm:"加權指數"}:{w:"sfc",el:"sfc-bt",k:(sfcUs?"u:":"c:")+sfcCode,c:sfcCode,us:sfcUs,nm:sfcName()}}
 // 歷史燈號變換（Luna 2026-11-19）：總結論每次變燈＋站回 20 日線買回
 function fcBtHist(K,sig,start){const n=K.length,C=K.map(r=>r[4]),cnt=s=>["W","B","P"].filter(k=>s[k]==="R").length,m20=t=>t<19?Infinity:C.slice(t-19,t+1).reduce((a,b)=>a+b,0)/20;
-  let last=null,nonY=null,sold=false;const H=[];
+  let last=null,nonY=null,sold=false,rc=0,half=false;const H=[];
   for(let t=0;t<n;t++){const s=sig[t];if(!s)continue;const r=cnt(s),b=r===3?"R":r<=1?"G":"Y",lab=b==="Y"?(nonY==="R"?"RY":nonY==="G"?"GY":"Y"):b;if(b!=="Y")nonY=b;
-    const ev=[];if(lab!==last){ev.push(lab);last=lab}
-    if(r===3)sold=true;else if(sold&&C[t]>m20(t)){sold=false;ev.push("MA")}
-    if(K[t][0]>=start)ev.filter(e=>e==="R"||e==="RY"||e==="MA").forEach(e=>H.push([t,e,[s.W,s.B,s.P]]))} // 只列要動作的：紅燈賣、紅黃燈買一半、站回 20 日線買回
+    const ev=[];if(lab!==last){ev.push(lab==="R"?"R0":lab);last=lab}rc=r===3?rc+1:0;
+    if(rc===FC_R5&&!sold){sold=true;half=false;ev.push("R")}else if(r<3&&sold&&C[t]>m20(t)){sold=false;ev.push("MA")}
+    if(K[t][0]>=start)ev.filter(e=>e==="R"||e==="RY"&&sold&&!half&&(half=true)||e==="MA").forEach(e=>H.push([t,e,[s.W,s.B,s.P]]))} // 只列要動作的：紅燈賣、紅黃燈買一半、站回 20 日線買回
   return H.map(([t,e,l],i)=>{const nx=i+1<H.length?H[i+1][0]:n-1;return [K[t][0],e,C[t],(C[nx]/C[t]-1)*100,i+1>=H.length,l]})}
 function sfcBtShow(w){const x=btCtx(w||"sfc"),el=$(x.el);if(!el)return;const k=x.k,R=sfcBtR[k];
   if(sfcBtBusy===k)return;
   if(!R){el.innerHTML=`<button class="sfc-btb" data-sfcbt="${x.w}">📊 回測${x.w==="fc"?"大盤":"這檔"}（3、5、10 年＋歷史燈號）</button>`;return}
   if(R.err){el.innerHTML=`<p class="dd-tn">${R.err}</p><button class="sfc-btb" data-sfcbt="${x.w}">再試一次</button>`;return}
   const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],P=["3 年","5 年","10 年"],T=R.p[sfcBtP],f=v=>x.w==="fc"?Math.round(v).toLocaleString("zh-TW"):(+v).toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
-  const LB={R:["🔴","紅燈","考慮減碼"],RY:[halfDot("🔴","🟡",1.1),"紅黃燈","先買回一半"],GY:[halfDot("🟢","🟡",1.1),"綠黃燈","續抱"],Y:["🟡","黃燈","續抱"],G:["🟢","綠燈","考慮加碼"],MA:["📈","站回20日線","買回"]};
+  const LB={R:["🔴","紅燈滿 5 天","考慮減碼"],RY:[halfDot("🔴","🟡",1.1),"紅黃燈","先買回一半"],GY:[halfDot("🟢","🟡",1.1),"綠黃燈","續抱"],Y:["🟡","黃燈","續抱"],G:["🟢","綠燈","考慮加碼"],MA:["📈","站回20日線","買回"]};
   const hist=T&&T.hist?`<h3 class="dd-h3">歷史燈號變換（最近 ${sfcBtAll?T.hist.length:Math.min(10,T.hist.length)} 次）</h3><div class="bt-hs"><table class="fc-ct bt-ht"><tr><th>日期</th><th>燈號</th><th>價格</th><th>到下次</th></tr>${T.hist.slice().reverse().slice(0,sfcBtAll?1e9:10).map(h=>{const L=LB[h[1]];return `<tr><td>${h[0].replace(/-/g,"/")}</td><td><span class="bt-hd">${L[0]}</span> ${L[1]}<small>${L[2]}</small>${h[5]?`<span class="bt-3l">${h[5].map(v=>({R:"🔴",Y:"🟡",G:"🟢"})[v]||"⚪").join("")}</span>`:""}</td><td>${f(h[2])}</td><td class="${h[3]>=0?"up":"down"}">${h[3]>=0?"+":""}${h[3].toFixed(1)}%${h[4]?"<small>到現在</small>":""}</td></tr>`}).join("")}</table></div>${!sfcBtAll&&T.hist.length>10?`<button class="sfc-btb" data-sball="${x.w}" style="font-size:17px;padding:10px">看更多（共 ${T.hist.length} 次）</button>`:""}`:"";
   el.innerHTML=`<h3 class="dd-h3">${esc(x.nm)} 回測</h3><div class="fc-tabs">${P.map((p,i)=>`<button data-sbp="${i}" data-sbw="${x.w}" aria-selected="${i===sfcBtP}">${p}</button>`).join("")}</div>`+
     (T?`${T.note?`<p class="gl-nt">${T.note}</p>`:""}<table class="fc-ct gl-bt"><tr><th>方法</th><th>賺</th><th>最多跌</th><th>躲掉大跌</th></tr>${T.rows.map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}</td><td>${r[0]}%</td><td>${r[1]}%</td><td>${r[2]}</td></tr>`).join("")}</table>`:`<p class="dd-tn">資料不夠，算不出來。</p>`)+hist+
-    `<ol class="gl-nt gl-ol" style="margin-bottom:18px"><li>用${x.w==="fc"?"加權指數":"這檔"}自己的 3 個燈算（${x.w==="fc"?"":"還原權息、"}每天收盤）</li><li>3 個一起＝網站的總結論：3 個都紅燈賣，收盤站回 20 日線買回</li><li>單一個燈：紅燈賣，黃燈或綠燈就買回</li><li>大跌＝從高點跌 15% 以上；躲掉＝跌到 15% 前就賣掉</li><li>燈號變換只列要動作的：紅燈（賣）、紅黃燈（買回一半）、站回 20 日線（買回）</li><li>「到下次」＝到下一筆（或到現在）漲跌多少</li><li>沒算手續費和稅，過去不代表未來</li></ol>`}
+    `<ol class="gl-nt gl-ol" style="margin-bottom:18px"><li>用${x.w==="fc"?"加權指數":"這檔"}自己的 3 個燈算（${x.w==="fc"?"":"還原權息、"}每天收盤）</li><li>3 個一起＝網站的總結論：3 個都紅燈連續 5 天才賣，收盤站回 20 日線買回</li><li>單一個燈：紅燈賣，黃燈或綠燈就買回</li><li>大跌＝從高點跌 15% 以上；躲掉＝跌到 15% 前就賣掉</li><li>燈號變換只列要動作的：紅燈滿 5 天（賣）、紅黃燈（買回一半）、站回 20 日線（買回）</li><li>「到下次」＝到下一筆（或到現在）漲跌多少</li><li>沒算手續費和稅，過去不代表未來</li></ol>`}
 async function sfcBtRun(w){const x=btCtx(w||"sfc"),k=x.k,c=x.c,us=x.us,el=$(x.el);if(sfcBtBusy)return;sfcBtBusy=k;sfcBtAll=false;el.innerHTML=`<p class="sfc-btw">回測計算中…</p>`;
   try{const d=await api(`/api/sfcbt?${us?"us":"c"}=${encodeURIComponent(c)}&v=2`);if(!d||!d.K||d.K.length<400)throw new Error("少");
     // Yahoo 歷史常常還沒有今天：用頁面上的今天資料補（大盤用日 K，個股用即時報價）
@@ -2215,7 +2217,7 @@ function fcRender(o){o=o||{d:fcData,K:fcK,dd:fcDd,el:"fc-body",nm:"加權指數"
   // 總結論（Luna 2026-11-19 同意，10 年回測挑出來的規則）：三塊都紅燈＝考慮減碼；紅燈剩 1 個以下＝可以分批買；其他＝觀望
   const WH=wenHtml(o.K,o.us?null:live,it&&it.pts,o.dp),bm=WH.match(/<b>(綠燈|紅燈|黃燈)/);let SUM="";
   if(bm){const cW=lt,cB=bm[1]==="綠燈"?"🟢":bm[1]==="紅燈"?"🔴":"🟡",cP=k>=4?"🟢":k>=2?"🟡":"🔴",nR=[cW,cB,cP].filter(x=>x==="🔴").length;
-    const [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","考慮加碼"]:["🟡","續抱"];
+    let [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","考慮加碼"]:["🟡","續抱"];
     // 總結論是從什麼燈轉過來的（Luna 2026-11-19：紅轉黃、綠轉黃意思不同）
     let ch="",psG=null;try{const K0=o.K,lv=o.us?null:live,L0=K0[K0.length-1],cur=lv>0&&L0[0]<today&&new Date(Date.now()+8*36e5).getUTCDay()%6?K0.length:K0.length-1;
       const sumAt=e=>{const Kp=K0.slice(0,e+1),pd=Kp[Kp.length-1],pw=wk(pd[0]),dw=Kp.filter(r=>wk(r[0])===pw);
@@ -2228,12 +2230,14 @@ function fcRender(o){o=o||{d:fcData,K:fcK,dd:fcDd,el:"fc-body",nm:"加權指數"
         const pm=wenHtml(Kp,null,null,o.dp).match(/<b>(綠燈|紅燈|黃燈)/);if(!pm)return null;const pB=pm[1]==="綠燈"?"🟢":pm[1]==="紅燈"?"🔴":"🟡",pR=[pW,pB,pP].filter(x=>x==="🔴").length;return pR===3?"🔴":pR<=1?"🟢":"🟡"};
       let e=cur-1,ps=null,since=cur<K0.length?today:K0[cur][0];for(;e>=Math.max(300,cur-120);e--){const v=sumAt(e);if(!v)break;if(v!==sd){ps=v;break}since=K0[e][0]}
       const cn={"🔴":"紅","🟡":"黃","🟢":"綠"},TIP={"🔴🟡":"可以先買回一半","🟢🟡":"先不動，續抱","🔴🟢":"考慮加碼","🟡🟢":"考慮加碼","🟢🔴":"考慮減碼","🟡🔴":"考慮減碼"};
-      if(ps)psG=ps;if(ps)ch=`<p class="fc-ch">${since.slice(5).replace("-","/")} 從${cn[ps]}燈變${cn[sd]}燈${since===(cur<K0.length?today:K0[cur][0])?"（今天剛變）":""}</p>`
+      const rd=sd==="🔴"?cur-e:0;if(sd==="🔴"&&rd<FC_R5)sx=`3 個都紅燈第 ${rd} 天，連續 ${FC_R5} 天才減碼`;else if(sd==="🔴")sx=`3 個都紅燈已連續 ${rd} 天，考慮減碼`;
+      let sh=false;if(ps==="🔴"&&sd!=="🔴"){let rl=0;for(let j=e;j>e-FC_R5&&j>=300&&sumAt(j)==="🔴";j--)rl++;sh=rl<FC_R5} // 紅燈沒滿 5 天＝沒賣，不用買回
+      if(ps&&!sh)psG=ps;if(ps)ch=`<p class="fc-ch">${since.slice(5).replace("-","/")} 從${cn[ps]}燈變${cn[sd]}燈${since===(cur<K0.length?today:K0[cur][0])?"（今天剛變）":""}</p>`
       // 買回看 20 日線（Luna 2026-11-19：抓低點買點，回測比等黃燈早）
       const cl=i=>i<K0.length?(i===K0.length-1&&lv>0&&L0[0]===today?lv:K0[i][4]):lv,m20=i=>{let s=0;for(let j=i-19;j<=i;j++)s+=cl(j);return s/20},dt=i=>(i<K0.length?K0[i][0]:today).slice(5).replace("-","/");
-      let lr=sd==="🔴"?cur:null;if(lr==null)for(let e2=cur-1;e2>=Math.max(300,cur-120);e2--){const v=e2>e&&e2<cur?sd:sumAt(e2);if(v==="🔴"){lr=e2;break}}
-      if(lr!=null){let up=-1;for(let t=lr+1;t<=cur;t++)if(cl(t)>m20(t)){up=t;break}
-        ch+=sd==="🔴"?`<p class="fc-ch"><b>減碼之後，等收盤站回 20 日線（現在 ${f(m20(cur))}）再買回</b></p>`:up>=0?(cur-up>20?"":`<p class="fc-ch"><b>${dt(up)} 已站回 20 日線，減碼的可以買回</b></p>`):(ps==="🔴"&&sd==="🟡"?`<p class="fc-ch"><b>剩下一半，等收盤站回 20 日線（${f(m20(cur))}）再買回</b></p>`:`<p class="fc-ch"><b>還沒站回 20 日線（${f(m20(cur))}），減碼的先別買回</b></p>`)}}catch(e){}
+      let lr=sd==="🔴"?cur:null;if(sh)lr=-1;if(lr==null)for(let e2=cur-1;e2>=Math.max(300,cur-120);e2--){const v=e2>e&&e2<cur?sd:sumAt(e2);if(v==="🔴"){lr=e2;break}}
+      if(lr!=null&&lr>=0){let up=-1;for(let t=lr+1;t<=cur;t++)if(cl(t)>m20(t)){up=t;break}
+        ch+=sd==="🔴"?(rd<FC_R5?"":`<p class="fc-ch"><b>減碼之後，等收盤站回 20 日線（現在 ${f(m20(cur))}）再買回</b></p>`):up>=0?(cur-up>20?"":`<p class="fc-ch"><b>${dt(up)} 已站回 20 日線，減碼的可以買回</b></p>`):(ps==="🔴"&&sd==="🟡"?`<p class="fc-ch"><b>剩下一半，等收盤站回 20 日線（${f(m20(cur))}）再買回</b></p>`:`<p class="fc-ch"><b>還沒站回 20 日線（${f(m20(cur))}），減碼的先別買回</b></p>`)}}catch(e){}
     const cnG={"🔴":"紅","🟡":"黃","🟢":"綠"};if(sd!=="🟡")psG=null;SUM=`<div class="fc-light fc-s3"><div class="fc-lt"><span class="fc-dot">${psG?halfDot(psG,sd):sd}</span><b>總結論・${psG?cnG[psG]+cnG[sd]:cnG[sd]}燈：${psG==="🔴"&&sd==="🟡"?"可以先買回一半":sx}</b></div><div class="fc-3l">${[["大方向",cW],["可不可以買",cB],["預測價格",cP]].map(([n,c])=>`<span><i>${c}</i>${n}</span>`).join("")}</div>${ch}</div>`}
   const TB=[["大方向穩不穩",`<p class="fc-sum">站上 ${k} ／ ${R.length} 條均線：<span class="${cls}">${lab}</span></p>
     <p class="fc-now">${esc(o.nm)} <b>${f(px)}</b>${live>0?"（即時）":""}</p>
@@ -2275,19 +2279,19 @@ async function ddLoad(){
 function ddDot(e){const l=e.scrollLeft,c=e.clientWidth,p=Math.min(3,Math.round(l/(c*.6))),d=e.nextElementSibling;if(d)d.querySelectorAll("i").forEach((x,i)=>x.classList.toggle("on",i==p))}
 const DD_WHY={"1997-08-25":"亞洲金融風暴","1998-02-23":"亞洲金融風暴、地雷股","1999-06-28":"兩國論","2000-02-14":"網路泡沫","2001-02-12":"網路泡沫、911","2002-04-22":"美股熊市","2003-01-20":"SARS 疫情","2004-03-01":"319 槍擊案","2007-10-29":"金融海嘯","2011-02-07":"歐債危機","2015-04-27":"中國股災","2020-01-03":"新冠疫情","2022-01-05":"美國升息","2024-07-11":"日圓套利、川普關稅","2026-10-06":""};
 // 3 個紅燈（總結論）後再跌、紅黃燈後漲回前高（Luna 2026-11-19）：依波段高點，[第一次 3 紅日期, 收盤, 低點後第一次紅黃燈日期, 收盤]，/tmp 腳本 dd3r.js 用加權指數 1997 起日線、頁面同一套燈號算
-const DD_3R={"2001-02-12":["2001-02-27",5674.69,"2001-10-29",4065.1],"2002-04-22":["2002-05-20",5574.71,"2002-10-23",4589.88],"2003-01-20":["2003-02-07",4735.37,"2003-05-26",4465.57],"2004-03-01":["2004-05-10",5825.05,"2004-08-09",5399.45],"2007-10-29":["2007-11-23",8342.2,"2009-01-05",4698.31],"2011-02-07":["2011-07-12",8491.01,"2012-01-10",7178.87],"2015-04-27":["2015-06-09",9191.87,"2015-11-02",8614.77],"2020-01-03":["2020-03-09",10977.64,"2020-04-28",10616.06],"2022-01-05":["2022-03-07",17178.69,"2022-11-11",14007.56],"2024-07-11":["2025-03-11",22071.09,"2025-04-28",20034.41],"2026-10-06":["2026-11-19",38426.89,null,null]};
+const DD_3R={"2001-02-12":["2001-03-06",5635.06,"2001-10-29",4065.1],"2002-04-22":["2002-05-24",5706.4,"2002-10-23",4589.88],"2003-01-20":["2003-02-13",4507.96,"2003-05-26",4465.57],"2004-03-01":["2004-06-16",5560.16,"2004-08-09",5399.45],"2007-10-29":["2007-12-19",8014.31,"2009-01-05",4698.31],"2011-02-07":["2011-08-09",7493.12,"2012-01-10",7178.87],"2015-04-27":["2015-06-15",9259.48,"2015-11-02",8614.77],"2020-01-03":["2020-03-13",10128.87,"2020-04-28",10616.06],"2022-01-05":["2022-04-13",17301.65,"2022-11-11",14007.56],"2024-07-11":["2025-03-19",21960.83,"2025-04-28",20034.41],"2026-10-06":[null,null,null,null]}; // E5 起改成 3 紅「滿 5 天」那天（backtest/歷史跌幅3紅燈.js 的 rc===5）
 function ddRender(d){
   const dt=s=>s.slice(0,4)+"/"+(+s.slice(5,7))+"/"+(+s.slice(8,10)),f=v=>Math.round(v).toLocaleString("zh-TW");
   const mon=(a,b)=>{const m=(Date.parse(b)-Date.parse(a))/864e5/30.44;return m<1?Math.max(1,Math.round(m*30.44/7))+" 週":m>=24?(m/12).toFixed(1).replace(/\.0$/,"")+" 年":(m<10?m.toFixed(1).replace(/\.0$/,""):Math.round(m))+" 個月"};
   // 表格化（Luna 2026-11-18）：每次大跌一列；國安基金、限空令放在表格下面
   const trow=x=>{const on=!x.back,w=DD_WHY[x.hd];return `<tr${on?' class="now"':""}><td>${w!==undefined?`<span class="dd-why">${w||"無"}</span>`:""}<b>${dt(x.hd)}</b><small>${f(x.h)} → ${f(x.l)}</small></td><td><b class="dd-pct">${x.pct.toFixed(1)}%</b><small>跌了 ${mon(x.hd,x.ld)}</small></td>${x.ox!==undefined?mxCell(x.ox,x)+dcCell(x):""}<td>${on?'<b class="dd-on">還沒漲回</b>':mon(x.ld,x.back)}</td>${x.ox!==undefined?gcCell(x)+r3Cell(x):""}</tr>`}; // 順序：跌幅、DIF、死叉日期、死叉到跌破、多久漲回最後（Luna 2026-11-18）
-  const table=a=>{const m=a.some(x=>x.ox!==undefined),t=`<table class="dd-t${m?" dd-4":""}"><thead><tr><th>原因／高點日期<small>高點 → 低點</small></th><th>跌幅<small>跌多久</small></th>${m?"<th>DIF 跌破<small>0 軸後再跌<br>（跌破那週）</small></th><th>死叉日期<small>0 軸上<br>DIF 穿過 MACD</small></th><th>0 軸上死叉<small>到 DIF 跌破<br>隔多久</small></th>":""}<th>多久漲回</th>${m?"<th>0 軸下金叉<small>金叉日期<br>到漲回高點</small></th><th>3 個紅燈<small>出現後<br>再跌多少</small></th><th>紅黃燈<small>出現後<br>漲回前高</small></th>":""}</tr></thead><tbody>${a.map(trow).join("")}</tbody></table>`;return m?`<div class="dd-sw" onscroll="ddDot(this)">${t}</div><div class="dd-dots"><i class="on"></i><i></i><i></i><i></i><span>往左滑看更多</span></div>`:t}; // 滑動翻頁同自選股（Luna 2026-11-18）
+  const table=a=>{const m=a.some(x=>x.ox!==undefined),t=`<table class="dd-t${m?" dd-4":""}"><thead><tr><th>原因／高點日期<small>高點 → 低點</small></th><th>跌幅<small>跌多久</small></th>${m?"<th>DIF 跌破<small>0 軸後再跌<br>（跌破那週）</small></th><th>死叉日期<small>0 軸上<br>DIF 穿過 MACD</small></th><th>0 軸上死叉<small>到 DIF 跌破<br>隔多久</small></th>":""}<th>多久漲回</th>${m?"<th>0 軸下金叉<small>金叉日期<br>到漲回高點</small></th><th>3 個紅燈<small>滿 5 天後<br>再跌多少</small></th><th>紅黃燈<small>出現後<br>漲回前高</small></th>":""}</tr></thead><tbody>${a.map(trow).join("")}</tbody></table>`;return m?`<div class="dd-sw" onscroll="ddDot(this)">${t}</div><div class="dd-dots"><i class="on"></i><i></i><i></i><i></i><span>往左滑看更多</span></div>`:t}; // 滑動翻頁同自選股（Luna 2026-11-18）
   // 限空令、國安基金整理成一個表格（Luna 2026-11-18）：每一波一組，左邊措施，右邊之前已跌、之後再跌
   // 快線、慢線往下穿越 0 軸後還跌幾 %（週線，Luna 2026-11-18）
   const mxCell=(z,x)=>!z?`<td><span class="dd-na">${x.back?"沒跌破":"還沒跌破"}</span></td>`:z.pre?'<td><span class="dd-na">高點前<br>已在 0 軸下</span></td>':`<td><b class="dd-pct">${((x.l/z.c-1)*100).toFixed(1)}%</b><small>${dt(z.d)}</small></td>`;
   const dcCell=x=>{const z=x.dc;if(!z)return `<td><span class="dd-na">無</span></td>`.repeat(2);if(z.now)return `<td><b class="dd-dt">${dt(z.d)}</b></td><td><span class="dd-na">還沒跌破</span></td>`;const w=z.w,t=w>=9?`約 ${Math.round(w/4.35)} 個月`:`${w} 週`;return `<td><b class="dd-dt">${dt(z.d)}</b></td><td><b>${t}</b><small>後跌破</small></td>`};
   const r3Cell=x=>{const z=DD_3R[x.hd],na=t=>`<td><span class="dd-na">${t}</span></td>`;if(!z)return na("無")+na("無");
-    const a=!z[0]?na("無"):!x.back&&x.l<=z[1]?`<td><b class="dd-dt">${dt(z[0])}</b><small>出現，還沒再跌</small></td>`:`<td><b class="dd-pct">${((x.l/z[1]-1)*100).toFixed(1)}%</b><small>${dt(z[0])}</small></td>`;
+    const a=!z[0]?na(x.back?"無":"還沒滿 5 天"):!x.back&&x.l<=z[1]?`<td><b class="dd-dt">${dt(z[0])}</b><small>滿 5 天，還沒再跌</small></td>`:`<td><b class="dd-pct">${((x.l/z[1]-1)*100).toFixed(1)}%</b><small>${dt(z[0])}</small></td>`;
     const b=!z[2]?na(x.back?"無":"還沒出現"):`<td><b class="dd-pct${x.back?" dd-up":""}">${x.back?"+"+((x.h/z[3]-1)*100).toFixed(1)+"%":"還沒漲回"}</b><small>${dt(z[2])}</small></td>`;return a+b};
   const gcCell=x=>{const z=x.gc;if(!z)return `<td><span class="dd-na">${x.back?"無":"還沒金叉"}</span></td>`;return `<td><b class="dd-dt">${dt(z.d)}</b><small>${x.back?mon(z.d,x.back)+"後漲回":"還沒漲回"}</small></td>`}; // 0 軸下金叉後多久回到高點（Luna 2026-11-18）
   const mxTable=a=>a.some(x=>x.ox!==undefined)?`<h3 class="dd-h3">DIF 跌破 0 軸後還跌幾 %</h3><table class="dd-t dd-m"><thead><tr><th>原因／高點日期<small>這波跌幅</small></th><th>DIF<small>跌破後再跌<br>（跌破那週）</small></th></tr></thead><tbody>${a.map(x=>{const w=DD_WHY[x.hd];return `<tr${x.back?"":' class="now"'}><td>${w!==undefined?`<span class="dd-why">${w||"無"}</span>`:""}<b>${dt(x.hd)}</b><small>跌 ${x.pct.toFixed(1)}%</small></td>${mxCell(x.ox,x)}</tr>`}).join("")}</tbody></table><p class="dd-tn">用加權指數週線算（MACD 12、26、9）。DIF 是 MACD 的快線；再跌＝從跌破那週的收盤價算到這波最低點。</p>`:"";

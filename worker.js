@@ -284,11 +284,39 @@ function ddCalc(K,W){
   const M=W&&W.length>40?ddMacd(W):null,brow=x=>{const r=row(x);if(M){r.ox=ddCross(M,r.hd,r.ld,2);r.dc=ddDc(M,r.ox);if(!r.dc&&!r.back&&!r.ox){const z=ddDc(M,{d:M[M.length-1][0]});if(z)r.dc={d:z.d,now:1}}r.gc=ddGc(M,r.ld,r.back);r.dx=ddCross(M,r.hd,r.ld,4)}return r};
   return {big:big.map(brow),small:sm.map(row).filter(x=>x.hd>=K[n-1][0].replace(/^\d{4}/,y=>y-5)),cur:cur?{...row(cur),last:r0(last[3]),date:last[0]}:null,from:K[0][0]};
 }
+// Yahoo 週線最後常多一根「今天」的資料，和本週那根重複（同一週）：同一週只留最後一根（2026-11-19）
+function wkDedupe(W){if(!W)return W;const wk=d=>{const x=new Date(d+"T00:00:00Z");return new Date(x-((x.getUTCDay()+6)%7)*864e5).toISOString().slice(0,10)};const o=[];for(const x of W){if(o.length&&wk(o[o.length-1][0])===wk(x[0]))o[o.length-1]=[o[o.length-1][0],...x.slice(1)];else o.push(x)}return o}
 async function ddHist() {
   const get=async q=>{for (const host of ["query1", "query2"]) {try {const j = await (await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/%5ETWII?${q}`, { headers: { "User-Agent": UA } })).json();const r = j.chart && j.chart.result && j.chart.result[0];if (r && (r.timestamp || []).length > 500) return ddBars(r);} catch (_) {}}return null};
   const [W,D]=await Promise.all([get(`period1=0&period2=${Math.floor(Date.now()/1000)}&interval=1wk`),get("range=10y&interval=1d")]);
   if(!D||D.length<1000)throw new Error("no data");
-  return ddCalc([...(W||[]).filter(x=>x[0]<D[0][0]),...D],W);
+  const W2=wkDedupe(W);return ddCalc([...(W2||[]).filter(x=>x[0]<D[0][0]),...D],W2);
+}
+// 站穩季線（Luna 2026-11-19，用週線看）：加權指數週收盤和 13 週均線（季線），加上歷史上站上後能不能站穩的比例
+async function ma13Hist() {
+  let W = null;
+  for (const host of ["query1", "query2"]) {try {const j = await (await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/%5ETWII?period1=0&period2=${Math.floor(Date.now()/1000)}&interval=1wk`, { headers: { "User-Agent": UA } })).json();const r = j.chart && j.chart.result && j.chart.result[0];if (r && (r.timestamp || []).length > 500) {const q = r.indicators.quote[0], V = {}; r.timestamp.forEach((t, i) => {V[new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10)] = q.volume[i] || 0}); W = wkDedupe(ddBars(r).map(x => [...x, V[x[0]] || 0])); break}} catch (_) {}}
+  if (!W) throw new Error("no data");
+  // 月線 4 週、季線 13 週、半年線 26 週、年線 52 週、3 年線 156 週（Luna 2026-11-19 讓我們選，用她熟的名字）；從 2001 年起算：連 2 週收在均線上之後，接下來 4 週都沒跌破的比例
+  const C = W.map(x => x[3]), n = C.length, st = {};
+  for (const N of [4, 13, 26, 52, 156]) {
+    const ma = []; let sm = 0;
+    for (let i = 0; i < n; i++) {sm += C[i]; if (i >= N) sm -= C[i - N]; ma[i] = i >= N - 1 ? sm / N : null}
+    const up = j => ma[j] != null && C[j] > ma[j];
+    let a = 0, b = 0;
+    for (let i = N + 2; i + 4 < n; i++) {if (W[i][0] < "2001") continue; if (up(i) && up(i - 1) && !up(i - 2)) {b++; if ([1, 2, 3, 4].every(k => up(i + k))) a++}}
+    st[N] = [a, b];
+  }
+  // 大盤預測用的機率（Luna 2026-11-19）：2001 年起每一週，看當時站上幾條均線（0～5），之後 13 週（約 3 個月）最高漲幾 %、最低跌幾 %
+  const MAS = [4, 13, 26, 52, 156].map(N => {const m = []; let sm = 0; for (let i = 0; i < n; i++) {sm += C[i]; if (i >= N) sm -= C[i - N]; m[i] = i >= N - 1 ? sm / N : null} return m});
+  const fw = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
+  for (let i = 156; i + 13 < n; i++) {
+    if (W[i][0] < "2001") continue;
+    const k = MAS.filter(m => C[i] > m[i]).length;
+    let hi = -Infinity, lo = Infinity; for (let j = i + 1; j <= i + 13; j++) {hi = Math.max(hi, W[j][1]); lo = Math.min(lo, W[j][2])}
+    fw[k].push([Math.round((hi / C[i] - 1) * 1000) / 10, Math.round((lo / C[i] - 1) * 1000) / 10]);
+  }
+  return { w: W.slice(-320).map(x => [x[0], x[3], x[2], x[4] || 0]), st, fw }; // [日期, 收盤, 最低, 成交量]（紅綠燈的回測不破、量縮用，Luna 2026-11-19）
 }
 async function chart(sym, range = "5y") {
   for (const host of ["query1", "query2", "query1"]) {
@@ -1539,6 +1567,7 @@ export default {
       case "/api/dd": return cached(request, ctx, 1800, ddHist); // 歷史跌幅（Luna 2026-11-06）
       case "/api/mgc": return cached(request, ctx, 3600, mgCmp); // 融資減幅 vs 大盤跌幅（Luna 2026-11-06）
       case "/api/nsf": { const d = url.searchParams.get("d") || ""; if (!/^\d{4}-\d\d-\d\d$/.test(d)) return new Response("{}", { status: 400 }); return cached(request, ctx, 1800, () => nsfDay(d)); }
+      case "/api/ma13": return cached(request, ctx, 3600, ma13Hist); // 站穩季線（週線，Luna 2026-11-19）
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用

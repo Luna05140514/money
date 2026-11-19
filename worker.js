@@ -297,6 +297,10 @@ async function ma13Hist() {
   let W = null;
   for (const host of ["query1", "query2"]) {try {const j = await (await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/%5ETWII?period1=0&period2=${Math.floor(Date.now()/1000)}&interval=1wk`, { headers: { "User-Agent": UA } })).json();const r = j.chart && j.chart.result && j.chart.result[0];if (r && (r.timestamp || []).length > 500) {const q = r.indicators.quote[0], V = {}; r.timestamp.forEach((t, i) => {V[new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10)] = q.volume[i] || 0}); W = wkDedupe(ddBars(r).map(x => [...x, V[x[0]] || 0])); break}} catch (_) {}}
   if (!W) throw new Error("no data");
+  return fcStats(W, "2001");
+}
+// W = [[日期, 高, 低, 收, 量]...] 週 K；大盤預測和個股預測共用（Luna 2026-11-19）
+function fcStats(W, from) {
   // 月線 4 週、季線 13 週、半年線 26 週、年線 52 週、3 年線 156 週（Luna 2026-11-19 讓我們選，用她熟的名字）；從 2001 年起算：連 2 週收在均線上之後，接下來 4 週都沒跌破的比例
   const C = W.map(x => x[3]), n = C.length, st = {};
   for (const N of [4, 13, 26, 52, 156]) {
@@ -304,19 +308,38 @@ async function ma13Hist() {
     for (let i = 0; i < n; i++) {sm += C[i]; if (i >= N) sm -= C[i - N]; ma[i] = i >= N - 1 ? sm / N : null}
     const up = j => ma[j] != null && C[j] > ma[j];
     let a = 0, b = 0;
-    for (let i = N + 2; i + 4 < n; i++) {if (W[i][0] < "2001") continue; if (up(i) && up(i - 1) && !up(i - 2)) {b++; if ([1, 2, 3, 4].every(k => up(i + k))) a++}}
+    for (let i = N + 2; i + 4 < n; i++) {if (W[i][0] < from) continue; if (up(i) && up(i - 1) && !up(i - 2)) {b++; if ([1, 2, 3, 4].every(k => up(i + k))) a++}}
     st[N] = [a, b];
   }
   // 大盤預測用的機率（Luna 2026-11-19）：2001 年起每一週，看當時站上幾條均線（0～5），之後 13 週（約 3 個月）最高漲幾 %、最低跌幾 %
   const MAS = [4, 13, 26, 52, 156].map(N => {const m = []; let sm = 0; for (let i = 0; i < n; i++) {sm += C[i]; if (i >= N) sm -= C[i - N]; m[i] = i >= N - 1 ? sm / N : null} return m});
   const fw = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
   for (let i = 156; i + 13 < n; i++) {
-    if (W[i][0] < "2001") continue;
+    if (W[i][0] < from) continue;
     const k = MAS.filter(m => C[i] > m[i]).length;
     let hi = -Infinity, lo = Infinity; for (let j = i + 1; j <= i + 13; j++) {hi = Math.max(hi, W[j][1]); lo = Math.min(lo, W[j][2])}
     fw[k].push([Math.round((hi / C[i] - 1) * 1000) / 10, Math.round((lo / C[i] - 1) * 1000) / 10]);
   }
   return { w: W.slice(-320).map(x => [x[0], x[3], x[2], x[4] || 0]), st, fw }; // [日期, 收盤, 最低, 成交量]（紅綠燈的回測不破、量縮用，Luna 2026-11-19）
+}
+// 個股預測（Luna 2026-11-19）：自己輸入代號；週 K 從上市到現在（還原權息），日 K 近 600 天給溫老師 4 項
+async function sfcHist(code, us) {
+  const syms = us ? [code] : [code + ".TW", code + ".TWO"];
+  for (const sym of syms) {
+    let r = null;
+    for (const host of ["query1", "query2"]) {try {const j = await (await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?period1=0&period2=${Math.floor(Date.now()/1000)}&interval=1wk`, { headers: { "User-Agent": UA } })).json(); r = j.chart && j.chart.result && j.chart.result[0]; if (r && (r.timestamp || []).length) break} catch (_) {}}
+    if (!r || !(r.timestamp || []).length) continue;
+    const adj = (r.indicators.adjclose && r.indicators.adjclose[0].adjclose) || [], q = r.indicators.quote[0], W = [];
+    r.timestamp.forEach((t, i) => {const h = q.high[i], l = q.low[i], c = q.close[i]; if (h == null || l == null || c == null || !(l > 0)) return; const k = adj[i] > 0 ? adj[i] / c : 1; W.push([new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), h * k, l * k, c * k, q.volume[i] || 0])});
+    const W2 = wkDedupe(W); if (W2.length < 30) continue;
+    const out = fcStats(W2, "2001");
+    const d = await chart(sym, "5y"), D = [];
+    if (d && d.timestamp) {const dq = d.indicators.quote[0], da = (d.indicators.adjclose && d.indicators.adjclose[0].adjclose) || [];
+      d.timestamp.forEach((t, i) => {const o = dq.open[i], h = dq.high[i], l = dq.low[i], c = dq.close[i]; if (h == null || l == null || c == null || !(l > 0)) return; if (!us && !(dq.volume[i] > 0) && h === l) return; const k = da[i] > 0 ? da[i] / c : 1; D.push([ymdOff(t, us ? -5 : 8), (o || c) * k, h * k, l * k, c * k, dq.volume[i] || 0])});}
+    out.d = D.slice(-600); out.since = W2[0][0]; out.sym = sym;
+    return out;
+  }
+  throw new Error("no data");
 }
 async function chart(sym, range = "5y") {
   for (const host of ["query1", "query2", "query1"]) {
@@ -955,6 +978,21 @@ function dayExtras(cl, vol) {
   if (vol && vol.length === n) { const p5 = vol.slice(-6, -1), a = p5.reduce((x, y) => x + y, 0) / 5; if (a > 0 && vol[n - 1] > 0) out.vr = Math.round(vol[n - 1] / a * 100) / 100; }
   return out;
 }
+// 紅綠燈（Luna 2026-11-19，自選股每一檔，和大盤預測同一套「真站穩 4 個條件」）：週線的月線(4)、季線(13)、半年線(26)
+// 回傳 [c1,c2,c3,c4]：1 站上三條、2 連 3 週沒跌破、3 多頭排列且都往上、4 拉回碰月線沒破且量縮
+function wkLight(wk, vo) {
+  const C = wk.map(b => b[2]), LO = wk.map(b => b[1]), n = C.length; if (n < 29) return null;
+  const mAt = (N, i) => i - N + 1 < 0 ? null : C.slice(i - N + 1, i + 1).reduce((s, v) => s + v, 0) / N;
+  const T = [4, 13, 26], above3 = i => T.every(N => { const m = mAt(N, i); return m != null && C[i] > m; });
+  const c1 = above3(n - 1), c2 = c1 && above3(n - 2) && above3(n - 3);
+  const c3 = mAt(4, n - 1) > mAt(13, n - 1) && mAt(13, n - 1) > mAt(26, n - 1) && T.every(N => mAt(N, n - 1) > mAt(N, n - 2));
+  let c4 = false;
+  if (c1) for (let i = n - 2; i >= Math.max(5, n - 7) && !c4; i--) {
+    const m = mAt(4, i), av = vo.slice(i - 4, i).reduce((s, v) => s + v, 0) / 4;
+    if (m && LO[i] <= m * 1.01 && C[i] > m && vo[i] > 0 && av > 0 && vo[i] < av) c4 = true;
+  }
+  return [c1, c2, c3, c4].map(x => x ? 1 : 0);
+}
 async function kdList(list) {
   // 台股：Yahoo 日線慢 20 分鐘、偶爾缺最近幾天，用奇摩即時報價補今天那根（和畫面上的股價一致）
   const live = await twLive(list.filter(x => !x[1]).map(x => x[0])).catch(() => ({}));
@@ -963,7 +1001,7 @@ async function kdList(list) {
       try {
         const r = (await (await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`)).json()).chart.result[0];
         const q = r.indicators.quote[0], ts = r.timestamp || []; if (!ts.length) continue;
-        const rows = [], weeks = new Map();
+        const rows = [], weeks = new Map(), wvol = new Map();
         ts.forEach((t, i) => {
           const b = [q.high[i], q.low[i], q.close[i]]; if (b.some(v => v == null)) return;
           // 台股休市日 Yahoo 會補一根量 0、高低收都一樣的假 K 棒（例如 10/23），不算進 KD
@@ -981,12 +1019,13 @@ async function kdList(list) {
           const d = new Date(dt + "T00:00:00Z"), wd = (d.getUTCDay() + 6) % 7;
           const mon = new Date(d.getTime() - wd * 864e5).toISOString().slice(0, 10);
           const w = weeks.get(mon); if (!w) weeks.set(mon, b.slice(0, 3)); else { w[0] = Math.max(w[0], b[0]); w[1] = Math.min(w[1], b[1]); w[2] = b[2]; }
+          wvol.set(mon, (wvol.get(mon) || 0) + (b[3] || 0));
         });
         const wk = [...weeks.keys()].sort().map(k => weeks.get(k));
         // 盤中今天的量還沒算完，不拿來比
         const reg = ((r.meta || {}).currentTradingPeriod || {}).regular, now = Date.now() / 1000;
         const open = reg && now >= reg.start && now < reg.end && ts[ts.length - 1] >= reg.start;
-        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol), tl: tlDay(day), hi: Math.max(...day.map(b => b[0])) }, week: { ...kdLast2(wk), mac: wkMacd(wk) } }];
+        return [code, { day: { ...kdLast2(day), ...dayExtras(day.map(b => b[2]), open ? null : vol), tl: tlDay(day), hi: Math.max(...day.map(b => b[0])) }, week: { ...kdLast2(wk), mac: wkMacd(wk), lt: wkLight(wk, [...weeks.keys()].sort().map(k => wvol.get(k) || 0)) } }];
       } catch (_) {}
     }
     return [code, null];
@@ -1567,7 +1606,10 @@ export default {
       case "/api/dd": return cached(request, ctx, 1800, ddHist); // 歷史跌幅（Luna 2026-11-06）
       case "/api/mgc": return cached(request, ctx, 3600, mgCmp); // 融資減幅 vs 大盤跌幅（Luna 2026-11-06）
       case "/api/nsf": { const d = url.searchParams.get("d") || ""; if (!/^\d{4}-\d\d-\d\d$/.test(d)) return new Response("{}", { status: 400 }); return cached(request, ctx, 1800, () => nsfDay(d)); }
-      case "/api/ma13": return cached(request, ctx, 3600, ma13Hist); // 站穩季線（週線，Luna 2026-11-19）
+      case "/api/ma13": return cached(request, ctx, 3600, ma13Hist);
+      case "/api/sfc": {const c = (url.searchParams.get("c") || "").toUpperCase(), u = (url.searchParams.get("us") || "").toUpperCase();
+        if (!/^[0-9A-Z]{4,6}$/.test(c) && !/^[A-Z][A-Z.\-]{0,9}$/.test(u)) return new Response("{}", { status: 400 });
+        return cached(request, ctx, 3600, () => sfcHist(c || u, !c));} // 站穩季線（週線，Luna 2026-11-19）
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用

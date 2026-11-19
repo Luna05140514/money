@@ -314,13 +314,16 @@ function fcStats(W, from) {
   // 大盤預測用的機率（Luna 2026-11-19）：2001 年起每一週，看當時站上幾條均線（0～5），之後 13 週（約 3 個月）最高漲幾 %、最低跌幾 %
   const MAS = [4, 13, 26, 52, 156].map(N => {const m = []; let sm = 0; for (let i = 0; i < n; i++) {sm += C[i]; if (i >= N) sm -= C[i - N]; m[i] = i >= N - 1 ? sm / N : null} return m});
   const fw = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
+  // 最近 5 年（Luna 2026-11-19 回測：用 2001 年起算「一般會漲到」太保守，改看最近 5 年）
+  const fw5 = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] }, from5 = new Date(Date.now() - 5 * 365.25 * 864e5).toISOString().slice(0, 10);
   for (let i = 156; i + 13 < n; i++) {
     if (W[i][0] < from) continue;
     const k = MAS.filter(m => C[i] > m[i]).length;
     let hi = -Infinity, lo = Infinity; for (let j = i + 1; j <= i + 13; j++) {hi = Math.max(hi, W[j][1]); lo = Math.min(lo, W[j][2])}
     fw[k].push([Math.round((hi / C[i] - 1) * 1000) / 10, Math.round((lo / C[i] - 1) * 1000) / 10]);
+    if (W[i][0] >= from5) fw5[k].push(fw[k][fw[k].length - 1]);
   }
-  return { w: W.slice(-320).map(x => [x[0], x[3], x[2], x[4] || 0]), st, fw }; // [日期, 收盤, 最低, 成交量]（紅綠燈的回測不破、量縮用，Luna 2026-11-19）
+  return { w: W.slice(-320).map(x => [x[0], x[3], x[2], x[4] || 0]), st, fw, fw5 }; // [日期, 收盤, 最低, 成交量]（紅綠燈的回測不破、量縮用，Luna 2026-11-19）
 }
 // 個股預測（Luna 2026-11-19）：自己輸入代號；週 K 從上市到現在（還原權息），日 K 近 600 天給溫老師 4 項
 async function sfcHist(code, us) {

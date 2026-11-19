@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">C1</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">C2</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1924,6 +1924,7 @@ const ON_CF=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|
 async function api(path){if(!ON_CF)return null;try{const r=await fetch(path,{cache:"no-store"});if(!r.ok)return null;const d=await r.json();return d&&!d.error?d:null}catch(_){return null}}
 /* 名詞小幫手（Luna 2026-10-23）：名詞旁邊的「？」，點了用白話解釋 */
 const GLOSS={
+  "回測比較":["回測比較",["兩塊：賺 183%，最多跌 17%，跌 15% 以上的大跌全部提早出場","三塊（現在網站上的）：賺 352%，最多跌 22%，大跌只避開 3 次","一直抱著：賺 329%，最多跌 32%"],"兩塊＝只看大方向和可不可以買：兩個都紅燈先減碼，大方向變黃燈或綠燈再分批買入。","用加權指數 2016/11～2026/11 每天收盤算，沒算手續費和稅；規則是看完歷史挑的，未來不保證。個股頁也是用大盤的回測。","近 10 年回測比較"],
   BT1:["① 每年一開始整筆買、不賣", ["每年第一天，把一年的錢一次買進","一直抱著，不賣"], "", "", "操作流程：每年一開始整筆買、不賣"],
   BT2:["② 每個月固定買", ["每月第一個交易日買進","一直抱著，不賣"], "", "", "操作流程：每個月固定買"],
   BT3:["③ 固定買＋低點加碼", ["每月一半的錢固定買","另一半先存著","日 K 或週 K 跌破 30，存的錢全買","一直抱著，不賣"], "", "", "操作流程：固定買＋低點加碼"],
@@ -2140,17 +2141,10 @@ function fcRender(o){o=o||{d:fcData,K:fcK,dd:fcDd,el:"fc-body",nm:"加權指數"
   // 總結論（Luna 2026-11-19 同意，10 年回測挑出來的規則）：三塊都紅燈＝考慮減碼；紅燈剩 1 個以下＝可以分批買；其他＝觀望
   const WH=wenHtml(o.K,o.us?null:live,it&&it.pts,o.dp),bm=WH.match(/<b>(綠燈|紅燈|黃燈)/);let SUM="";
   if(bm){const cW=lt,cB=bm[1]==="綠燈"?"🟢":bm[1]==="紅燈"?"🔴":"🟡",cP=k>=4?"🟢":k>=2?"🟡":"🔴",nR=[cW,cB,cP].filter(x=>x==="🔴").length;
-    const [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","可以分批買"]:["🟡","觀望，先不加碼"];
-    SUM=`<div class="fc-light fc-s3"><div class="fc-lt"><span class="fc-dot">${sd}</span><b>總結論：${sx}</b></div>
+    const [sd,sx]=nR===3?["🔴","3 個都紅燈，考慮減碼"]:nR<=1?["🟢","可以分批買"]:["🟡","觀望"];
+    SUM=`<div class="fc-light fc-s3"><div class="fc-lt"><span class="fc-dot">${sd}</span><b>總結論：${sx} ${qm("回測比較")}</b></div>
       <p class="fc-s3l"><span>大方向 ${cW}</span><span>可不可以買 ${cB}</span><span>預測價格 ${cP}</span></p>
-      <p class="dd-tn" style="margin:4px 0 0">3 個都紅燈＝考慮減碼；紅燈剩 1 個以下＝可以分批買；其他＝觀望，先不加碼。回測（大盤近 10 年）：照這樣做賺 352%，一直抱著 329%；最大回檔 −22%，一直抱著 −32%。但不能每次都避開大跌（10 年 8 次跌 10% 以上，只提早避開 3 次）。${o.dp?"這是大盤的回測，個股只能參考。":""}</p></div>
-    <details class="fc-cmp"><summary>近 10 年回測比較（點開看）</summary>
-      <table class="fc-ct"><thead><tr><th>做法</th><th>10 年<br>報酬</th><th>最大<br>回檔</th><th>大跌<br>避開</th></tr></thead><tbody>
-      <tr><td><b>三塊</b><small>（上面的總結論）</small></td><td>+352%</td><td>−22%</td><td>3／6</td></tr>
-      <tr><td><b>兩塊</b><small>大方向＋可不可以買</small></td><td>+183%</td><td>−17%</td><td>6／6</td></tr>
-      <tr><td><b>一直抱著</b></td><td>+329%</td><td>−32%</td><td>—</td></tr></tbody></table>
-      <p class="dd-tn"><b>兩塊的看法：</b>🔴 大方向和可不可以買兩個都紅燈＝先減碼；🟢 減碼後，大方向變黃燈或綠燈＝可以分批買入；🟡 其他＝觀望。</p>
-      <p class="dd-tn">「大跌避開」＝跌 15% 以上的 6 次裡，在跌到 15% 之前就出場幾次。想「避開大跌」看兩塊；想「賺得跟一直抱著差不多、回檔少一點」看三塊。兩塊避開大跌的代價是常常賣了又要買回更貴（10 年賣 61 次，52 次買回更貴）。用加權指數 2016/11～2026/11 每天收盤算，沒算手續費和稅；規則是看完歷史挑的，未來不保證。${o.dp?"這是大盤的回測，個股只能參考。":""}</p></details>`}
+      <p class="dd-tn" style="margin:4px 0 0">3 個都紅燈＝考慮減碼；紅燈剩 1 個以下＝可以分批買；其他＝觀望。回測（大盤近 10 年）：照這樣做賺 352%，一直抱著 329%；最大回檔 −22%，一直抱著 −32%。但不能每次都避開大跌（10 年 8 次跌 10% 以上，只提早避開 3 次）。${o.dp?"這是大盤的回測，個股只能參考。":""}</p></div>`}
   const TB=[["大方向穩不穩",`<p class="fc-sum">站上 ${k} ／ ${R.length} 條均線：<span class="${cls}">${lab}</span></p>
     <p class="fc-now">${esc(o.nm)} <b>${f(px)}</b>${live>0?"（即時）":""}</p>
     <div class="fc-light"><div class="fc-lt"><span class="fc-dot">${lt}</span><b class="${ltc}">${ltx}</b></div>

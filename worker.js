@@ -344,6 +344,18 @@ async function sfcHist(code, us) {
   }
   throw new Error("no data");
 }
+// 個股回測查詢（Luna 2026-11-19）：2015/9 起的還原日 K，頁面自己算 3 個燈和回測
+async function sfcBtK(code, us) {
+  const syms = us ? [code] : [code + ".TW", code + ".TWO"];
+  for (const sym of syms) {
+    const d = await chart(sym, Math.floor(Date.UTC(2015, 8, 1) / 1000)), D = [];
+    if (!d || !d.timestamp) continue;
+    const dq = d.indicators.quote[0], da = (d.indicators.adjclose && d.indicators.adjclose[0].adjclose) || [];
+    d.timestamp.forEach((t, i) => {const o = dq.open[i], h = dq.high[i], l = dq.low[i], c = dq.close[i]; if (h == null || l == null || c == null || !(l > 0)) return; if (!us && !(dq.volume[i] > 0) && h === l) return; const k = da[i] > 0 ? da[i] / c : 1; D.push([ymdOff(t, us ? -5 : 8), +((o || c) * k).toPrecision(6), +(h * k).toPrecision(6), +(l * k).toPrecision(6), +(c * k).toPrecision(6), dq.volume[i] || 0])});
+    if (D.length > 300) return { K: D, sym };
+  }
+  throw new Error("no data");
+}
 async function chart(sym, range = "5y") {
   for (const host of ["query1", "query2", "query1"]) {
     try {
@@ -1613,6 +1625,9 @@ export default {
       case "/api/sfc": {const c = (url.searchParams.get("c") || "").toUpperCase(), u = (url.searchParams.get("us") || "").toUpperCase();
         if (!/^[0-9A-Z]{4,6}$/.test(c) && !/^[A-Z][A-Z.\-]{0,9}$/.test(u)) return new Response("{}", { status: 400 });
         return cached(request, ctx, 3600, () => sfcHist(c || u, !c));} // 站穩季線（週線，Luna 2026-11-19）
+      case "/api/sfcbt": {const c = (url.searchParams.get("c") || "").toUpperCase(), u = (url.searchParams.get("us") || "").toUpperCase();
+        if (!/^[0-9A-Z]{4,6}$/.test(c) && !/^[A-Z][A-Z.\-]{0,9}$/.test(u)) return new Response("{}", { status: 400 });
+        return cached(request, ctx, 6 * 3600, () => sfcBtK(c || u, !c));} // 個股回測查詢（Luna 2026-11-19）
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用

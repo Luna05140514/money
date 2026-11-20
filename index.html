@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J3</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J4</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2357,9 +2357,12 @@ async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1
 const apiR=async u=>(await api(u))||(await new Promise(r=>setTimeout(r,5000)),await api(u));
 /* 融資維持率分段抓（Luna 2026-11-20 融資維持率不見：一次算超過 Cloudflare 免費版的計算上限）：
    mgt 上市融資張數、cls 上市收盤價、mgo 上櫃、keep 整戶擔保維持率，網頁再合起來 */
-async function mgLoad(){const t=await apiR("/api/mval?k=mgt&v=1");if(!t||!t.N)return;const d=t.d;
-  const [cl,o,k]=await Promise.all([apiR(`/api/mval?k=cls&d=${d}&v=1`),apiR(`/api/mval?k=mgo&d=${d}&v=1`),apiR(`/api/mval?k=keep&d=${d}&v=3`)]);
-  if(k&&k.keep){MKT.keep=k.keep;MKT.keepX=k.keepX}
+/* 整戶先用手機存的上次結果馬上顯示，抓到新的就先畫，不等上市櫃融資算完（Luna 2026-11-20 整戶跑比較久） */
+function keepSet(k){if(!k||!k.keep||!MKT)return;MKT.keep=k.keep;MKT.keepX=k.keepX;mktInit()}
+async function mgLoad(){{let o=null;try{o=JSON.parse(localStorage.getItem("facai-keep")||"null")}catch(_){}keepSet(o)}
+  const t=await apiR("/api/mval?k=mgt&v=1");if(!t||!t.N)return;const d=t.d;
+  const kp=apiR(`/api/mval?k=keep&d=${d}&v=3`).then(k=>{if(k&&k.keep){try{localStorage.setItem("facai-keep",JSON.stringify(k))}catch(_){}keepSet(k)}});
+  const [cl,o]=await Promise.all([apiR(`/api/mval?k=cls&d=${d}&v=1`),apiR(`/api/mval?k=mgo&d=${d}&v=1`)]);
   if(cl&&cl.close){let val=0,etf=0;const em=[],sm=[];for(const c in t.N){const p=cl.close[c];if(!p)continue;const v=t.N[c]*1000*p;val+=v;if(/^0/.test(c)){etf+=v;em.push([c,Math.round(v/1e6)])}else sm.push([c,Math.round(v/1e6),6])}
     const oo=o&&o.V?o:{V:0,A:0,E:0,top:[],stk:[]};
     MKT.mgSum={d,V:Math.round(val/1e6)+oo.V,A:t.A+oo.A,E:Math.round(etf/1e6)+oo.E,top:em.concat(oo.top).sort((a,b)=>b[1]-a[1]).slice(0,15),stk:sm.concat(oo.stk).sort((a,b)=>b[1]-a[1]).slice(0,150)};

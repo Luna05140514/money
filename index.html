@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J2</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J3</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1764,7 +1764,7 @@ function zoneBar(def,v){
 }
 
 /* 整戶維持率下面的追繳、強制處分金額表（Luna 2026-11-20：單日、三日） */
-function keepTbl(k){const y=v=>v==null?"－":(v/1e8).toFixed(2)+" 億";return `<span class="ksub"><table><tr><th></th><th>單日</th><th>三日合計</th></tr><tr><td>追繳</td><td>${y(k.camt)}</td><td>${y(k.c3)}</td></tr><tr><td>強制處分</td><td>${y(k.eamt)}</td><td>${y(k.e3)}</td></tr></table></span>`}
+function keepTbl(k){const y=v=>v==null?"－":(v/1e8).toFixed(2)+" 億";return `<span class="ksub"><table><tr><th></th><th>${MKT.keep&&MKT.keep.length?MKT.keep[MKT.keep.length-1][0].slice(5).replace("-","/").replace(/^0/,""):"單日"}</th><th>三日合計</th></tr><tr><td>追繳</td><td>${y(k.camt)}</td><td>${y(k.c3)}</td></tr><tr><td>強制處分</td><td>${y(k.eamt)}</td><td>${y(k.e3)}</td></tr></table></span>`}
 function mktInit(){
   if(!MKT){$("mkt-cards").innerHTML='<p class="note">指標資料還沒載入。</p>';return}
   $("mkt-lead").textContent=upd(MKT.updated);

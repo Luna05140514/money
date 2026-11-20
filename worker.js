@@ -1305,7 +1305,13 @@ async function mgTwse() { /* 上市：只回融資總金額和各股融資張數
 async function mgClose(d) { const x = await dayClose(d); if (!x) throw new Error("no close"); return { d, close: x.close }; }
 async function mgTpex(d) { const t = await tpexMg(d); if (!t) throw new Error("no tpex"); return { d, ...mgPack(t.val, t.amt, t.etf, t.em, t.sm) }; }
 async function mgKeep(d) { const k = await twseGet(`marginTrading/BFIJ3U?response=json&date=${d.replace(/-/g, "")}`);
-  if (!(k && k.stat === "OK" && k.keepRate > 0)) throw new Error("no keep"); return { d, keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum } }; }
+  if (!(k && k.stat === "OK" && k.keepRate > 0)) throw new Error("no keep");
+  // 近三個交易日的追繳、斷頭金額合計（Luna 2026-11-20）：往前找 2 個有資料的交易日
+  let c3 = k.callAmt || 0, e3 = k.exeAmt || 0, n = 1; const ds = [d];
+  for (let i = 1; i < 8 && n < 3; i++) { const t = new Date(Date.parse(d + "T00:00:00Z") - i * 864e5), w = t.getUTCDay(); if (w === 0 || w === 6) continue;
+    const td = t.toISOString().slice(0, 10), x = await twseGet(`marginTrading/BFIJ3U?response=json&date=${td.replace(/-/g, "")}`).catch(() => null);
+    if (x && x.stat === "OK" && x.keepRate > 0) { c3 += x.callAmt || 0; e3 += x.exeAmt || 0; n++; ds.push(td); } }
+  return { d, keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum, camt: k.callAmt, eamt: k.exeAmt, ...(n === 3 ? { c3, e3, d3: ds } : {}) } }; }
 // 國安基金進場那天：加權指數收盤＋融資維持率；兩樣都有就快取 30 天，之後不再變
 async function nsfDay(d) {
   const key = new Request(`https://nsf.cache/v2/${d}`), hit = await caches.default.match(key).catch(() => null);
@@ -1321,7 +1327,7 @@ async function marginRatio() {
   return twseRecent(async d => { const v = await marginAt(d); if (!v) return null;
     // 整戶擔保維持率（Luna 2026-11-20）：證交所臺股儀表板 BFIJ3U，融資＋融券整戶合併、上市櫃全市場，官方數字
     const k = await twseGet(`marginTrading/BFIJ3U?response=json&date=${d.replace(/-/g, "")}`).catch(() => null);
-    return { margin: [[d, v.all]], marginEx: [[d, v.ex]], mgSum: { d, V: v.V, A: v.A, E: v.E, top: v.top, stk: v.stk }, ...(k && k.stat === "OK" && k.keepRate > 0 ? { keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum } } : {}), ...(v.tw ? { mgTw: 1 } : {}) }; });
+    return { margin: [[d, v.all]], marginEx: [[d, v.ex]], mgSum: { d, V: v.V, A: v.A, E: v.E, top: v.top, stk: v.stk }, ...(k && k.stat === "OK" && k.keepRate > 0 ? { keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum, camt: k.callAmt, eamt: k.exeAmt } } : {}), ...(v.tw ? { mgTw: 1 } : {}) }; });
 }
 
 // 同一個網址在 sec 秒內大家共用同一份結果

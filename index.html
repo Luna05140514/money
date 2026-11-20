@@ -375,7 +375,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wsimple .wrow:not(.wed)>.nm{grid-row:auto!important;grid-column:1!important;position:sticky;left:0;z-index:1;background:var(--surface);flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding-left:8px;padding-right:2px}
 .wsimple .wrow:not(.wed)>.nm b{white-space:normal!important;overflow:hidden;max-width:100%;font-size:17px;line-height:1.25;word-break:normal;overflow-wrap:anywhere}
 .wsimple .wrow:not(.wed)>.nm small{display:none}
-.wlt{font-style:normal;font-size:14px;font-weight:700;color:var(--muted);margin-top:3px;white-space:nowrap;cursor:pointer}
+.wlt{font-style:normal;font-size:17px;letter-spacing:-1px;font-weight:700;color:var(--muted);margin-top:3px;white-space:nowrap;cursor:pointer}
 .wsimple .wrow:not(.wed)>.px{grid-column:2!important;overflow:hidden;min-width:0;position:sticky;left:var(--c1);z-index:1;background:var(--surface);justify-content:flex-end;padding-right:6px;font-size:clamp(15px,4.3vw,21px);line-height:1.2;box-shadow:4px 0 6px -4px rgba(0,0,0,.18)}
 .wsimple .wrow:not(.wed)>.chg{grid-column:3!important;flex-direction:column;align-items:flex-end;justify-content:center;font-size:clamp(15px,4.2vw,19px);line-height:1.2;min-width:0}
 .wsimple .wrow:not(.wed)>.chg br{display:none!important}
@@ -442,7 +442,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 /* 價值投資、技術分析各框成一塊（Luna 2026-10-24）；自選股平常左右並排精簡，展開的那個占整行 */
 .wrow .vt{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px;align-items:center}
 .wrow .vt>.vchip:only-of-type{grid-column:1/3}.wrow .vt>.vq{margin:0;width:26px;height:26px;font-size:15px}
-.wrow .vchip{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;padding:4px 5px;border:2px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;min-width:0}
+.wrow .pdot{font-size:18px;line-height:1;letter-spacing:-2px;white-space:nowrap}.pbox .p3{font-weight:700;margin-bottom:4px}.pbox span{display:block}.vchip{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;padding:4px 5px;border:2px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;min-width:0}
 .wrow .vchip.on{border-color:var(--gold);background:var(--gold-soft)}
 .wrow .vchip small{font-size:13px;white-space:nowrap;font-weight:600;color:var(--muted)}
 .wrow .vchip b{font-size:16px;font-weight:800;padding:1px 5px;min-width:0;overflow:hidden;text-overflow:ellipsis;border-radius:8px;white-space:nowrap;font-style:normal;margin:0}
@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">I4</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">I6</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2348,7 +2348,7 @@ async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1
   ["inst","vix","usvix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});
   MKT.updated=d.updated+LIVE;mktInit();
   // 本益比、融資維持率是盤後資料，各自抓（Luna 2026-10-24）
-  for(const k of ["pe","mg"]){if(k==="mg"){delete MKT.margin;try{const o=JSON.parse(localStorage.getItem("facai-mgc")||"null");if(o)mgcSet(o)}catch(_){}}const x=await api(`/api/mval?k=${k}&v=${k==="mg"?7:1}`);if(x){if(k==="mg"){delete x.margin;delete x.marginEx}Object.assign(MKT,x);mktInit()}}
+  for(const k of ["pe","mg"]){if(k==="mg"){delete MKT.margin;let o=null;try{o=JSON.parse(localStorage.getItem("facai-mgc")||"null")}catch(_){}if(o)mgcSet(o);else mktInit()} /* 內嵌的舊融資維持率不要顯示（Luna 2026-11-20 看到 149.98%） */let x=await api(`/api/mval?k=${k}&v=${k==="mg"?7:1}`);if(!x){await new Promise(r=>setTimeout(r,5000));x=await api(`/api/mval?k=${k}&v=${k==="mg"?7:1}`)}if(x){if(k==="mg"){delete x.margin;delete x.marginEx}Object.assign(MKT,x);mktInit()}}
   mgEtf()
 }
 // 只算 ETF、扣除 ETF 的融資維持率（Luna 2026-11-20）：融資市值最大的 15 檔 ETF 各自估算借款（/api/mgr），
@@ -2917,12 +2917,13 @@ document.querySelectorAll("section.page").forEach(s=>{const h=s.querySelector(":
 // 自選股紅綠燈（Luna 2026-11-19）：每一檔用週線月線、季線、半年線，和大盤預測同一套 4 個條件；worker /api/kd week.lt
 const LT_CK=["收盤站上月線、季線、半年線","連續 3 週收盤都沒跌破","多頭排列（月線＞季線＞半年線）而且都往上","拉回碰到月線沒跌破，而且量縮"];
 function ltOf(c){const k=watchKd[c],l=k&&k.week&&k.week.lt;if(!l)return null;const n=l.filter(x=>x).length;return !l[0]?["🔴","紅燈","還沒站穩",l]:n===4?["🟢","綠燈","真站穩",l]:["🟡","黃燈","站上了，還沒確認",l]}
-function ltTag(c,nm){const x=ltOf(c);return x?`<i class="wlt" data-lt="${esc(c)}" data-nm="${esc(nm)}" role="button" tabindex="0" aria-label="${x[1]}，看說明">${x[0]}${x[1]}</i>`:""}
-document.addEventListener("click",e=>{const g=e.target.closest(".wlt[data-lt]");if(!g)return;e.preventDefault();e.stopPropagation();const x=ltOf(g.dataset.lt);if(!x)return;let box=$("sg-pop");
+/* 名字下面放 3 個燈的圖案、不寫字（Luna 2026-11-20）：大方向、可不可以買、預測價格 */
+function ltTag(c,nm,last){const x=ltOf(c),p=predOf(watchPredD[c],last,predLev(c)),w=p&&predLev(c)?p.dW:x&&x[0];if(!w&&!p)return"";return `<i class="wlt" data-lt="${esc(c)}" data-nm="${esc(nm)}" data-last="${last||""}" role="button" tabindex="0" aria-label="大方向、可不可以買、預測價格 3 個燈，看說明">${w||"⚪"}${p?(p.dB||"⚪")+p.dot:""}</i>`}
+document.addEventListener("click",e=>{const g=e.target.closest(".wlt[data-lt]");if(!g)return;e.preventDefault();e.stopPropagation();const x=ltOf(g.dataset.lt),c=g.dataset.lt,last=+g.dataset.last||null,p=predOf(watchPredD[c],last,predLev(c));if(!x&&!p)return;let box=$("sg-pop");
   if(!box){box=document.createElement("div");box.id="sg-pop";box.className="sg-pop";document.body.appendChild(box);box.addEventListener("click",e=>{if(e.target===box||e.target.closest(".sg-x"))box.hidden=true})}
-  box.innerHTML=`<div class="sg-card" role="dialog" aria-label="紅綠燈"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(g.dataset.nm)} 紅綠燈</h2><p class="sg-res">結果：<b>${x[0]} ${x[1]}：${x[2]}</b></p>
-    <div class="fc-light"><ul>${LT_CK.map((t,i)=>`<li class="${x[3][i]?"ok":"no"}"><span>${x[3][i]?"✔":"✘"}</span>${t}</li>`).join("")}</ul></div>
-    <p class="muted">用週線看。4 條都符合是綠燈；第 1 條沒有是紅燈；其他是黃燈。只是參考，不是保證。</p></div>`;box.hidden=false},true);
+  box.innerHTML=`<div class="sg-card" role="dialog" aria-label="紅綠燈"><button class="sg-x" aria-label="關閉">✕ 關閉</button><h2>${esc(g.dataset.nm)} 3 個燈</h2>${x?`<p class="sg-res">大方向：<b>${p&&predLev(c)?p.dW:x[0]} ${p&&predLev(c)?"看加權指數":x[1]+"："+x[2]}</b></p>
+    <div class="fc-light"><ul>${LT_CK.map((t,i)=>`<li class="${x[3][i]?"ok":"no"}"><span>${x[3][i]?"✔":"✘"}</span>${t}</li>`).join("")}</ul></div>`:""}${p?`<p class="sg-res">可不可以買：<b>${p.dB||"⚪ 資料不夠"}</b></p><p class="sg-res">預測價格：<b>${p.dot} 站上 ${p.k}／${p.nR} 條週均線</b></p>${predBox(c,last)}`:""}
+    <p class="muted">大方向用週線看，4 條都符合是綠燈、第 1 條沒有是紅燈、其他是黃燈。可不可以買、預測價格和個股回測同一套。只是參考，不是保證。</p></div>`;box.hidden=false},true);
 function watchRender(){twiiBar();
   const f2=v=>v==null?"—":v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
   $("watch-tabs").innerHTML=watchGroups.map((g,i)=>`<button role="tab" data-t="${i}" aria-selected="${i===watchTab}">${esc(g.name)}</button>`).join("")+`<button class="wt-add" id="wt-plus" aria-label="新增分頁">＋</button>`;{const t=$("watch-tabs"),sb=t.querySelector('[aria-selected="true"]');if(sb&&t.scrollWidth>t.clientWidth){const l=sb.offsetLeft-t.offsetLeft;if(l<t.scrollLeft||l+sb.offsetWidth>t.scrollLeft+t.clientWidth)t.scrollLeft=l-(t.clientWidth-sb.offsetWidth)/2}}
@@ -2932,10 +2933,32 @@ function watchRender(){twiiBar();
     const chg=d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}<br><small class="pc">${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%</small>`;
     const kx=watchKd[c],sd=stkData[c],ac=anaCells(kx&&kx.day,kx?kx.week:(sd&&sd.k!=null?{k:sd.k,d:sd.d}:null),kx&&kx.day&&kx.day.tl,idxOf[c][2]?premCell(c):c==="TSM"?adrCell(it.last):peMini(c,it.last),it.last,mkData[c],(idxOf[c][4]?"u:":"c:")+c);
     if(watchEdit)return `<div class="wrow wed" data-c="${esc(c)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small></span><span class="wmv"><span class="wmb wdrag" aria-label="按住拖動 ${esc(it.name)}，可用上下鍵移動" role="button" tabindex="0">☰</span><span class="wmb wdx" data-rm="1" role="button" tabindex="0" aria-label="移除 ${esc(it.name)}">✕</span></span></div>`;
-    return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small>${ltTag(c,it.name)}</span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
+    return `<button class="wrow" data-c="${esc(c)}" aria-label="查看 ${esc(it.name)}"><span class="nm"><b>${esc(it.name)}</b><small>${esc(c)}</small>${ltTag(c,it.name,it.last)}</span><span class="px ${cls}">${it.loading?"…":f2(it.last)}</span>${watchEdit?"":`<span class="chg ${cls}">${chg}</span>${ac}${tlRow(watchKd[c]&&watchKd[c].day&&watchKd[c].day.tl,idxOf[c][4]?"":mgrSpan(c,it.last))}${hiDrop(watchKd[c]&&watchKd[c].day&&watchKd[c].day.hi,it.last)}${idxOf[c][2]?watchSig(c):`<span class="vt">${watchValTag(c,it.last,"chip")}${watchSig(c,"chip")}<i class="qm vq" data-term="看法" role="button" tabindex="0" aria-label="價值投資和技術分析是什麼">?</i></span>${watchSel[c]==="v"?watchValTag(c,it.last):watchSel[c]==="t"?watchSig(c):""}`}`}</button>`}).join("");
   $("watch-cards").innerHTML=rows?(watchEdit?"":anaHead((()=>{const e=g.list.filter(c=>idxOf[c]).map(c=>!!idxOf[c][2]);return e.length&&e.every(x=>x)?"折溢價":e.some(x=>x)?"價位<br>折溢價":true})()))+rows:'<p class="wempty">這頁還沒有股票，按「編輯」加入。</p>';
   watchFit();
 }
+// 自選股的「預測價格」（Luna 2026-11-20）：和個股回測同一套（站上幾條週均線 → 燈號；最近 5 年同樣情況之後 3 個月的漲跌幅）
+// 清單只顯示燈的圖案，點了才在下面顯示一般會漲到／跌到；資料用 /api/sfc，這次開網頁抓過就不再抓
+const watchPredD={},watchPredBusy=new Set();
+function predOf(d,last,lev){if(!d||!d.w||!d.w.length)return null;const wk=s=>{const x=new Date(s+"T00:00:00Z");return new Date(x-((x.getUTCDay()+6)%7)*864e5).toISOString().slice(0,10)};
+  const today=new Date(Date.now()+8*36e5).toISOString().slice(0,10),C=d.w.map(x=>x[1]),LO=d.w.map(x=>x[2]||x[1]),VO=d.w.map(x=>x[3]||0);if(last>0){if(wk(d.w[d.w.length-1][0])===wk(today)){C[C.length-1]=last;LO[LO.length-1]=Math.min(LO[LO.length-1],last)}else{C.push(last);LO.push(last);VO.push(0)}}
+  const n=C.length,px=C[n-1],ma=N=>{const a=C.slice(n-N);return a.length===N?a.reduce((s,v)=>s+v,0)/N:null};
+  const R=FC_MA.map(([N])=>ma(N)).filter(v=>v),k=R.filter(v=>px>v).length,F=(d.fw&&d.fw[k])||[],F5=d.fw5&&d.fw5[k]&&d.fw5[k].length>=20?d.fw5[k]:null,FR=F5||F;
+  const q=(a,p)=>{const s=a.slice().sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.max(0,Math.round((s.length-1)*p)))]};
+  /* 大方向（和個股回測同：月、季、半年線 4 個條件；正二看加權指數） */const T=[4,13,26],mAt=(N,i)=>{const a=C.slice(i-N+1,i+1);return a.length===N&&i-N+1>=0?a.reduce((s,v)=>s+v,0)/N:null},a3=i=>T.every(N=>{const m=mAt(N,i);return m!=null&&C[i]>m});
+  const c1=a3(n-1),c2=c1&&a3(n-2)&&a3(n-3),c3=mAt(4,n-1)>mAt(13,n-1)&&mAt(13,n-1)>mAt(26,n-1)&&T.every(N=>mAt(N,n-1)>mAt(N,n-2));let c4=false;if(c1)for(let i=n-2;i>=Math.max(5,n-7)&&!c4;i--){const m=mAt(4,i),av=VO.slice(i-4,i).reduce((s,v)=>s+v,0)/4;if(m&&LO[i]<=m*1.01&&C[i]>m&&VO[i]>0&&av>0&&VO[i]<av)c4=true}
+  let dW=!c1?"🔴":(c1&&c2&&c3&&c4)?"🟢":"🟡";if(lev&&twWMap){const w=[...twWMap.values()].pop();if(w)dW={R:"🔴",G:"🟢",Y:"🟡"}[w]||dW}
+  /* 可不可以買（溫老師，日線） */let dB=null;if(d.d&&d.d.length>=300){const m=wenHtml(d.d,last>0?last:null,last>0?[["",last]]:null,1).match(/<b>(綠燈|紅燈|黃燈)/);if(m)dB=m[1]==="綠燈"?"🟢":m[1]==="紅燈"?"🔴":"🟡"}
+  return {dW,dB,dot:k>=4?"🟢":k>=2?"🟡":"🔴",k,nR:R.length,px,mu:FR.length?q(FR.map(x=>x[0]),.5):null,md:FR.length?q(FR.map(x=>x[1]),.5):null,u75:FR.length?q(FR.map(x=>x[0]),.75):null,d25:FR.length?q(FR.map(x=>x[1]),.25):null}}
+async function watchPredLoad(){if(!ON_CF)return;const g=watchGroups[watchTab];if(!g)return;
+  const need=g.list.filter(c=>idxOf[c]&&!watchPredD[c]&&!watchPredBusy.has(c));if(!need.length)return;need.forEach(c=>watchPredBusy.add(c));
+  for(let i=0;i<need.length;i+=4){await Promise.all(need.slice(i,i+4).map(async c=>{const us=!!idxOf[c][4],d=await api(`/api/sfc?${us?"us":"c"}=${encodeURIComponent(c)}&v=2`);if(d&&d.w)watchPredD[c]={w:d.w.slice(-160),fw:d.fw,fw5:d.fw5,d:d.d};watchPredBusy.delete(c)}));if(curPage()==="watch"&&!watchEdit)watchRender()}}
+const predLev=c=>!idxOf[c][4]&&FC_LEV.includes(c);
+function predChip(c,last){const p=predOf(watchPredD[c],last,predLev(c));if(p&&predLev(c)&&!twWMap)twWGet().then(m=>{if(m&&curPage()==="watch"&&!watchEdit)watchRender()});return `<span class="vchip pchip${watchSel[c]==="p"?" on":""}" data-xp="p:${esc(c)}" role="button" tabindex="0" aria-label="大方向、可不可以買、預測價格 3 個燈"><small>3 個燈</small><b class="pdot">${p?(p.dW+(p.dB||"⚪")+p.dot):"…"}</b></span>`}
+function predBox(c,last){const p=predOf(watchPredD[c],last,predLev(c));if(!p)return `<span class="vals vbox vdet">${ON_CF?"資料載入中…":"預測價格要用你的網站（Cloudflare 版）打開才看得到。"}</span>`;
+  const f=v=>v>=100?Math.round(v).toLocaleString():(+v).toFixed(2),pc=v=>(v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(1)+"%";
+  if(p.mu==null)return `<span class="vals vbox vdet">${p.dot} 站上 ${p.k}／${p.nR} 條週均線，資料不夠算範圍</span>`;
+  return `<span class="vals vbox vdet pbox"><span>接下來 3 個月：</span><span>一般會漲到 <b class="up">${f(p.px*(1+p.mu/100))}</b>（${pc(p.mu)}）</span><span>一般會跌到 <b class="down">${f(p.px*(1+p.md/100))}</b>（${pc(p.md)}）</span><span><small>比較好時漲到 ${f(p.px*(1+p.u75/100))}，比較差時跌到 ${f(p.px*(1+p.d25/100))}</small></span></span>`}
 // 往下滑只有股票列表在動，上面的頁名、分頁、表頭都不動（Luna 2026-11-18）：列表高度剛好到螢幕底，在列表裡上下捲
 function watchFit(){const l=$("watch-cards");if(!l)return;if(watchEdit||curPage()!=="watch"){l.classList.remove("wfit");l.style.maxHeight="";return}
   l.classList.add("wfit");const top=l.getBoundingClientRect().top+window.scrollY;l.style.maxHeight=Math.max(240,window.innerHeight-top-10)+"px"}
@@ -2945,7 +2968,7 @@ async function watchLoad(){
   await Promise.all(codes.map(c=>stkData[c]?null:loadShard(idxOf[c][3]).catch(()=>null)));
   watchRender();
   if(!ON_CF)return;
-  watchKdLoad();watchValLoad();
+  watchKdLoad();watchValLoad();watchPredLoad();
   const need=codes;if(!need.length)return;
   const d=await api(`/api/quote?c=${need.filter(c=>!idxOf[c][4]).join(",")}&us=${need.filter(c=>idxOf[c][4]).join(",")}`);
   if(!d)return;
@@ -3031,7 +3054,7 @@ function watchInit(){
   watchGroups.forEach(g=>g.list=g.list.filter(c=>idxOf[c]));
   $("watch-time").textContent=ON_CF?"":`資料 ${STOCK.updated}`;
   watchRender();watchLoad();
-  $("watch-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;watchTab=+b.dataset.t;try{localStorage.setItem("facai-watch-tab",watchTab)}catch(_){}watchRender();watchKdLoad();watchValLoad()});
+  $("watch-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;watchTab=+b.dataset.t;try{localStorage.setItem("facai-watch-tab",watchTab)}catch(_){}watchRender();watchKdLoad();watchValLoad();watchPredLoad()});
   $("watch-edit").addEventListener("click",()=>{watchEdit=!watchEdit;$("watch-edit").setAttribute("aria-pressed",watchEdit);$("watch-edit").innerHTML=watchEdit?"完成":'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="M14.5 5.5l3 3"/></svg>';$("watch-edit").setAttribute("aria-label",watchEdit?"完成":"編輯");$("watch-add").hidden=!watchEdit;if(!watchEdit){$("watch-q").value="";$("watch-sug").hidden=true}watchRender()});
   $("watch-cards").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;
     if(!watchEdit){wdOpen(b.dataset.c);return}

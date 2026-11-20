@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J5</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J6</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1938,6 +1938,10 @@ function idxInit(){
 /* 放在 Cloudflare 時：打開網頁就向 Cloudflare 拿最新資料（worker.js；報價每 60 秒最多抓一次），換掉內嵌的資料；
    在 Claude 上抓不到，就維持內嵌（每天排程更新）的資料 */
 const ON_CF=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
+/* 手機一直用舊版網頁（Luna 2026-11-20）：打開或回到網頁時檢查網站上的版本號，不一樣就自動重新載入新版 */
+function verCheck(){if(!ON_CF)return;const me=(document.getElementById("ver-n")||{}).textContent;if(!me)return;
+  fetch("/?vc="+Date.now(),{cache:"no-store"}).then(r=>r.text()).then(t=>{const m=t.match(/id="ver-n">([^<]+)</);if(m&&m[1]!==me){let n=0;try{n=+sessionStorage.getItem("facai-vc")||0}catch(_){}if(n>2)return;try{sessionStorage.setItem("facai-vc",n+1)}catch(_){}location.replace("/?r="+Date.now()+location.hash)}}).catch(()=>{})}
+window.addEventListener("load",()=>setTimeout(verCheck,1500));document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")verCheck()});
 async function api(path){if(!ON_CF)return null;try{const r=await fetch(path,{cache:"no-store"});if(!r.ok)return null;const d=await r.json();return d&&!d.error?d:null}catch(_){return null}}
 /* 名詞小幫手（Luna 2026-10-23）：名詞旁邊的「？」，點了用白話解釋 */
 // 準確率這一欄整欄換顏色，跟其他欄分開（Luna 2026-11-19）
@@ -2359,10 +2363,10 @@ const apiR=async u=>(await api(u))||(await new Promise(r=>setTimeout(r,5000)),aw
 /* 融資維持率分段抓（Luna 2026-11-20 融資維持率不見：一次算超過 Cloudflare 免費版的計算上限）：
    mgt 上市融資張數、cls 上市收盤價、mgo 上櫃、keep 整戶擔保維持率，網頁再合起來 */
 /* 整戶先用手機存的上次結果馬上顯示，抓到新的就先畫，不等上市櫃融資算完（Luna 2026-11-20 整戶跑比較久） */
-function keepSet(k){if(!k||!k.keep||!MKT)return;MKT.keep=k.keep;MKT.keepX=k.keepX;mktInit()}
+function keepSet(k){if(!k||!k.keep||!MKT||!k.keepX||k.keepX.camt==null)return;MKT.keep=k.keep;MKT.keepX=k.keepX;mktInit()}
 async function mgLoad(){{let o=null;try{o=JSON.parse(localStorage.getItem("facai-keep")||"null")}catch(_){}keepSet(o)}
   const t=await apiR("/api/mval?k=mgt&v=1");if(!t||!t.N)return;const d=t.d;
-  const kp=apiR(`/api/mval?k=keep&d=${d}&v=3`).then(k=>{if(k&&k.keep){try{localStorage.setItem("facai-keep",JSON.stringify(k))}catch(_){}keepSet(k)}});
+  const kp=apiR(`/api/mval?k=keep&d=${d}&v=4`).then(k=>{if(k&&k.keep){try{localStorage.setItem("facai-keep",JSON.stringify(k))}catch(_){}keepSet(k)}});
   const [cl,o]=await Promise.all([apiR(`/api/mval?k=cls&d=${d}&v=1`),apiR(`/api/mval?k=mgo&d=${d}&v=1`)]);
   if(cl&&cl.close){let val=0,etf=0;const em=[],sm=[];for(const c in t.N){const p=cl.close[c];if(!p)continue;const v=t.N[c]*1000*p;val+=v;if(/^0/.test(c)){etf+=v;em.push([c,Math.round(v/1e6)])}else sm.push([c,Math.round(v/1e6),6])}
     const oo=o&&o.V?o:{V:0,A:0,E:0,top:[],stk:[]};

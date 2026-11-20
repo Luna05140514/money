@@ -264,7 +264,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .mkt-sum{display:grid;gap:0;padding:6px 18px}
 .mkt-sum a{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
 .mkt-sum a:last-child{border-bottom:none}#mkt .mcard:not(.mk-clone){display:none!important}#mk-pop{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}#mk-pop[hidden]{display:none}#mk-pop .mk-box{position:relative;width:min(560px,100%);max-height:86vh;overflow:auto;background:var(--bg);border-radius:18px;padding:44px 10px 4px;box-shadow:0 10px 40px rgba(0,0,0,.3)}#mk-pop .mk-x{position:absolute;top:8px;right:10px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;cursor:pointer}#mk-pop .mcard{margin:0 0 10px}
-.mkt-sum .ksub{grid-column:1/-1;margin-top:-2px}.mkt-sum .ksub table{width:100%;border-collapse:collapse;font-size:17px}.mkt-sum .ksub th{font-weight:600;color:var(--muted,#6b6b6b);text-align:right;padding:4px 6px;border-bottom:1px solid var(--line)}.mkt-sum .ksub td{text-align:right;padding:5px 6px;font-family:var(--num);font-variant-numeric:tabular-nums}.mkt-sum .ksub td:first-child{text-align:left;font-family:inherit}.mkt-sum .v{font-family:var(--num);font-variant-numeric:tabular-nums}
+.mkt-sum .kbtn{margin-left:8px;padding:2px 10px;font-size:15px;font-weight:600;border:1.5px solid var(--line);border-radius:999px;background:transparent;color:inherit;cursor:pointer;vertical-align:middle}.mkt-sum .kbtn.on{background:var(--gold,#c9a23a);border-color:transparent;color:#fff}.mkt-sum .ksub{grid-column:1/-1;margin-top:-2px}.mkt-sum .ksub table{width:100%;border-collapse:collapse;font-size:17px}.mkt-sum .ksub th{font-weight:600;color:var(--muted,#6b6b6b);text-align:right;padding:4px 6px;border-bottom:1px solid var(--line)}.mkt-sum .ksub td{text-align:right;padding:5px 6px;font-family:var(--num);font-variant-numeric:tabular-nums}.mkt-sum .ksub td:first-child{text-align:left;font-family:inherit}.mkt-sum .v{font-family:var(--num);font-variant-numeric:tabular-nums}
 .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:500;white-space:nowrap}
 .pill.hot{background:var(--hot-bg);color:var(--hot)}
 .pill.mid{background:var(--gold-soft);color:var(--ink)}
@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J4</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J5</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1764,6 +1764,7 @@ function zoneBar(def,v){
 }
 
 /* 整戶維持率下面的追繳、強制處分金額表（Luna 2026-11-20：單日、三日） */
+let keepOpen=false; /* 整戶後面的「追繳」按鈕：點了才展開金額表（Luna 2026-11-20） */
 function keepTbl(k){const y=v=>v==null?"－":(v/1e8).toFixed(2)+" 億";return `<span class="ksub"><table><tr><th></th><th>${MKT.keep&&MKT.keep.length?MKT.keep[MKT.keep.length-1][0].slice(5).replace("-","/").replace(/^0/,""):"單日"}</th><th>三日合計</th></tr><tr><td>追繳</td><td>${y(k.camt)}</td><td>${y(k.c3)}</td></tr><tr><td>強制處分</td><td>${y(k.eamt)}</td><td>${y(k.e3)}</td></tr></table></span>`}
 function mktInit(){
   if(!MKT){$("mkt-cards").innerHTML='<p class="note">指標資料還沒載入。</p>';return}
@@ -1787,7 +1788,7 @@ function mktInit(){
     let pctl="";
     if(def.zones&&s.length>20&&!NOW_ONLY.includes(def.key)){const below=s.filter(p=>p[1]<v).length,dd=t=>Date.parse(t.length<8?t+"-01":t),mo=Math.round((dd(last[0])-dd(s[0][0]))/2629800000);
       pctl=`<p class="pctl">比過去 ${mo>=12?Math.round(mo/12)+" 年":Math.max(1,mo)+" 個月"}中 ${Math.round(below/s.length*100)}% 的時間高</p>`}
-    sum+=`<a href="#mkt-${def.key}" data-jump="mkt-${def.key}"><span>${def.short}</span><span class="v">${def.key==="m1b"?`${fmtV(last[1])}% / ${fmtV(last[2])}%`:def.key==="inst"?sgn(last[1]+last[2]+last[3])+" 億":fmtV(v)+(def.unit==="%"?"%":"")}</span><span class="pill ${tone}">${label}</span>${def.key==="keep"&&MKT.keepX&&MKT.keepX.camt!=null?keepTbl(MKT.keepX):""}</a>`;
+    sum+=`<a href="#mkt-${def.key}" data-jump="mkt-${def.key}"><span>${def.short}${def.key==="keep"&&MKT.keepX&&MKT.keepX.camt!=null?`<button type="button" class="kbtn${keepOpen?" on":""}" aria-expanded="${keepOpen}">追繳 ${keepOpen?"▲":"▼"}</button>`:""}</span><span class="v">${def.key==="m1b"?`${fmtV(last[1])}% / ${fmtV(last[2])}%`:def.key==="inst"?sgn(last[1]+last[2]+last[3])+" 億":fmtV(v)+(def.unit==="%"?"%":"")}</span><span class="pill ${tone}">${label}</span>${def.key==="keep"&&keepOpen&&MKT.keepX&&MKT.keepX.camt!=null?keepTbl(MKT.keepX):""}</a>`;
     cards+=`<div class="panel mcard" id="mkt-${def.key}"><h2>${def.name}</h2>
       <div class="top"><span class="big">${big}</span><span class="pill ${tone}">${label}</span><span class="asof">${def.asof(last[0])}</span></div>
       ${def.zones?zoneBar(def,v):""}${pctl}${def.key==="inst"?instBlock(s):""}
@@ -1800,7 +1801,7 @@ function mktInit(){
     if(NOW_ONLY.includes(def.key))return;
     mktChart($("mkt-ch-"+def.key),s,def.key==="m1b"?[{i:1,color:"var(--s2)"},{i:2,color:"var(--s1)"}]:[{i:1,color:"var(--red)"}],def.zones?def.zones.slice(0,-1).map(z=>z[0]):[0])});
   mktShow();
-  if(!mktInit.bound)mktInit.bound=1,$("mkt-sum").addEventListener("click",e=>{const a=e.target.closest("[data-jump]");if(!a)return;e.preventDefault();mktOpen=a.dataset.jump;mktShow()});
+  if(!mktInit.bound)mktInit.bound=1,$("mkt-sum").addEventListener("click",e=>{if(e.target.closest(".kbtn")){e.preventDefault();e.stopPropagation();keepOpen=!keepOpen;mktInit();return}const a=e.target.closest("[data-jump]");if(!a)return;e.preventDefault();mktOpen=a.dataset.jump;mktShow()});
 }
 
 /* 全球大盤：IDX 由 data/index_intraday.py 嵌入；x 軸是交易時段（台股 9:00–13:30、台指期 8:45–13:45、美股美東 9:30–16:00） */

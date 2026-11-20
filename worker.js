@@ -1287,6 +1287,25 @@ async function marginAt(d) {
     const stk = Object.entries(sm).sort((a, b) => b[1][0] - a[1][0]).slice(0, 150).map(([c, [v, r]]) => [c, e8(v), r]);
     return { all: r2(V / A), ex: r2((V - E) / (A - E * 0.6)), V: e8(V), A: e8(A), E: e8(E), top, stk, ...(tp ? {} : { tw: 1 }) };
 }
+// 融資維持率拆成 3 段分開抓（Luna 2026-11-20 融資維持率不見）：一次算完要 15 毫秒，超過 Cloudflare 免費版 10 毫秒會被中斷
+// 每段回傳該市場融資市值最大的 ETF 15 檔、個股 150 檔，網頁再合併
+const mgPack = (val, amt, etf, em, sm) => { const e8 = v => Math.round(v / 1e6);
+  return { V: e8(val), A: e8(amt), E: e8(etf), top: Object.entries(em).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([c, v]) => [c, e8(v)]),
+    stk: Object.entries(sm).sort((a, b) => b[1][0] - a[1][0]).slice(0, 150).map(([c, [v, r]]) => [c, e8(v), r]) }; };
+async function mgTwse() { /* 上市：只回融資總金額和各股融資張數，收盤價另外用 k=cls 抓，網頁再相乘 */
+  return twseRecent(async d => {
+    const mm = await twseGet(`marginTrading/MI_MARGN?response=json&selectType=ALL&date=${d.replace(/-/g, "")}`); if (mm.stat !== "OK") return null;
+    const sum = (mm.tables || []).find(x => (x.fields || [])[0] === "項目"), det = (mm.tables || []).find(x => (x.fields || [])[0] === "代號");
+    const row = sum && sum.data.find(r => String(r[0]).startsWith("融資金額")); if (!row || !det) return null;
+    const amt = fnum(row[5]) * 1000; if (!amt) return null;
+    const N = {}; for (const r of det.data) { const n = fnum(r[6]); if (n) N[r[0].trim()] = n; }
+    return { d, A: Math.round(amt / 1e6), N };
+  });
+}
+async function mgClose(d) { const x = await dayClose(d); if (!x) throw new Error("no close"); return { d, close: x.close }; }
+async function mgTpex(d) { const t = await tpexMg(d); if (!t) throw new Error("no tpex"); return { d, ...mgPack(t.val, t.amt, t.etf, t.em, t.sm) }; }
+async function mgKeep(d) { const k = await twseGet(`marginTrading/BFIJ3U?response=json&date=${d.replace(/-/g, "")}`);
+  if (!(k && k.stat === "OK" && k.keepRate > 0)) throw new Error("no keep"); return { d, keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum } }; }
 // 國安基金進場那天：加權指數收盤＋融資維持率；兩樣都有就快取 30 天，之後不再變
 async function nsfDay(d) {
   const key = new Request(`https://nsf.cache/v2/${d}`), hit = await caches.default.match(key).catch(() => null);
@@ -1647,6 +1666,10 @@ export default {
         const k = url.searchParams.get("k");
         if (k === "pe") return cached(request, ctx, 10800, marketPe);
         if (k === "mg") return cached(request, ctx, 10800, marginRatio);
+        const md = url.searchParams.get("d") || ""; /* 分段：mgt 上市、mgo 上櫃、keep 整戶（d=日期） */
+        if (k === "mgt") return cached(request, ctx, 10800, mgTwse);
+        if (k === "cls" && /^\d{4}-\d\d-\d\d$/.test(md)) return cached(request, ctx, 10800, () => mgClose(md));
+        if ((k === "mgo" || k === "keep") && /^\d{4}-\d\d-\d\d$/.test(md)) return cached(request, ctx, 10800, () => k === "mgo" ? mgTpex(md) : mgKeep(md));
         return new Response("{}", { status: 400 });
       }
       case "/api/mdd": {

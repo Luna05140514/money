@@ -534,8 +534,14 @@ async function m1b() {
     const [y, m] = r[0].split("M"); return [`${y}-${m.padStart(2, "0")}`, Math.round(num(r[i1]) * 100) / 100, Math.round(num(r[i2]) * 100) / 100];
   }).slice(-13);
 }
+async function usVix() { // 美國恐慌指數 VIX（Luna 2026-11-19），Yahoo ^VIX 最後一筆收盤（盤中是即時）
+  const d = await chart("^VIX", "5d"); if (!d || !d.timestamp) return null;
+  const q = d.indicators.quote[0].close; for (let i = d.timestamp.length - 1; i >= 0; i--) if (q[i] != null)
+    return [[new Date((d.timestamp[i] - 5 * 3600) * 1000).toISOString().slice(0, 10), Math.round(q[i] * 100) / 100]];
+  return null;
+}
 async function market() {
-  const jobs = { inst: inst(), vix: vixNow(), retail: retail(), ndc: ndc(), m1b: m1b() };
+  const jobs = { inst: inst(), vix: vixNow(), usvix: usVix(), retail: retail(), ndc: ndc(), m1b: m1b() };
   const out = { updated: `${twDay(0)} ${new Date(Date.now() + 8 * 3600e3).toISOString().slice(11, 16)}` };
   await Promise.all(Object.entries(jobs).map(([k, p]) => p.then(v => { if (v && v.length) out[k] = v; }, () => {})));
   return out;
@@ -1259,23 +1265,27 @@ async function tpexMg(d) {
     fetch(`https://www.tpex.org.tw/www/zh-tw/afterTrading/otc?date=${ds}&type=EW&response=json`, H).then(r => r.json())]);
   const t = (mb.tables || [])[0], c = (cl.tables || [])[0]; if (!t || !c || !(t.data || []).length || !(c.data || []).length) return null;
   const px = {}; for (const r of c.data) { const v = fnum(r[2]); if (v) px[r[0].trim()] = v; }
-  let val = 0, etf = 0; for (const r of t.data) { const c = r[0].trim(), n = fnum(r[6]), p = px[c]; if (n && p) { val += n * 1000 * p; if (/^0/.test(c)) etf += n * 1000 * p; } }
+  let val = 0, etf = 0; const em = {}, sm = {}; for (const r of t.data) { const c = r[0].trim(), n = fnum(r[6]), p = px[c]; if (n && p) { val += n * 1000 * p; if (/^0/.test(c)) { etf += n * 1000 * p; em[c] = n * 1000 * p; } else sm[c] = [n * 1000 * p, 5]; } }
   const row = (t.summary || []).find(r => /融資金/.test(r[1] || "")), amt = row ? fnum(row[6]) * 1000 : 0;
-  return amt ? { val, amt, etf } : null;
+  return amt ? { val, amt, etf, em, sm } : null;
 }
 async function marginAt(d) {
     const [mm, tp] = await Promise.all([twseGet(`marginTrading/MI_MARGN?response=json&selectType=ALL&date=${d.replace(/-/g, "")}`), tpexMg(d).catch(() => null)]);
     if (mm.stat !== "OK") return null;
     // 上櫃網站有時擋 Cloudflare（Luna 2026-11-09 看到停在 10/22 的 176）：抓不到就先只算上市，不要整個沒資料
-    const tq = tp || { val: 0, amt: 0, etf: 0 };
+    const tq = tp || { val: 0, amt: 0, etf: 0, em: {}, sm: {} };
     const sum = (mm.tables || []).find(x => (x.fields || [])[0] === "項目"), det = (mm.tables || []).find(x => (x.fields || [])[0] === "代號");
     const row = sum && sum.data.find(r => String(r[0]).startsWith("融資金額")); if (!row || !det) return null;
     const x = await dayClose(d); if (!x) return null;
-    let val = 0, etf = 0; for (const r of det.data) { const c = r[0].trim(), n = fnum(r[6]); if (n && x.close[c]) { val += n * 1000 * x.close[c]; if (/^0/.test(c)) etf += n * 1000 * x.close[c]; } }
+    let val = 0, etf = 0; const em = { ...tq.em }, sm = { ...tq.sm }; for (const r of det.data) { const c = r[0].trim(), n = fnum(r[6]); if (n && x.close[c]) { val += n * 1000 * x.close[c]; if (/^0/.test(c)) { etf += n * 1000 * x.close[c]; em[c] = n * 1000 * x.close[c]; } else sm[c] = [n * 1000 * x.close[c], 6]; } }
     const amt = fnum(row[5]) * 1000; if (!amt) return null;
     // 扣除 ETF（Luna 2026-11-08）：證交所只公布融資總金額，ETF 借的錢用「ETF 融資市值 × 6 成（融資成數）」估算後扣掉
     const E = etf + tq.etf, V = val + tq.val, A = amt + tq.amt, r2 = v => Math.round(v * 10000) / 100;
-    return { all: r2(V / A), ex: r2((V - E) / (A - E * 0.6)), ...(tp ? {} : { tw: 1 }) };
+    // 只算 ETF（Luna 2026-11-20）：回傳融資市值最大的 15 檔 ETF，網頁再用 /api/mgr 各檔的估算借款算 ETF 的維持率
+    const top = Object.entries(em).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([c, v]) => [c, Math.round(v / 1e6)]), e8 = v => Math.round(v / 1e6);
+    // 買進成本算法（Luna 2026-11-20 一律改用）：融資市值最大的 150 檔個股，[代號, 市值(百萬), 融資成數 6=上市 5=上櫃]
+    const stk = Object.entries(sm).sort((a, b) => b[1][0] - a[1][0]).slice(0, 150).map(([c, [v, r]]) => [c, e8(v), r]);
+    return { all: r2(V / A), ex: r2((V - E) / (A - E * 0.6)), V: e8(V), A: e8(A), E: e8(E), top, stk, ...(tp ? {} : { tw: 1 }) };
 }
 // 國安基金進場那天：加權指數收盤＋融資維持率；兩樣都有就快取 30 天，之後不再變
 async function nsfDay(d) {
@@ -1289,7 +1299,10 @@ async function nsfDay(d) {
   return o;
 }
 async function marginRatio() {
-  return twseRecent(async d => { const v = await marginAt(d); return v ? { margin: [[d, v.all]], marginEx: [[d, v.ex]], ...(v.tw ? { mgTw: 1 } : {}) } : null; });
+  return twseRecent(async d => { const v = await marginAt(d); if (!v) return null;
+    // 整戶擔保維持率（Luna 2026-11-20）：證交所臺股儀表板 BFIJ3U，融資＋融券整戶合併、上市櫃全市場，官方數字
+    const k = await twseGet(`marginTrading/BFIJ3U?response=json&date=${d.replace(/-/g, "")}`).catch(() => null);
+    return { margin: [[d, v.all]], marginEx: [[d, v.ex]], mgSum: { d, V: v.V, A: v.A, E: v.E, top: v.top, stk: v.stk }, ...(k && k.stat === "OK" && k.keepRate > 0 ? { keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum } } : {}), ...(v.tw ? { mgTw: 1 } : {}) }; });
 }
 
 // 同一個網址在 sec 秒內大家共用同一份結果
@@ -1518,9 +1531,9 @@ async function etfHold(code, us) {
 // 個股融資維持率（估算，Luna 2026-11-01）：官方只公布每檔融資張數，沒有借款金額
 // 用近 2 年每天融資買進張數 × 當天收盤累積成本，賣出、現金償還照平均成本扣掉；借款 = 成本 × 6 成（上櫃 5 成）
 // 回傳 b 融資餘額（張）、loan 借款（張×元），網頁用即時股價 × b ÷ loan 算維持率
-async function marginEst(code) {
+async function marginEst(code, r0) {
   const st = new Date(Date.now() - 730 * 864e5).toISOString().slice(0, 10), fm = ds => get(`https://api.finmindtrade.com/api/v4/data?dataset=${ds}&data_id=${code}&start_date=${st}`).then(r => r.json());
-  const [m, p, inf] = await Promise.all([fm("TaiwanStockMarginPurchaseShortSale"), fm("TaiwanStockPrice"), get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&data_id=${code}`).then(r => r.json()).catch(() => ({}))]);
+  const [m, p, inf] = await Promise.all([fm("TaiwanStockMarginPurchaseShortSale"), fm("TaiwanStockPrice"), r0 ? { data: [{ type: r0 === 5 ? "tpex" : "twse" }] } : get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&data_id=${code}`).then(r => r.json()).catch(() => ({}))]);
   const px = {}; for (const x of p.data || []) if (x.close > 0) px[x.date] = x.close;
   const md = m.data || []; if (!md.length || !Object.keys(px).length) return { __partial: 1 };
   const it = (inf.data || []).slice(-1)[0], rate = it && it.type === "tpex" ? 0.5 : 0.6;
@@ -1684,7 +1697,8 @@ export default {
       case "/api/mgr": {
         // ?c=2330 → 融資維持率（估算）；融資資料每天晚上才公布，3 小時內共用
         const c = url.searchParams.get("c") || "";
-        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, 10800, () => marginEst(c));
+        const r0 = +url.searchParams.get("r") || 0; // r=6 上市、r=5 上櫃：不用再查是哪個市場
+        if (/^[0-9A-Z]{4,7}$/.test(c)) return cached(request, ctx, r0 ? 21600 : 10800, () => marginEst(c, r0 === 5 || r0 === 6 ? r0 : 0));
         return new Response("{}", { status: 400 });
       }
       case "/api/corp": {

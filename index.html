@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">H9</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">I4</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1679,7 +1679,7 @@ async function dcaCalc(){
 
 /* 大盤高低指標：MKT 由 data/market_indicators.py 每日嵌入
    每項指標用區間（zones）判斷目前偏高或偏低：[上限, 名稱, 色調, 區間條顏色]，最後一段上限為 Infinity */
-const NOW_ONLY=["margin","pe","vix","usvix","inst","retail"];  // 這幾項只顯示當下數字，不畫走勢圖
+const NOW_ONLY=["keep","margin","marginEx","pe","vix","usvix","inst","retail"];  // 這幾項只顯示當下數字，不畫走勢圖
 const ZC={cold:"var(--z-cold)",mid:"var(--z-mid)",hot:"var(--z-hot)"};
 const MKT_DEF=[
   {key:"ndc",short:"景氣燈號",name:"國發會景氣對策信號",unit:"分",min:9,max:45,
@@ -1693,9 +1693,17 @@ const MKT_DEF=[
     zones:[[13,"偏低 便宜","cold"],[20,"適中","mid"],[Infinity,"偏高 昂貴","hot"]],
     what:"整個上市股市的股價是一年獲利的幾倍。用證交所每天公布的各股本益比，依市值加權算出（虧損的公司不算）。數字越高代表股價越貴；台股過去大多在 12～20 倍之間。",
     asof:d=>`${d.replace(/-/g,"/")} 收盤，證交所資料，每天盤後更新`},
-  {key:"margin",short:"融資維持率",name:"大盤融資維持率",unit:"%",min:120,max:200,
+  {key:"keep",short:"整戶擔保維持率",name:"整戶擔保維持率",unit:"%",min:120,max:220,
     zones:[[140,"偏低 恐慌","cold"],[170,"適中","mid"],[Infinity,"偏高 過熱","hot"]],
-    what:"上市＋上櫃全部融資買進的股票現在的市值 ÷ 融資借的錢。跌到 140% 以下常有人被追繳、斷頭，多半接近低點；170% 以上表示融資很賺、市場偏熱。用證交所每天公布的各股融資餘額和收盤價算出。",
+    what:"證交所每天公布的官方數字：每個信用帳戶把融資、融券、擔保品合起來算，上市＋上櫃全市場加權平均。券商就是看這個追繳，低於 130% 會被追繳。",
+    asof:d=>`${d.replace(/-/g,"/")} 收盤，證交所臺股儀表板${MKT.keepX?`；當天追繳 ${MKT.keepX.call.toLocaleString()} 戶、斷頭 ${MKT.keepX.exe.toLocaleString()} 戶`:""}`},
+  {key:"margin",short:"大盤融資維持率",name:"大盤融資維持率",unit:"%",min:120,max:200,
+    zones:[[140,"偏低 恐慌","cold"],[170,"適中","mid"],[Infinity,"偏高 過熱","hot"]],
+    what:"上市＋上櫃融資買進的股票現在的市值 ÷ 融資借的錢。借的錢用買進成本推算：融資最多的 150 檔個股和 15 檔 ETF，依近 2 年每天融資買進的價格算成本，再乘融資成數（上市 6 成、上櫃 5 成）。跌到 130% 是追繳線，140% 以下常有人被追繳、斷頭，多半接近低點；170% 以上表示融資很賺、市場偏熱。",
+    asof:d=>`${d.replace(/-/g,"/")} 收盤，${MKT.mgTw?"上櫃資料這次沒抓到，先只算上市，":""}晚上 9 點多公布當天的融資`},
+  {key:"marginEx",short:"扣除ETF融資維持率",name:"扣除 ETF 融資維持率",unit:"%",min:120,max:200,
+    zones:[[140,"偏低 恐慌","cold"],[170,"適中","mid"],[Infinity,"偏高 過熱","hot"]],
+    what:"和上面的融資維持率一樣用買進成本算，但把 ETF 的融資扣掉，只看個股（融資最多的 150 檔）。",
     asof:d=>`${d.replace(/-/g,"/")} 收盤，${MKT.mgTw?"上櫃資料這次沒抓到，先只算上市，":""}晚上 9 點多公布當天的融資`},
   {key:"vix",short:"恐慌指數",name:"台股恐慌指數（臺指 VIX）",unit:"",min:10,max:50,
     zones:[[20,"平靜","mid"],[30,"緊張","hot"],[Infinity,"恐慌","hot"]],
@@ -2340,8 +2348,21 @@ async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1
   ["inst","vix","usvix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});
   MKT.updated=d.updated+LIVE;mktInit();
   // 本益比、融資維持率是盤後資料，各自抓（Luna 2026-10-24）
-  for(const k of ["pe","mg"]){const x=await api(`/api/mval?k=${k}&v=${k==="mg"?4:1}`);if(x){Object.assign(MKT,x);mktInit()}}
+  for(const k of ["pe","mg"]){if(k==="mg"){delete MKT.margin;try{const o=JSON.parse(localStorage.getItem("facai-mgc")||"null");if(o)mgcSet(o)}catch(_){}}const x=await api(`/api/mval?k=${k}&v=${k==="mg"?7:1}`);if(x){if(k==="mg"){delete x.margin;delete x.marginEx}Object.assign(MKT,x);mktInit()}}
+  mgEtf()
 }
+// 只算 ETF、扣除 ETF 的融資維持率（Luna 2026-11-20）：融資市值最大的 15 檔 ETF 各自估算借款（/api/mgr），
+// ETF 維持率 ＝ Σ(張數×收盤) ÷ Σ借款；全部 ETF 的借款 ＝ ETF 融資市值 ÷ 這個維持率；扣除 ETF ＝ (總市值－ETF 市值) ÷ (總借款－ETF 借款)
+// 一律用買進成本算（Luna 2026-11-20，和網路上常見的「扣除 ETF 128%」同算法）：融資市值最大的 150 檔個股、15 檔 ETF 各自用近 2 年每天融資買進的價格推算成本，
+// 借款＝成本×融資成數（上市 6 成、上櫃 5 成）；個股維持率＝Σ市值÷Σ借款，ETF 同理；整體＝全部融資市值÷(個股市值÷個股維持率＋ETF 市值÷ETF 維持率)
+// 算好的結果存在手機（facai-mgc），下次打開先顯示，背景再更新
+function mgcSet(o){if(!o||!MKT)return;MKT.margin=[[o.d,o.a]];MKT.marginEx=[[o.d,o.x]];mktInit()}
+async function mgEtf(){const m=MKT&&MKT.mgSum;if(!m||!m.top||!m.stk)return;let old=null;try{old=JSON.parse(localStorage.getItem("facai-mgc")||"null")}catch(_){}
+  if(old&&old.d===m.d)return mgcSet(old);
+  const sum=async L=>{let bc=0,ln=0;for(let i=0;i<L.length;i+=6){const R=await Promise.all(L.slice(i,i+6).map(([c,,r])=>api(`/api/mgr?c=${c}${r?"&r="+r:""}&v=2`)));for(const r of R)if(r&&r.b>0&&r.loan>0&&r.c>0){bc+=r.b*r.c;ln+=r.loan}}return ln?bc/ln:null};
+  const [rs,re]=await Promise.all([sum(m.stk),sum(m.top)]);if(!rs||!re)return;
+  const S=m.V-m.E,r2=v=>Math.round(v*10000)/100,o={d:m.d,a:r2(m.V/(S/rs+m.E/re)),x:r2(rs),e:r2(re)};
+  try{localStorage.setItem("facai-mgc",JSON.stringify(o))}catch(_){}mgcSet(o)}
 // 股票報酬比較、回測：選到的那幾檔向 /api/stk 拿最新日線和當日走勢，每檔每次開網頁只抓一次
 const liveDone=new Set();
 async function liveStk(codes){

@@ -1306,12 +1306,16 @@ async function mgClose(d) { const x = await dayClose(d); if (!x) throw new Error
 async function mgTpex(d) { const t = await tpexMg(d); if (!t) throw new Error("no tpex"); return { d, ...mgPack(t.val, t.amt, t.etf, t.em, t.sm) }; }
 async function mgKeep(d) { const k = await twseGet(`marginTrading/BFIJ3U?response=json&date=${d.replace(/-/g, "")}`);
   if (!(k && k.stat === "OK" && k.keepRate > 0)) throw new Error("no keep");
-  // 近三個交易日的追繳、斷頭金額合計（Luna 2026-11-20）：往前找 2 個有資料的交易日
-  let c3 = k.callAmt || 0, e3 = k.exeAmt || 0, n = 1; const ds = [d];
-  for (let i = 1; i < 8 && n < 3; i++) { const t = new Date(Date.parse(d + "T00:00:00Z") - i * 864e5), w = t.getUTCDay(); if (w === 0 || w === 6) continue;
+  // 近 4 個交易日的追繳、強制處分（Luna 2026-11-20）：每天 [日期, 追繳金額, 強制處分金額, 追繳戶, 斷頭戶, 整戶維持率, 加權收盤]
+  const days = [[d, k.callAmt, k.exeAmt, k.callAccNum, k.exeAccNum, k.keepRate]];
+  for (let i = 1; i < 10 && days.length < 4; i++) { const t = new Date(Date.parse(d + "T00:00:00Z") - i * 864e5), w = t.getUTCDay(); if (w === 0 || w === 6) continue;
     const td = t.toISOString().slice(0, 10), x = await twseGet(`marginTrading/BFIJ3U?response=json&date=${td.replace(/-/g, "")}`).catch(() => null);
-    if (x && x.stat === "OK" && x.keepRate > 0) { c3 += x.callAmt || 0; e3 += x.exeAmt || 0; n++; ds.push(td); } }
-  return { d, keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum, camt: k.callAmt, eamt: k.exeAmt, ...(n === 3 ? { c3, e3, d3: ds } : {}) } }; }
+    if (x && x.stat === "OK" && x.keepRate > 0) days.push([td, x.callAmt, x.exeAmt, x.callAccNum, x.exeAccNum, x.keepRate]); }
+  try { const r = (await (await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII?range=1mo&interval=1d`, { headers: { "User-Agent": UA } })).json()).chart.result[0], q = r.indicators.quote[0], C = {};
+    (r.timestamp || []).forEach((t, i) => { if (q.close[i] != null) C[new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10)] = Math.round(q.close[i] * 100) / 100; });
+    for (const x of days) x.push(C[x[0]] || null); } catch (_) {}
+  const s3 = j => days.length >= 3 ? days.slice(0, 3).reduce((a, x) => a + (x[j] || 0), 0) : undefined;
+  return { d, keep: [[d, k.keepRate]], keepX: { call: k.callAccNum, exe: k.exeAccNum, acc: k.marginAccNum, camt: k.callAmt, eamt: k.exeAmt, c3: s3(1), e3: s3(2), days } }; }
 // 國安基金進場那天：加權指數收盤＋融資維持率；兩樣都有就快取 30 天，之後不再變
 async function nsfDay(d) {
   const key = new Request(`https://nsf.cache/v2/${d}`), hit = await caches.default.match(key).catch(() => null);

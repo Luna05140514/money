@@ -264,7 +264,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .mkt-sum{display:grid;gap:0;padding:6px 18px}
 .mkt-sum a{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
 .mkt-sum a:last-child{border-bottom:none}#mkt .mcard:not(.mk-clone){display:none!important}#mk-pop{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}#mk-pop[hidden]{display:none}#mk-pop .mk-box{position:relative;width:min(560px,100%);max-height:86vh;overflow:auto;background:var(--bg);border-radius:18px;padding:44px 10px 4px;box-shadow:0 10px 40px rgba(0,0,0,.3)}#mk-pop .mk-x{position:absolute;top:8px;right:10px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;cursor:pointer}#mk-pop .mcard{margin:0 0 10px}
-.mkt-sum .kbtn{margin-left:8px;padding:2px 10px;font-size:15px;font-weight:600;border:1.5px solid var(--line);border-radius:999px;background:transparent;color:inherit;cursor:pointer;vertical-align:middle}.mkt-sum .kbtn.on{background:var(--gold,#c9a23a);border-color:transparent;color:#fff}.mkt-sum .ksub{grid-column:1/-1;margin-top:-2px}.mkt-sum .ksub table{width:100%;border-collapse:collapse;font-size:17px}.mkt-sum .ksub th{font-weight:600;color:var(--muted,#6b6b6b);text-align:right;padding:4px 6px;border-bottom:1px solid var(--line)}.mkt-sum .ksub td{text-align:right;padding:5px 6px;font-family:var(--num);font-variant-numeric:tabular-nums}.mkt-sum .ksub td:first-child{text-align:left;font-family:inherit}.mkt-sum .v{font-family:var(--num);font-variant-numeric:tabular-nums}
+.mkt-sum .kbtn{margin-left:8px;padding:2px 10px;font-size:15px;font-weight:600;border:1.5px solid var(--line);border-radius:999px;background:transparent;color:inherit;cursor:pointer;vertical-align:middle}.mkt-sum .kbtn.on{background:var(--gold,#c9a23a);border-color:transparent;color:#fff}.mkt-sum .ksub{grid-column:1/-1;margin-top:-2px}.mkt-sum .ksub table{width:100%;border-collapse:collapse;font-size:16px}.mkt-sum .ksub th{font-weight:600;color:var(--muted,#6b6b6b);text-align:right;padding:4px 2px;border-bottom:1px solid var(--line)}.mkt-sum .ksub td{text-align:right;padding:5px 2px;white-space:nowrap;letter-spacing:-.02em;font-family:var(--num);font-variant-numeric:tabular-nums}.mkt-sum .kix{margin-top:6px;font-size:17px;text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}.mkt-sum .kix b.up{color:var(--up,#c8102e)}.mkt-sum .kix b.dn{color:var(--down,#0a7d3c)}.mkt-sum .ksub th:first-child{text-align:left}.mkt-sum .ksub td small{display:block;font-size:14px;color:var(--muted,#6b6b6b)}.mkt-sum .ksub tr.ktot td{font-weight:700;border-top:1.5px solid var(--line)}.mkt-sum .ksub td.up{color:var(--up,#c8102e)}.mkt-sum .ksub td.dn{color:var(--down,#0a7d3c)}.mkt-sum .ksub td:first-child{text-align:left;font-family:inherit}.mkt-sum .v{font-family:var(--num);font-variant-numeric:tabular-nums}
 .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:500;white-space:nowrap}
 .pill.hot{background:var(--hot-bg);color:var(--hot)}
 .pill.mid{background:var(--gold-soft);color:var(--ink)}
@@ -694,7 +694,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J6</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">J9</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1765,7 +1765,10 @@ function zoneBar(def,v){
 
 /* 整戶維持率下面的追繳、強制處分金額表（Luna 2026-11-20：單日、三日） */
 let keepOpen=false; /* 整戶後面的「追繳」按鈕：點了才展開金額表（Luna 2026-11-20） */
-function keepTbl(k){const y=v=>v==null?"－":(v/1e8).toFixed(2)+" 億";return `<span class="ksub"><table><tr><th></th><th>${MKT.keep&&MKT.keep.length?MKT.keep[MKT.keep.length-1][0].slice(5).replace("-","/").replace(/^0/,""):"單日"}</th><th>三日合計</th></tr><tr><td>追繳</td><td>${y(k.camt)}</td><td>${y(k.c3)}</td></tr><tr><td>強制處分</td><td>${y(k.eamt)}</td><td>${y(k.e3)}</td></tr></table></span>`}
+function keepTbl(k){const y=v=>v==null?"－":(v/1e8).toFixed(2)+"億",md=x=>x.slice(5).replace("-","/").replace(/^0/,""),D=k.days||[];
+  const rows=D.map(x=>`<tr><td>${md(x[0])}</td><td>${y(x[1])}${x[3]!=null?`<small>${x[3].toLocaleString()} 戶</small>`:""}</td><td>${y(x[2])}${x[4]!=null?`<small>${x[4].toLocaleString()} 戶</small>`:""}</td><td>${x[6]?Math.round(x[6]).toLocaleString():"－"}</td></tr>`).join("");
+  let ixl="";const a=D[D.length-1],b=D[0];if(D.length>=4&&a[6]&&b[6]){const v=(b[6]/a[6]-1)*100;ixl=`<div class="kix">大盤 ${md(a[0])}→${md(b[0])}　<b class="${v>0?"up":v<0?"dn":""}">${v>0?"+":""}${v.toFixed(1)}%</b></div>`}
+  return `<span class="ksub"><table><tr><th>日期</th><th>追繳</th><th>強制處分</th><th>大盤</th></tr>${rows}${k.c3!=null?`<tr class="ktot"><td>三日合計</td><td>${y(k.c3)}</td><td>${y(k.e3)}</td><td></td></tr>`:""}</table>${ixl}</span>`}
 function mktInit(){
   if(!MKT){$("mkt-cards").innerHTML='<p class="note">指標資料還沒載入。</p>';return}
   $("mkt-lead").textContent=upd(MKT.updated);
@@ -1788,7 +1791,7 @@ function mktInit(){
     let pctl="";
     if(def.zones&&s.length>20&&!NOW_ONLY.includes(def.key)){const below=s.filter(p=>p[1]<v).length,dd=t=>Date.parse(t.length<8?t+"-01":t),mo=Math.round((dd(last[0])-dd(s[0][0]))/2629800000);
       pctl=`<p class="pctl">比過去 ${mo>=12?Math.round(mo/12)+" 年":Math.max(1,mo)+" 個月"}中 ${Math.round(below/s.length*100)}% 的時間高</p>`}
-    sum+=`<a href="#mkt-${def.key}" data-jump="mkt-${def.key}"><span>${def.short}${def.key==="keep"&&MKT.keepX&&MKT.keepX.camt!=null?`<button type="button" class="kbtn${keepOpen?" on":""}" aria-expanded="${keepOpen}">追繳 ${keepOpen?"▲":"▼"}</button>`:""}</span><span class="v">${def.key==="m1b"?`${fmtV(last[1])}% / ${fmtV(last[2])}%`:def.key==="inst"?sgn(last[1]+last[2]+last[3])+" 億":fmtV(v)+(def.unit==="%"?"%":"")}</span><span class="pill ${tone}">${label}</span>${def.key==="keep"&&keepOpen&&MKT.keepX&&MKT.keepX.camt!=null?keepTbl(MKT.keepX):""}</a>`;
+    sum+=`<a href="#mkt-${def.key}" data-jump="mkt-${def.key}"><span>${def.short}${def.key==="keep"&&MKT.keepX&&MKT.keepX.days?`<button type="button" class="kbtn${keepOpen?" on":""}" aria-expanded="${keepOpen}">追繳 ${keepOpen?"▲":"▼"}</button>`:""}</span><span class="v">${def.key==="m1b"?`${fmtV(last[1])}% / ${fmtV(last[2])}%`:def.key==="inst"?sgn(last[1]+last[2]+last[3])+" 億":fmtV(v)+(def.unit==="%"?"%":"")}</span><span class="pill ${tone}">${label}</span>${def.key==="keep"&&keepOpen&&MKT.keepX&&MKT.keepX.days?keepTbl(MKT.keepX):""}</a>`;
     cards+=`<div class="panel mcard" id="mkt-${def.key}"><h2>${def.name}</h2>
       <div class="top"><span class="big">${big}</span><span class="pill ${tone}">${label}</span><span class="asof">${def.asof(last[0])}</span></div>
       ${def.zones?zoneBar(def,v):""}${pctl}${def.key==="inst"?instBlock(s):""}
@@ -2363,10 +2366,10 @@ const apiR=async u=>(await api(u))||(await new Promise(r=>setTimeout(r,5000)),aw
 /* 融資維持率分段抓（Luna 2026-11-20 融資維持率不見：一次算超過 Cloudflare 免費版的計算上限）：
    mgt 上市融資張數、cls 上市收盤價、mgo 上櫃、keep 整戶擔保維持率，網頁再合起來 */
 /* 整戶先用手機存的上次結果馬上顯示，抓到新的就先畫，不等上市櫃融資算完（Luna 2026-11-20 整戶跑比較久） */
-function keepSet(k){if(!k||!k.keep||!MKT||!k.keepX||k.keepX.camt==null)return;MKT.keep=k.keep;MKT.keepX=k.keepX;mktInit()}
+function keepSet(k){if(!k||!k.keep||!MKT||!k.keepX||!k.keepX.days)return;MKT.keep=k.keep;MKT.keepX=k.keepX;mktInit()}
 async function mgLoad(){{let o=null;try{o=JSON.parse(localStorage.getItem("facai-keep")||"null")}catch(_){}keepSet(o)}
   const t=await apiR("/api/mval?k=mgt&v=1");if(!t||!t.N)return;const d=t.d;
-  const kp=apiR(`/api/mval?k=keep&d=${d}&v=4`).then(k=>{if(k&&k.keep){try{localStorage.setItem("facai-keep",JSON.stringify(k))}catch(_){}keepSet(k)}});
+  const kp=apiR(`/api/mval?k=keep&d=${d}&v=7`).then(k=>{if(k&&k.keep){try{localStorage.setItem("facai-keep",JSON.stringify(k))}catch(_){}keepSet(k)}});
   const [cl,o]=await Promise.all([apiR(`/api/mval?k=cls&d=${d}&v=1`),apiR(`/api/mval?k=mgo&d=${d}&v=1`)]);
   if(cl&&cl.close){let val=0,etf=0;const em=[],sm=[];for(const c in t.N){const p=cl.close[c];if(!p)continue;const v=t.N[c]*1000*p;val+=v;if(/^0/.test(c)){etf+=v;em.push([c,Math.round(v/1e6)])}else sm.push([c,Math.round(v/1e6),6])}
     const oo=o&&o.V?o:{V:0,A:0,E:0,top:[],stk:[]};

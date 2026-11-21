@@ -393,7 +393,9 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 /* 回測和「往左滑看分析」同一行（Luna 2026-11-18） */
 .wtip-row{display:flex;align-items:center;gap:10px}.wlist.wfit{overflow:auto!important;overscroll-behavior:contain;border-radius:12px}.wlist.wfit .wthead{position:sticky;top:0;z-index:3}.wlist.wfit .wthead span:nth-child(-n+2){z-index:4}.wtip-row .swipe-tip{margin:0 2px 0 auto}
 .wedit2{margin-left:0}
-#watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.lvrow{display:flex;align-items:center;gap:10px;margin:0 0 14px;min-height:28px}.page .lvrow .lead{margin:0 0 0 auto;text-align:right}.page>h1{display:none}.bar .back,.bar .reload{white-space:nowrap}.page .bar .brand.pgt{min-width:0;font-size:24px;letter-spacing:.04em;color:var(--ink,#2a1a12)}.twii-bar small{font-size:15px;margin-left:auto}
+#watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
+.bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:nowrap;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}#idx-tabs button{font-size:16px;padding:9px 4px}.watch-top:not(:has(#watch-time)){min-height:0}
+.lvrow{display:flex;align-items:center;gap:10px;margin:0 0 14px;min-height:28px}.page .lvrow .lead{margin:0 0 0 auto;text-align:right}.page>h1{display:none}.bar .back,.bar .reload{white-space:nowrap}.page .bar .brand.pgt{min-width:0;font-size:20px;letter-spacing:.04em;color:var(--ink,#2a1a12)}.twii-bar small{font-size:15px;margin-left:auto}
 /* 編輯按鈕固定浮在右下角，往下滑也不會跑掉（Luna 2026-11-18） */
 #watch-edit.wfab{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;margin:0;width:60px;height:60px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;background:rgba(84,118,128,.45);color:#fff;border:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 #watch-edit.wfab[aria-pressed="true"]{background:rgba(201,151,40,.92);color:#2a1714}
@@ -416,7 +418,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .pg-tabs button{all:unset;cursor:pointer;text-align:center;padding:10px 2px;border-radius:12px;font-size:17px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pg-tabs button[aria-current="page"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
 .pg-tabs.pg4 button{font-size:15px;padding:10px 1px}.pg-tabs.pg5{gap:6px;grid-auto-flow:row;grid-template-columns:repeat(3,1fr)}.pg-tabs.pg5 button{font-size:16px;padding:9px 1px}#bt-pop [hidden]{display:none!important}.bt-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.bt-cell{border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:1px}.bt-cell.best{border:3px solid var(--gold)}.bt-cell.second{border:3px solid var(--red)}.bt-cl{font-size:14px;font-weight:700;color:var(--muted);line-height:1.35}.bt-cl em{font-style:normal;font-size:12px;background:var(--gold);color:#3a2a00;border-radius:999px;padding:0 6px;margin-left:2px;white-space:nowrap}.bt-cl em.sec{background:var(--red);color:#fff}.bt-pct{font-size:26px;font-variant-numeric:tabular-nums}.bt-cg{font-size:16px;font-weight:700}.bt-cd{font-size:14px}.bt-cell .bt-lgb{margin-top:6px;align-self:flex-start}.bt-cell.bt-wide{grid-column:1/-1}.bt-cn{font-size:16px;font-weight:800;line-height:1.35;margin-bottom:2px}.bt-cn .bt-q{margin-left:4px;vertical-align:1px}#bt-ut,#bt-klo,#bt-khi{font-size:18px;padding:6px 4px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}.bt-hf{margin-top:6px}.bt-hf button{font-size:14px;padding-left:2px;padding-right:2px}.pg-tabs.pg5 button{font-size:14px;padding:10px 0}
-.bt-sw{grid-template-columns:repeat(3,1fr);grid-auto-flow:row;margin:0 0 12px}.bt-sw button{font-size:17px}
+.bt-sw{grid-template-columns:repeat(3,1fr);grid-auto-flow:row;margin:0 0 12px}.pg-tabs.bt-sw button{font-size:15px;padding:7px 1px}
 .pg-tabs button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .wlist{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .wrow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:16px 14px;border-top:1px solid var(--line);width:100%;box-sizing:border-box;font:inherit;color:inherit;background:none;text-align:left}
@@ -696,7 +698,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">L6</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">L8</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1103,7 +1105,7 @@ function show(p){
   render(p);pgtFit(p);try{twiiBar()}catch(_){}try{watchFit()}catch(_){}
 }
 // 上排頁名太長時自動縮小字，放得下「回首頁」和「重新整理」
-function pgtFit(p){const b=$(p)&&$(p).querySelector(".bar .brand.pgt");if(!b)return;let z=24;b.style.fontSize=z+"px";while(z>14&&b.scrollWidth>b.clientWidth+1){z--;b.style.fontSize=z+"px"}}
+function pgtFit(p){const b=$(p)&&$(p).querySelector(".bar .brand.pgt");if(!b)return;let z=20;b.style.fontSize=z+"px";while(z>14&&b.scrollWidth>b.clientWidth+1){z--;b.style.fontSize=z+"px"}}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // 看盤這組頁面頂端的分頁列（全球大盤／大盤高低指標／自選股），不用回首頁就能切換
 const PG_SHORT={mkt:"高低指標",fc:"大盤回測",sfc:"個股回測",dd:"歷史跌幅",corp:"公司買賣",hold:"持股損益",divc:"除權息",stock:"報酬比較",pledge:"質押",debt:"負債比",fire:"財務自由",compound:"複利"};
@@ -2935,12 +2937,19 @@ async function watchValLoad(){
 // 自選股頁上方（全球大盤那排分頁下面）顯示加權指數，寫「大盤 24,000」不寫加權指數（Luna 2026-11-18），點了到全球大盤
 // 看盤 4 頁（全球大盤、自選股、高低指標、歷史跌幅）：同一行左邊大盤漲跌、右邊「時間 即時」（Luna 2026-11-18）
 function twiiRows(){return ["idx","mkt","fc","sfc"].map( /* 歷史跌幅不放大盤膠囊（Luna 2026-11-21） */pid=>{const sec=$(pid);if(!sec)return null;let row=sec.querySelector(".lvrow");
-  if(!row){row=document.createElement("div");row.className="lvrow";const b=document.createElement("button");b.className="twii-bar";b.dataset.go="idx";b.hidden=true;row.append(b);
+  if(!row){row=document.createElement("div");row.className="lvrow";const b=document.createElement("button");b.className="twii-bar";b.dataset.go="idx";b.hidden=true;sec._tw=b;if(!twBarPut(sec,b))row.append(b);
     const ld=sec.querySelector(".lead[id]"),first=sec.querySelector(".lead");(first||sec.querySelector(":scope>h1")).before(row);if(ld)row.append(ld)}
-  return row.firstChild}).filter(Boolean)}
+  return sec._tw||row.firstChild}).filter(Boolean)}
+/* 大盤漲跌小框統一放在上排頁名下面、縮小（Luna 2026-11-21） */
+function twBarPut(sec,b){const br=sec&&sec.querySelector(".bar .brand");if(!br)return false;let w=br.parentNode.classList.contains("bar-c")?br.parentNode:null;
+  if(!w){w=document.createElement("div");w.className="bar-c";br.before(w);w.append(br)}if(b.parentNode!==w)w.append(b);
+  /* 「09:44 即時」也擠進上排，放在重新整理下面（Luna 2026-11-21） */
+  const bar=br.closest(".bar"),ld=sec.id==="watch"?$("watch-time"):sec.querySelector(".lead[id]"),r=bar&&(bar.querySelector(":scope>.bar-r")||bar.querySelector(":scope>.reload"));
+  if(ld&&r){let rc=r.parentNode.classList.contains("bar-rc")?r.parentNode:null;if(!rc){rc=document.createElement("div");rc.className="bar-rc";r.before(rc);rc.append(r)}if(ld.parentNode!==rc)rc.append(ld)}
+  return true}
 function twiiBar(){const h1=$("watch-time");if(!h1)return;let el=$("watch-twii");
   if(!el){el=document.createElement("button");el.id="watch-twii";el.className="twii-bar";el.dataset.go="idx";}
-  if(el.parentNode!==h1.parentNode)h1.before(el); // 頁名移到上排後，大盤小框放在「資料更新於」左邊
+  if(!twBarPut($("watch"),el)&&el.parentNode!==h1.parentNode)h1.before(el); // 頁名移到上排後，大盤小框放在「資料更新於」左邊
   const all=[el,$("home-twii"),...twiiRows()];
   const it=IDX&&IDX.items&&IDX.items.find(x=>x.key==="twii");if(!it||!it.pts||!it.pts.length||!(it.prev>0)){all.forEach(x=>{if(x)x.hidden=true});return}
   const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat",f=v=>v.toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});

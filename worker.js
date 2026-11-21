@@ -348,10 +348,12 @@ async function sfcHist(code, us) {
 async function sfcBtK(code, us) {
   const syms = code === "TWII" && !us ? ["^TWII"] : us ? [code] : [code + ".TW", code + ".TWO"];
   for (const sym of syms) {
-    const d = await chart(sym, Math.floor(Date.UTC(2015, 8, 1) / 1000)), D = [];
+    const d = await chart(sym, Math.floor(Date.UTC(2004, 0, 1) / 1000)), D = []; // 20 年回測（Luna 2026-11-21）
     if (!d || !d.timestamp) continue;
     const dq = d.indicators.quote[0], da = (d.indicators.adjclose && d.indicators.adjclose[0].adjclose) || [];
     d.timestamp.forEach((t, i) => {const o = dq.open[i], h = dq.high[i], l = dq.low[i], c = dq.close[i]; if (h == null || l == null || c == null || !(l > 0)) return; if (!us && !(dq.volume[i] > 0) && h === l) return; const k = da[i] > 0 ? da[i] / c : 1; D.push([ymdOff(t, us ? -5 : 8), +((o || c) * k).toPrecision(6), +(h * k).toPrecision(6), +(l * k).toPrecision(6), +(c * k).toPrecision(6), dq.volume[i] || 0])});
+    // Yahoo 舊資料有時沒做分割還原（0050 2014 年前差 4 倍）：台股一天最多漲跌 10%，開盤跳超過 1.6 倍就把之前的價格調成同一個基準（Luna 2026-11-21 加 20 年回測）
+    if (!us) for (let i = D.length - 1; i > 0; i--) {const r = D[i][1] / D[i - 1][4]; if (r > 1.6 || r < 0.62) for (let j = 0; j < i; j++) for (let m = 1; m < 5; m++) D[j][m] = +(D[j][m] * r).toPrecision(6)}
     if (D.length > 300) return { K: D, sym };
   }
   throw new Error("no data");

@@ -696,7 +696,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">L5</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">L6</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2934,7 +2934,7 @@ async function watchValLoad(){
   if(ch&&curPage()==="watch")watchRender()}
 // 自選股頁上方（全球大盤那排分頁下面）顯示加權指數，寫「大盤 24,000」不寫加權指數（Luna 2026-11-18），點了到全球大盤
 // 看盤 4 頁（全球大盤、自選股、高低指標、歷史跌幅）：同一行左邊大盤漲跌、右邊「時間 即時」（Luna 2026-11-18）
-function twiiRows(){return ["idx","mkt","fc","sfc","dd"].map(pid=>{const sec=$(pid);if(!sec)return null;let row=sec.querySelector(".lvrow");
+function twiiRows(){return ["idx","mkt","fc","sfc"].map( /* 歷史跌幅不放大盤膠囊（Luna 2026-11-21） */pid=>{const sec=$(pid);if(!sec)return null;let row=sec.querySelector(".lvrow");
   if(!row){row=document.createElement("div");row.className="lvrow";const b=document.createElement("button");b.className="twii-bar";b.dataset.go="idx";b.hidden=true;row.append(b);
     const ld=sec.querySelector(".lead[id]"),first=sec.querySelector(".lead");(first||sec.querySelector(":scope>h1")).before(row);if(ld)row.append(ld)}
   return row.firstChild}).filter(Boolean)}

@@ -698,7 +698,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M4</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M6</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2220,18 +2220,18 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-sblv]");if
 function btCtx(w){return w==="fc"?{w,el:"fc-bt",k:"c:TWII",c:"TWII",us:false,nm:"加權指數"}:{w:"sfc",el:"sfc-bt",k:(sfcUs?"u:":"c:")+sfcCode,c:sfcCode,us:sfcUs,nm:sfcName()}}
 // 歷史燈號變換（Luna 2026-11-19）：總結論每次變燈＋站回 20 日線買回
 function fcBtHist(K,sig,start){const n=K.length,C=K.map(r=>r[4]),cnt=s=>["W","B","P"].filter(k=>s[k]==="R").length,m20=t=>t<19?Infinity:C.slice(t-19,t+1).reduce((a,b)=>a+b,0)/20;
-  let last=null,nonY=null,sold=false,rc=0,half=false;const H=[];
+  let last=null,nonY=null,sold=false,rc=0,half=false;const H=[],DXG=FC_AC?fcDX(K).g:null;
   for(let t=0;t<n;t++){const s=sig[t];if(!s)continue;const r=cnt(s),b=r===3?"R":r<=1?"G":"Y",lab=b==="Y"?(nonY==="R"?"RY":nonY==="G"?"GY":"Y"):b;if(b!=="Y")nonY=b;
     const ev=[];if(lab!==last){ev.push(lab==="R"?"R0":lab);last=lab}rc=r===3?rc+1:0;
-    if(rc>=FC_R5&&(!FC_MK||(FC_MK.get(K[t][0])||0)>=FC_R5)&&fcQ60(C,t)&&!sold){sold=true;half=false;ev.push("R")}else if(r<3&&sold&&C[t]>m20(t)){sold=false;ev.push("MA")}
-    if(K[t][0]>=start)ev.filter(e=>e==="R"||e==="MA").forEach(e=>H.push([t,e,[s.W,s.B,s.P]]))} // 只列要動作的：紅燈賣、紅黃燈買一半、站回 20 日線買回
+    {const nr=rc>=FC_R5&&(!FC_MK||(FC_MK.get(K[t][0])||0)>=FC_R5),dx=DXG&&rc>=FC_AC&&DXG[t];if((nr||dx)&&fcQ60(C,t)&&!sold){sold=true;half=false;ev.push(nr?"R":"RD")}else if(r<3&&sold&&C[t]>m20(t)){sold=false;ev.push("MA")}}
+    if(K[t][0]>=start)ev.filter(e=>e==="R"||e==="RD"||e==="MA").forEach(e=>H.push([t,e,[s.W,s.B,s.P]]))} // 只列要動作的：紅燈賣、紅黃燈買一半、站回 20 日線買回
   return H.map(([t,e,l],i)=>{const nx=i+1<H.length?H[i+1][0]:n-1;return [K[t][0],e,C[t],(C[nx]/C[t]-1)*100,i+1>=H.length,l]})}
 function sfcBtShow(w){const x=btCtx(w||"sfc"),el=$(x.el);if(!el)return;const k=x.k,R=sfcBtR[k];
   if(sfcBtBusy===k)return;
   if(!R){el.innerHTML=`<button class="sfc-btb" data-sfcbt="${x.w}">📊 回測${x.w==="fc"?"大盤":"這檔"}（3、5、10 年＋歷史燈號）</button>`;return}
   if(R.err){el.innerHTML=`<p class="dd-tn">${R.err}</p><button class="sfc-btb" data-sfcbt="${x.w}">再試一次</button>`;return}
   const M=["一直抱著","大方向","可不可以買","預測價格","3 個一起"],P=["3 年","5 年","10 年"],T=R.p[sfcBtP],f=v=>x.w==="fc"?Math.round(v).toLocaleString("zh-TW"):(+v).toLocaleString("zh-TW",{minimumFractionDigits:2,maximumFractionDigits:2});
-  const r5n=T&&T.r5n||5,LB={R:["🔴",`紅燈滿 ${r5n} 天`,"考慮減碼"],RY:[halfDot("🔴","🟡",1.1),"紅黃燈","先買回一半"],GY:[halfDot("🟢","🟡",1.1),"綠黃燈","續抱"],Y:["🟡","黃燈","續抱"],G:["🟢","綠燈","考慮加碼"],MA:["📈","站回20日線","買回"]};
+  const r5n=T&&T.r5n||5,LB={R:["🔴",`紅燈滿 ${r5n} 天`,"考慮減碼"],RD:["🔴",`死叉＋紅燈 ${R.ac||1} 天`,"考慮減碼"],RY:[halfDot("🔴","🟡",1.1),"紅黃燈","先買回一半"],GY:[halfDot("🟢","🟡",1.1),"綠黃燈","續抱"],Y:["🟡","黃燈","續抱"],G:["🟢","綠燈","考慮加碼"],MA:["📈","站回20日線","買回"]};
   const hist=T&&T.hist?`<h3 class="dd-h3">歷史燈號變換（最近 ${sfcBtAll?T.hist.length:Math.min(10,T.hist.length)} 次）</h3><div class="bt-hs"><table class="fc-ct bt-ht"><tr><th>日期</th><th>燈號</th><th>價格</th><th>到下次</th></tr>${T.hist.slice().reverse().slice(0,sfcBtAll?1e9:10).map(h=>{const L=LB[h[1]];return `<tr><td>${h[0].replace(/-/g,"/")}</td><td><span class="bt-hd">${L[0]}</span> ${L[1]}<small>${L[2]}</small>${h[5]?`<span class="bt-3l">${h[5].map(v=>({R:"🔴",Y:"🟡",G:"🟢"})[v]||"⚪").join("")}</span>`:""}</td><td>${f(h[2])}</td><td class="${h[3]>=0?"up":"down"}">${h[3]>=0?"+":""}${h[3].toFixed(1)}%${h[4]?"<small>到現在</small>":""}</td></tr>`}).join("")}</table></div>${!sfcBtAll&&T.hist.length>10?`<button class="sfc-btb" data-sball="${x.w}" style="font-size:17px;padding:10px">看更多（共 ${T.hist.length} 次）</button>`:""}`:"";
   el.innerHTML=`<h3 class="dd-h3">${esc(x.nm)} 回測</h3><p class="bt-lvh">訊號強度</p><div class="fc-tabs bt-lv">${FC_LVN.map((t,i)=>`<button data-sblv="${i}" data-sbw="${x.w}" aria-selected="${i===FC_LV}">${t}<small>${FC_LVS[i].slice(0,3).join("／")} 天</small></button>`).join("")}</div><button class="bt-q60${FC_Q60?" on":""}" data-sbq="${x.w}" aria-pressed="${FC_Q60}">${FC_Q60?"☑":"☐"} 3 個一起：跌破季線才賣</button><div class="fc-tabs">${P.map((p,i)=>`<button data-sbp="${i}" data-sbw="${x.w}" aria-selected="${i===sfcBtP}">${p}</button>`).join("")}</div>`+
     (T?`${T.note?`<p class="gl-nt">${T.note}</p>`:""}<table class="fc-ct gl-bt"><tr><th>方法</th><th>準確率</th><th>賺</th><th>大跌時<br>跌多少</th><th>躲掉<br>50%</th><th>躲掉<br>40%</th><th>躲掉<br>30%</th></tr>${T.rows.map((r,j)=>`<tr${j===4?' class="gl-me"':""}><td>${M[j]}${BT_MS[j]?`<small>${j===4?`3紅${r5n}天賣${R.mk?"<br>大盤也要":""}${R.ac?`<br>死叉後${R.ac}天`:""}${FC_Q60?"<br>跌破季線":""}`:`紅燈${FC_RN[j-1]}天賣`}</small>`:""}</td>${accTd(r[5],r[7],r[8])}<td>${r[0]}%</td><td>${r[6]&&r[6].length?`<button class="bt-ddb${sfcBtDD===j?" on":""}" data-btdd="${j}" data-sbw="${x.w}">${r[1]}%</button>`:r[1]+"%"}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("")}</table>${sfcBtDD!=null&&T.rows[sfcBtDD]&&T.rows[sfcBtDD][6]&&T.ew?`<div class="bt-ddl" id="bt-ddl-${x.w}"><h3 class="dd-h3">${M[sfcBtDD]}：每次大跌跌多少</h3><table class="fc-ct"><tr><th>大跌期間<small>高點 → 低點</small></th><th>${x.w==="fc"?"大盤":"這檔"}跌</th>${sfcBtDD?`<th>${M[sfcBtDD]}<br>跌</th>`:""}</tr>${T.ew.map((w,i)=>`<tr><td>${w[0].replace(/-/g,"/")}<small>→ ${w[1].replace(/-/g,"/")}</small></td><td>${T.rows[0][6][i]}%</td>${sfcBtDD?`<td>${T.rows[sfcBtDD][6][i]}%</td>`:""}</tr>`).join("")}<tr class="gl-me"><td>平均</td><td>${T.rows[0][1]}%</td>${sfcBtDD?`<td>${T.rows[sfcBtDD][1]}%</td>`:""}</tr></table><button class="sfc-btb" data-btdd="-1" data-sbw="${x.w}" style="font-size:17px;padding:10px">收起來</button></div>`:""}`:`<p class="dd-tn">資料不夠，算不出來。</p>`)+hist+

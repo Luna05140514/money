@@ -1443,6 +1443,15 @@ async function indexKd(keys) {
 }
 
 // 另外留一份 3 天的備份：資料來源一時抓不到時，先給上一次成功的結果，不讓畫面空白
+/* 外資每月買賣超（Luna 2026-11-23）：FinMind 三大法人合計，外資＋外資自營，單位億；頁面內建歷史，這裡只補最近 3 個月 */
+async function fiMonths() {
+  const d = new Date(Date.now() + 8 * 36e5), st = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 2, 1)).toISOString().slice(0, 10);
+  const j = await (await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockTotalInstitutionalInvestors&start_date=${st}`)).json();
+  if (!j || !Array.isArray(j.data) || !j.data.length) throw new Error("fim");
+  const m = {}; let last = "";
+  for (const r of j.data) { if (r.name !== "Foreign_Investor" && r.name !== "Foreign_Dealer_Self") continue; const k = r.date.slice(0, 7); m[k] = (m[k] || 0) + (r.buy - r.sell); if (r.date > last) last = r.date; }
+  return { m: Object.keys(m).sort().map(k => [k, Math.round(m[k] / 1e8)]), last };
+}
 async function cached(request, ctx, sec, make) {
   const cache = caches.default, key = new Request(request.url);
   // 備份不分 v 版本：換新版時也能先用舊版的完整資料
@@ -1673,6 +1682,7 @@ export default {
         if (!/^[0-9A-Z]{4,6}$/.test(c) && !/^[A-Z][A-Z.\-]{0,9}$/.test(u)) return new Response("{}", { status: 400 });
         return cached(request, ctx, 6 * 3600, () => sfcBtK(c || u, !c));} // 個股回測查詢（Luna 2026-11-19）
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
+      case "/api/fim": return cached(request, ctx, 6 * 3600, fiMonths); // 外資每月買賣超（億，含外資自營），最近 3 個月（Luna 2026-11-23）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用
         const k = url.searchParams.get("k");

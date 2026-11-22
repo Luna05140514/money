@@ -698,7 +698,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M15</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M16</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2315,7 +2315,8 @@ function fcRender(o){o=o||{d:fcData,K:fcK,dd:fcDd,el:"fc-body",nm:"加權指數"
       const cl=i=>i<K0.length?(i===K0.length-1&&lv>0&&L0[0]===today?lv:K0[i][4]):lv,m20=i=>{let s=0;for(let j=i-19;j<=i;j++)s+=cl(j);return s/20},dt=i=>(i<K0.length?K0[i][0]:today).slice(5).replace("-","/");
       let lr=sd==="🔴"?cur:null;if(sh)lr=-1;if(lr==null)for(let e2=cur-1;e2>=Math.max(300,cur-120);e2--){const v=e2>e&&e2<cur?sd:sumAt(e2);if(v==="🔴"){lr=e2;break}}
       if(lr!=null&&lr>=0){let up=-1;for(let t=lr+1;t<=cur;t++)if(cl(t)>m20(t)){up=t;break}
-        ch+=sd==="🔴"?(rd<NR||!okM||!okQ?"":`<p class="fc-ch"><b>減碼之後，等收盤站回 20 日線（現在 ${f(m20(cur))}）再買回</b></p>`):up>=0?(cur-up>20?"":`<p class="fc-ch"><b>${dt(up)} 已站回 20 日線，減碼的可以買回</b></p>`):(ps==="🔴"&&sd==="🟡"?`<p class="fc-ch"><b>減碼的等收盤站回 20 日線（${f(m20(cur))}）再買回</b></p>`:`<p class="fc-ch"><b>還沒站回 20 日線（${f(m20(cur))}），減碼的先別買回</b></p>`)}}catch(e){}
+        ch+=sd==="🔴"?(rd<NR||!okM||!okQ?"":`<p class="fc-ch"><b>減碼之後，等收盤站回 20 日線（現在 ${f(m20(cur))}）再買回</b></p>`):up>=0?(cur-up>20?"":`<p class="fc-ch"><b>${dt(up)} 已站回 20 日線，減碼的可以買回</b></p>`):(ps==="🔴"&&sd==="🟡"?`<p class="fc-ch"><b>減碼的等收盤站回 20 日線（${f(m20(cur))}）再買回</b></p>`:`<p class="fc-ch"><b>還沒站回 20 日線（${f(m20(cur))}），減碼的先別買回</b></p>`)}
+      /* 每檔都寫買回價（Luna 2026-11-22）：沒有買回提示時，也列出 20 日線 */if(!/20 日線/.test(ch))ch+=`<p class="fc-ch"><b>買回價（20 日線）：${f(m20(cur))}，現在在它${cl(cur)>m20(cur)?"上面":"下面"}</b></p>`}catch(e){}
     const cnG={"🔴":"紅","🟡":"黃","🟢":"綠"};psG=null; // 紅黃燈、綠黃燈都拿掉（Luna 2026-11-19），黃燈只有一種
     SUM=`<div class="fc-light fc-s3"><div class="fc-lt"><span class="fc-dot">${psG?halfDot(psG,sd):sd}</span><b>總結論・${psG?cnG[psG]+cnG[sd]:cnG[sd]}燈：${psG==="🔴"&&sd==="🟡"?"可以先買回一半":sx}</b></div><div class="fc-3l">${[["大方向",cW],["可不可以買",cB],["預測價格",cP]].map(([n,c],i)=>`<span><i>${c}</i>${n}</span>`).join("")}</div>${ch}</div>`}
   const TB=[["大方向穩不穩",`<p class="fc-sum">站上 ${k} ／ ${R.length} 條均線：<span class="${cls}">${lab}</span></p>

@@ -394,7 +394,13 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wtip-row{display:flex;align-items:center;gap:10px}.wlist.wfit{overflow:auto!important;overscroll-behavior:contain;border-radius:12px}.wlist.wfit .wthead{position:sticky;top:0;z-index:3}.wlist.wfit .wthead span:nth-child(-n+2){z-index:4}.wtip-row .swipe-tip{margin:0 2px 0 auto}
 .wedit2{margin-left:0}
 #watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
-.bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}#idx-tabs button{font-size:16px;padding:9px 4px}.watch-top:not(:has(#watch-time)){min-height:0}
+.bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}
+.igo{cursor:pointer}.inst-go{all:unset;box-sizing:border-box;display:block;width:100%;margin:10px 0 2px;padding:13px 10px;text-align:center;border-radius:12px;background:var(--gold);color:#3a2a00;font-size:18px;font-weight:800;cursor:pointer}
+#inst .watch-tabs{margin:0 0 10px}#inst .inst-n{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:0 0 10px}#inst .inst-n button{all:unset;cursor:pointer;text-align:center;padding:10px 0;border-radius:10px;font-size:17px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line)}#inst .inst-n button[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
+#inst .inst-w button{font-size:18px;padding:10px 2px}.inst-asof{text-align:right;font-weight:800;font-size:16px;margin:2px 0 6px}
+.inst-row{display:flex;align-items:center;gap:8px;padding:12px 2px;border-bottom:1px solid var(--line)}.ir-l{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.ir-nm{font-size:21px;font-weight:800;color:var(--ink)}.ir-nm i{font-style:normal;font-size:14px;color:var(--muted);margin-right:6px}.ir-nm small{font-size:15px;margin-left:5px;color:var(--muted);font-weight:700}
+.ir-px{font-size:24px;font-weight:800;font-family:var(--num)}.ir-px small{font-size:15px;margin-left:6px}.ir-v{font-size:17px;font-weight:700}.ir-v b{font-size:19px;font-family:var(--num)}.ir-sp{flex:none;width:120px;height:54px}.bar-rc .lvrow{margin:0;min-height:0} /* 看盤 4 頁切換時標題、分頁同高（Luna 2026-11-25） */#idx-tabs button{font-size:16px;padding:9px 4px}.watch-top:not(:has(#watch-time)){min-height:0}
 .lvrow{display:flex;align-items:center;gap:10px;margin:0 0 14px;min-height:28px}.page .lvrow .lead{margin:0 0 0 auto;text-align:right}.page>h1{display:none}.bar .back,.bar .reload{white-space:nowrap}.page .bar .brand.pgt{min-width:0;font-size:20px;letter-spacing:.04em;color:var(--ink,#2a1a12)}.twii-bar small{font-size:15px;margin-left:auto}
 /* 編輯按鈕固定浮在右下角，往下滑也不會跑掉（Luna 2026-11-18） */
 #watch-edit.wfab{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;margin:0;width:60px;height:60px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;background:rgba(84,118,128,.45);color:#fff;border:none;box-shadow:0 2px 8px rgba(0,0,0,.12)}
@@ -698,7 +704,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M27</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M30</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -820,6 +826,17 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
   <!-- 除權息行事曆 -->
   <!-- 公司買賣股票（Luna 2026-11-01）：龍巖、寶島科自己買賣別家公司股票的重大訊息 -->
+  <section id="inst" class="page" hidden>
+    <div class="bar"><button class="back" data-go="mkt">‹ 高低指標</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <h1>法人動向</h1>
+    <div class="watch-tabs inst-bs" role="tablist"><button role="tab" data-ibs="1">買超</button><button role="tab" data-ibs="-1">賣超</button></div>
+    <div class="inst-n" role="tablist"></div>
+    <div class="watch-tabs inst-w" role="tablist"><button role="tab" data-iw="0">外資</button><button role="tab" data-iw="1">投信</button><button role="tab" data-iw="2">自營</button><button role="tab" data-iw="3">合計</button></div>
+    <p class="inst-asof" id="inst-asof"></p>
+    <div id="inst-body"><p class="muted">資料載入中…</p></div>
+    <p class="note">上市＋上櫃個股（不含 ETF），買賣超單位是張（1 張＝1,000 股）。外資不含外資自營商；合計是三大法人合計。幾日＝最近幾個交易日加起來。右邊小圖是最近一個交易日的走勢，虛線是前一天收盤價。</p>
+    <p class="src">資料來源：臺灣證券交易所、證券櫃檯買賣中心（三大法人買賣明細）、Yahoo Finance／Yahoo 奇摩股市（股價）。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
+  </section>
   <section id="corp" class="page" hidden>
     <div class="bar"><button class="back" data-go="home">‹ 回首頁</button><span class="brand">賺大錢發發發</span><button class="reload" data-reload>↻ 重新整理</button></div>
     <h1>公司買賣股票</h1>
@@ -1095,7 +1112,7 @@ const pct=n=>(n>=0?"+":"")+(n*100).toFixed(2)+"%";
 const short=n=>n>=1e8?(n/1e8).toFixed(1)+"億":n>=1e4?Math.round(n/1e4)+"萬":Math.round(n)+"";
 
 /* 路由：#stock #compound #fire #nav #dca #mkt #idx */
-const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch","wdetail","hold","divc","pledge","debt","corp","dd","fc","sfc"];
+const pages=["home","stock","compound","fire","nav","dca","mkt","idx","watch","wdetail","hold","divc","pledge","debt","corp","dd","fc","sfc","inst"];
 function show(p){
   if(!pages.includes(p))p="home";
   pages.forEach(x=>$(x).hidden=x!==p);
@@ -1735,7 +1752,7 @@ const sgn=v=>`<span class="${v>=0?"up":"down"}">${v>0?"+":""}${(Math.round(v*100
 /* 三大法人：最新一天、近 5 日與 20 日累計，以及每日合計長條圖 */
 function instBlock(s){
   const r=s[s.length-1],t=r[1]+r[2]+r[3];
-  return `<div class="navgrid igrid">${[["外資",r[1]],["投信",r[2]],["自營商",r[3]]].map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${sgn(v)}<small>億</small></div></div>`).join("")}</div>`;
+  return `<div class="navgrid igrid">${[["外資",r[1],0],["投信",r[2],1],["自營商",r[3],2]].map(([k,v,w])=>`<div class="igo" data-instw="${w}" role="button" tabindex="0"><div class="k">${k} ›</div><div class="v">${sgn(v)}<small>億</small></div></div>`).join("")}</div><button class="inst-go" data-instw="3">看法人買賣哪些股票（法人動向）›</button>`; /* 點了打開法人動向（Luna 2026-11-25） */
 }
 
 /* 小走勢圖：pts=[[標籤,值,...]]，lines=[{i:值的欄位,color}]，refs=[門檻值] */
@@ -2971,7 +2988,7 @@ async function watchValLoad(){
   if(ch&&curPage()==="watch")watchRender()}
 // 自選股頁上方（全球大盤那排分頁下面）顯示加權指數，寫「大盤 24,000」不寫加權指數（Luna 2026-11-18），點了到全球大盤
 // 看盤 4 頁（全球大盤、自選股、高低指標、歷史跌幅）：同一行左邊大盤漲跌、右邊「時間 即時」（Luna 2026-11-18）
-function twiiRows(){return ["idx","mkt","fc","sfc"].map( /* 歷史跌幅不放大盤膠囊（Luna 2026-11-21） */pid=>{const sec=$(pid);if(!sec)return null;let row=sec.querySelector(".lvrow");
+function twiiRows(){return ["idx","mkt","fc","sfc","dd"].map( /* 歷史跌幅又加回大盤膠囊（Luna 2026-11-25） */pid=>{const sec=$(pid);if(!sec)return null;let row=sec.querySelector(".lvrow");
   if(!row){row=document.createElement("div");row.className="lvrow";const b=document.createElement("button");b.className="twii-bar";b.dataset.go="idx";b.hidden=true;sec._tw=b;if(!twBarPut(sec,b))row.append(b);
     const ld=sec.querySelector(".lead[id]"),first=sec.querySelector(".lead");(first||sec.querySelector(":scope>h1")).before(row);if(ld)row.append(ld)}
   return sec._tw||row.firstChild}).filter(Boolean)}
@@ -3828,6 +3845,35 @@ function corpRender(){const box=$("corp-body");
       ${x.link?`<a class="corp-link" href="${esc(x.link)}" target="_blank" rel="noopener">看公告全文 ›</a>`:""}</div>`).join(""):'<p class="wempty">最近一年沒有買賣股票的公告。</p>')}).join("")}
 async function corpInit(){corpRender();if(!ON_CF)return;const d=await api("/api/corp?c="+CORP.map(x=>x[0]).join(",")+"&v=1");if(d){corpData=d;corpRender()}else if(!corpData){$("corp-body").innerHTML='<p class="wempty">公告暫時抓不到，等一下按「重新整理」。</p>'}}
 calc.corp=corpInit;
+/* 法人動向（Luna 2026-11-25）：高低指標的三大法人點進來；買超／賣超、1～60 日、外資／投信／自營／合計，列出個股 */
+const INST_N=[1,2,3,5,10,20,60];let instQd=[],instDays=[],instNm={},instQ={},instBusy=null,instTried=0,instCur=null,instS={bs:1,n:1,w:0};try{Object.assign(instS,JSON.parse(localStorage.getItem("facai-inst")||"{}"))}catch(_){}
+const instSave=()=>{try{localStorage.setItem("facai-inst",JSON.stringify(instS))}catch(_){}};
+const iGet=p=>fetch(p).then(r=>r.ok?r.json():null).catch(()=>null);
+async function instNeed(n){if(instDays.length>=n)return;if(instBusy)return instBusy;instBusy=(async()=>{
+  if(!instCur)instCur=new Date(Date.now()+8*36e5);const tries={};let fails=0;
+  while(instDays.length<n&&instTried<n*1.6+20&&fails<6){const B=instQd.splice(0,3);while(B.length<3){const d=instCur.toISOString().slice(0,10);instCur=new Date(instCur-864e5);const w=new Date(d+"T00:00:00Z").getUTCDay();if(w>0&&w<6){B.push(d.replace(/-/g,""));instTried++}}
+    const R=await Promise.all(B.map(d=>iGet(`/api/instd?d=${d}${Object.keys(instNm).length?"":"&nm=1"}&v=1`)));let bad=0;
+    R.forEach((o,i)=>{if(!o||o.e){bad++;tries[B[i]]=(tries[B[i]]||0)+1;if(tries[B[i]]<4)instQd.push(B[i]);return}if(o.nm&&!Object.keys(instNm).length)instNm=o.nm;if(o.r){instDays.push(o);instDays.sort((x,y)=>x.d<y.d?1:-1)}});
+    if(bad){fails++;await new Promise(r=>setTimeout(r,2500))}else fails=0;if(curPage()==="inst")instRender()}
+  })().finally(()=>{instBusy=null});return instBusy}
+function instSpark(q){if(!q||!q.pts||q.pts.length<2||!(q.prev>0))return '<span class="ir-sp"></span>';const P=q.pts.map(x=>x[1]),lo=Math.min(q.prev,...P),hi=Math.max(q.prev,...P),W=120,H=54,y=v=>hi>lo?(H-3-(v-lo)/(hi-lo)*(H-6)):H/2,x=i=>i/(Math.max(P.length-1,1))*W;
+  const c=P[P.length-1]>=q.prev?"var(--red)":"var(--green, #2f8f3a)";return `<svg class="ir-sp" viewBox="0 0 ${W} ${H}" aria-hidden="true"><line x1="0" x2="${W}" y1="${y(q.prev).toFixed(1)}" y2="${y(q.prev).toFixed(1)}" stroke="#c9a227" stroke-dasharray="3 3" stroke-width="1"/><polyline fill="none" stroke="${c}" stroke-width="1.8" points="${P.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ")}"/></svg>`}
+function instRender(){const nb=document.querySelector("#inst .inst-n");if(nb&&!nb.children.length)nb.innerHTML=INST_N.map(n=>`<button role="tab" data-in="${n}">${n}日</button>`).join("");
+  document.querySelectorAll("#inst [data-ibs]").forEach(b=>b.setAttribute("aria-selected",+b.dataset.ibs===instS.bs));document.querySelectorAll("#inst [data-in]").forEach(b=>b.setAttribute("aria-selected",+b.dataset.in===instS.n));document.querySelectorAll("#inst [data-iw]").forEach(b=>b.setAttribute("aria-selected",+b.dataset.iw===instS.w));
+  const body=$("inst-body"),asof=$("inst-asof");if(!ON_CF){body.innerHTML='<p class="wempty">法人動向要用你的網站（Cloudflare 版）打開才看得到。</p>';asof.textContent="";return}
+  const n=instS.n,D=instDays.slice(0,n),fd=d=>d.slice(0,4)+"/"+d.slice(4,6)+"/"+d.slice(6);
+  if(D.length<n){body.innerHTML=`<p class="muted">資料載入中…（${D.length}／${n} 天）</p>`;asof.textContent="";instNeed(n).then(()=>{if(curPage()==="inst"&&instDays.length>=n)instRender();else if(curPage()==="inst"&&!instBusy)body.innerHTML='<p class="wempty">法人資料暫時抓不到，等一下再按「重新整理」。</p>'});return}
+  asof.textContent=n===1?`資料更新日期 ${fd(D[0].d)}`:`最近 ${n} 個交易日（${fd(D[n-1].d).slice(5)}～${fd(D[0].d).slice(5)}），更新到 ${fd(D[0].d)}`;
+  const S={};D.forEach(o=>{for(const c in o.r)S[c]=(S[c]||0)+o.r[c][instS.w]});
+  const L=Object.entries(S).filter(([,v])=>v*instS.bs>0).sort((a,b)=>(b[1]-a[1])*instS.bs).slice(0,30);
+  if(!L.length){body.innerHTML='<p class="wempty">這段時間沒有資料。</p>';return}
+  const need=L.map(x=>x[0]).filter(c=>!instQ[c]);if(need.length)iGet(`/api/quote?c=${need.join(",")}&v=1`).then(q=>{need.forEach(c=>{instQ[c]=(q&&q[c])||{}});if(curPage()==="inst")instRender()});
+  body.innerHTML=L.map(([c,v],i)=>{const q=instQ[c]||{},d=q.last!=null&&q.prev?q.last-q.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat",f2=x=>(+x).toFixed(2);
+    return `<div class="inst-row"><div class="ir-l"><b class="ir-nm"><i>${i+1}</i>${esc(instNm[c]||c)}<small>${c}</small></b><span class="ir-px ${cls}">${q.last!=null?f2(q.last):"…"}<small>${d==null?"":`${d>0?"+":d<0?"−":""}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/q.prev*100).toFixed(2)}%）`}</small></span><span class="ir-v">買賣超 <b class="${v>0?"up":"down"}">${v.toLocaleString("zh-TW")}</b> 張</span></div>${instSpark(q)}</div>`}).join("")}
+function instInit(){instRender()}
+calc.inst=instInit;
+document.addEventListener("click",e=>{const b=e.target.closest("#inst [data-ibs],#inst [data-in],#inst [data-iw]");if(b){if(b.dataset.ibs)instS.bs=+b.dataset.ibs;else if(b.dataset.in)instS.n=+b.dataset.in;else instS.w=+b.dataset.iw;instSave();instRender();return}
+  const g=e.target.closest("#mk-pop [data-instw],#mkt [data-instw]");if(g){instS.w=+g.dataset.instw;instSave();const p=$("mk-pop");if(p)p.hidden=true;show("inst")}});
 /* 清除全部：先跳確認視窗，按「取消」就不會清除（Luna 2026-10-23：不用復原） */
 function clrBtn(id,ask,clear){$(id).addEventListener("click",()=>{if(ask()){clear();toast("已清除")}})}
 /* 質押維持率（Luna 2026-10-23）：質押股票（台股）＋借款金額存在這支手機；市值用現價（和自選股同一個來源） */

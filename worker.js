@@ -3,7 +3,8 @@ import { DurableObject } from "cloudflare:workers";
 // /api/idx 大盤台美股、/api/quote 首頁自選股、/api/detail 自選股詳細頁、/api/stk 股票報酬比較與回測、/api/nav 淨值查詢、/api/mkt 大盤高低指標；其他網址交給靜態檔案。
 // 報價類每 60 秒最多真的去抓一次（大盤高低指標 30 分鐘），期間大家共用同一份結果。
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
-const US = [["^GSPC", "標普500"], ["^SOX", "費城半導體"], ["^DJI", "道瓊工業指數"], ["^IXIC", "那斯達克"]];
+// 美股期貨（Luna 2026-11-25，像台股夜指期）：各放在自己的指數下面；費半期貨幾乎沒有成交，不放
+const US = [["^GSPC", "標普500"], ["ES=F", "標普期貨"], ["^SOX", "費城半導體"], ["^DJI", "道瓊工業指數"], ["YM=F", "道瓊期貨"], ["^IXIC", "那斯達克"], ["NQ=F", "那斯達克期貨"]];
 // 日韓（Luna 2026-10-23）：時間用台灣時間；as: 1 讓網頁放在「日韓」分頁
 const ASIA = [["^N225", "日經指數"], ["^KS11", "韓國指數"]];
 // 匯率（Luna 2026-10-23）：1 美元、100 日圓、1000 韓元換多少台幣，放在全球大盤「匯率」分頁
@@ -1445,17 +1446,19 @@ async function indexKd(keys) {
 // 另外留一份 3 天的備份：資料來源一時抓不到時，先給上一次成功的結果，不讓畫面空白
 /* 外資每月買賣超（Luna 2026-11-23）：FinMind 三大法人合計，外資＋外資自營，單位億；頁面內建歷史，這裡只補最近 3 個月 */
 // 法人動向（Luna 2026-11-25）：某一天上市＋上櫃個股的三大法人買賣超（張）；外資＝外陸資不含外資自營，合計＝三大法人合計
-async function instDay(d) {
-  const roc = `${+d.slice(0, 4) - 1911}/${d.slice(4, 6)}/${d.slice(6)}`;
+async function instDay(d, today) {
+  const roc = `${d.slice(0, 4)}/${d.slice(4, 6)}/${d.slice(6)}`, to = ms => ({ signal: AbortSignal.timeout(ms) });
   const [a, b] = await Promise.all([
-    twseGet(`fund/T86?date=${d}&selectType=ALLBUT0999&response=json`).catch(() => null),
-    fetch(`https://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=EW&t=D&d=${roc}&o=json`, { headers: { "User-Agent": UA } }).then(r => r.json()).catch(() => null)]);
+    fetch(`https://www.twse.com.tw/rwd/zh/fund/T86?date=${d}&selectType=ALLBUT0999&response=json`, { headers: { "User-Agent": UA }, ...to(45000) }).then(r => r.json()).catch(() => null),
+    fetch(`https://www.tpex.org.tw/www/zh-tw/insti/dailyTrade?type=Daily&sect=EW&date=${roc}&response=json`, { headers: { "User-Agent": UA }, ...to(12000) }).then(r => r.json()).catch(() => null)]);
   const n = v => Math.round(+String(v).replace(/,/g, "") / 1000) || 0, ok = c => /^[1-9]\d{3}$/.test(c), r = {}, nm = {};
   if (a && a.stat === "OK" && a.data) for (const x of a.data) { const c = String(x[0]).trim(); if (!ok(c)) continue; r[c] = [n(x[4]), n(x[10]), n(x[11]), n(x[18])]; nm[c] = String(x[1]).trim() }
-  const tb = b && b.tables && b.tables[0];
-  if (tb && tb.data) for (const x of tb.data) { const c = String(x[0]).trim(); if (!ok(c)) continue; r[c] = [n(x[4]), n(x[13]), n(x[22]), n(x[23])]; nm[c] = String(x[1]).trim() }
-  const o = Object.keys(r).length ? { d, r, nm } : { d, none: 1 };
-  if (a === null || b === null || (o.r && (!(a && a.stat === "OK") || !(tb && tb.data && tb.data.length)))) { o.__partial = 1; o.e = 1 } // 有一邊沒抓到：只快取 5 分鐘，網頁會再試
+  const tb = b && b.tables && b.tables[0], otc = !!(tb && tb.data && tb.data.length);
+  if (otc) for (const x of tb.data) { const c = String(x[0]).trim(); if (!ok(c)) continue; r[c] = [n(x[4]), n(x[13]), n(x[22]), n(x[23])]; nm[c] = String(x[1]).trim() }
+  const has = Object.keys(r).length, o = has ? { d, r, nm } : { d, none: 1 };
+  if (has && !otc) o.lo = 1; // 只有上市（櫃買中心沒抓到）
+  // 證交所沒回應：網頁會再試；今天還沒公布：5 分鐘後再抓；過去的假日、已經公布的日子：存 30 天（櫃買抓不到也先存上市的，不要每次都讓人等）
+  if (a === null) { o.e = 1; o.__partial = 1 } else if (!has && d >= today) o.__partial = 1;
   return o;
 }
 async function fiMonths() {
@@ -1698,7 +1701,7 @@ export default {
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/instd": { const d = url.searchParams.get("d") || ""; if (!/^20\d{6}$/.test(d)) return new Response("{}", { status: 400 });
         const t = new Date(Date.now() + 8 * 36e5).toISOString().slice(0, 10).replace(/-/g, ""); if (d > t) return new Response(JSON.stringify({ d, none: 1 }), { headers: { "Content-Type": "application/json; charset=utf-8" } });
-        const wn = url.searchParams.get("nm") === "1"; return cached(request, ctx, d < t ? 30 * 86400 : 1800, async () => { const o = await instDay(d); if (!wn) delete o.nm; return o }); } // 法人動向：過去的日子不會變，快取 30 天（Luna 2026-11-25）
+        const wn = url.searchParams.get("nm") === "1"; return cached(request, ctx, 30 * 86400, async () => { const o = await instDay(d, t); if (!wn) delete o.nm; return o }); } // 法人動向：過去的日子不會變，快取 30 天（Luna 2026-11-25）
       case "/api/fim": return cached(request, ctx, 6 * 3600, fiMonths); // 外資每月買賣超（億，含外資自營），最近 3 個月（Luna 2026-11-23）
       case "/api/mval": {
         // ?k=pe 台股本益比、?k=mg 大盤融資維持率；盤後資料，3 小時內共用

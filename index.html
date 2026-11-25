@@ -704,7 +704,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M31</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M32</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -834,7 +834,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="watch-tabs inst-w" role="tablist"><button role="tab" data-iw="0">外資</button><button role="tab" data-iw="1">投信</button><button role="tab" data-iw="2">自營</button><button role="tab" data-iw="3">合計</button></div>
     <p class="inst-asof" id="inst-asof"></p>
     <div id="inst-body"><p class="muted">資料載入中…</p></div>
-    <p class="note">上市＋上櫃個股（不含 ETF），買賣超單位是張（1 張＝1,000 股）。外資不含外資自營商；合計是三大法人合計。幾日＝最近幾個交易日加起來（最多 10 日）。右邊小圖是最近一個交易日的走勢，虛線是前一天收盤價。</p>
+    <p class="note">上市＋上櫃個股（不含 ETF），買賣超單位是張（1 張＝1,000 股）。外資不含外資自營商；合計是三大法人合計。幾日＝最近幾個交易日加起來（最多 10 日）。列出前 10 名。</p>
     <p class="src">資料來源：臺灣證券交易所、證券櫃檯買賣中心（三大法人買賣明細）、Yahoo Finance／Yahoo 奇摩股市（股價）。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
   </section>
   <section id="corp" class="page" hidden>
@@ -3865,11 +3865,11 @@ function instRender(){const nb=document.querySelector("#inst .inst-n");if(nb&&!n
   if(D.length<n){body.innerHTML=`<p class="muted">資料載入中…（${D.length}／${n} 天）</p>`;asof.textContent="";instNeed(n).then(()=>{if(curPage()==="inst"&&instDays.length>=n)instRender();else if(curPage()==="inst"&&!instBusy)body.innerHTML='<p class="wempty">法人資料暫時抓不到，等一下再按「重新整理」。</p>'});return}
   asof.textContent=n===1?`資料更新日期 ${fd(D[0].d)}`:`最近 ${n} 個交易日（${fd(D[n-1].d).slice(5)}～${fd(D[0].d).slice(5)}），更新到 ${fd(D[0].d)}`;
   const S={};D.forEach(o=>{for(const c in o.r)S[c]=(S[c]||0)+o.r[c][instS.w]});
-  const L=Object.entries(S).filter(([,v])=>v*instS.bs>0).sort((a,b)=>(b[1]-a[1])*instS.bs).slice(0,30);
+  const L=Object.entries(S).filter(([,v])=>v*instS.bs>0).sort((a,b)=>(b[1]-a[1])*instS.bs).slice(0,10); /* 前 10 名、不放走勢圖（Luna 2026-11-25） */
   if(!L.length){body.innerHTML='<p class="wempty">這段時間沒有資料。</p>';return}
   const need=L.map(x=>x[0]).filter(c=>!instQ[c]);if(need.length)iGet(`/api/quote?c=${need.join(",")}&v=1`).then(q=>{need.forEach(c=>{instQ[c]=(q&&q[c])||{}});if(curPage()==="inst")instRender()});
   body.innerHTML=L.map(([c,v],i)=>{const q=instQ[c]||{},d=q.last!=null&&q.prev?q.last-q.prev:null,cls=d==null?"flat":d>0?"up":d<0?"down":"flat",f2=x=>(+x).toFixed(2);
-    return `<div class="inst-row"><div class="ir-l"><b class="ir-nm"><i>${i+1}</i>${esc(instNm[c]||c)}<small>${c}</small></b><span class="ir-px ${cls}">${q.last!=null?f2(q.last):"…"}<small>${d==null?"":`${d>0?"+":d<0?"−":""}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/q.prev*100).toFixed(2)}%）`}</small></span><span class="ir-v">買賣超 <b class="${v>0?"up":"down"}">${v.toLocaleString("zh-TW")}</b> 張</span></div>${instSpark(q)}</div>`}).join("")}
+    return `<div class="inst-row"><div class="ir-l"><b class="ir-nm"><i>${i+1}</i>${esc(instNm[c]||c)}<small>${c}</small></b><span class="ir-px ${cls}">${q.last!=null?f2(q.last):"…"}<small>${d==null?"":`${d>0?"+":d<0?"−":""}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/q.prev*100).toFixed(2)}%）`}</small></span><span class="ir-v">買賣超 <b class="${v>0?"up":"down"}">${v.toLocaleString("zh-TW")}</b> 張</span></div></div>`}).join("")}
 function instInit(){instRender()}
 calc.inst=instInit;
 document.addEventListener("click",e=>{const b=e.target.closest("#inst [data-ibs],#inst [data-in],#inst [data-iw]");if(b){if(b.dataset.ibs)instS.bs=+b.dataset.ibs;else if(b.dataset.in)instS.n=+b.dataset.in;else instS.w=+b.dataset.iw;instSave();instRender();return}

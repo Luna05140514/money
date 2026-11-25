@@ -394,7 +394,22 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wtip-row{display:flex;align-items:center;gap:10px}.wlist.wfit{overflow:auto!important;overscroll-behavior:contain;border-radius:12px}.wlist.wfit .wthead{position:sticky;top:0;z-index:3}.wlist.wfit .wthead span:nth-child(-n+2){z-index:4}.wtip-row .swipe-tip{margin:0 2px 0 auto}
 .wedit2{margin-left:0}
 #watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
-.bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}.ix-sec{font-size:19px;font-weight:800;color:var(--ink);padding:16px 2px 6px;border-bottom:2px solid var(--gold)}
+.bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}
+.wd-top{display:grid;grid-template-columns:26px minmax(64px,1fr) auto auto 26px;align-items:center;gap:6px;margin:2px -4px 10px;padding:8px 2px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.wd-arr{all:unset;cursor:pointer;text-align:center;font-size:20px;color:var(--ink);padding:10px 0}.wd-arr:focus-visible{outline:2px solid var(--red)}
+.wt-nm b{display:block;font-size:21px;font-weight:800;line-height:1.15;word-break:keep-all;overflow-wrap:anywhere}.wt-nm small{display:block;font-family:var(--num);font-size:16px;font-weight:700;color:var(--muted)}
+.wt-px{font-family:var(--num);font-size:25px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wt-px.sm{font-size:21px}.wd-ohlc.sm b{font-size:13.5px}.wd-ohlc.sm>div{padding:7px 4px}
+.wt-chg{display:flex;flex-direction:column;align-items:flex-end;font-family:var(--num);font-size:16px;line-height:1.3;white-space:nowrap}
+#wd-k{padding:10px 6px}
+.wd-ohlc{display:grid;grid-template-columns:1.15fr 1fr 1fr;border:1px solid var(--line);border-radius:8px;margin:8px 0 6px;font-family:var(--num)}
+.wd-ohlc>div{display:flex;align-items:baseline;justify-content:space-between;gap:4px;padding:7px 6px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:16px;font-weight:700;min-width:0}
+.wd-ohlc>div:nth-child(3n+1){border-left:0}.wd-ohlc>div:nth-child(3n){border-right:0}
+.wd-ohlc span{color:var(--ink);font-family:var(--body);font-weight:800}.wd-ohlc b{font-size:15px;white-space:nowrap}
+.wd-ohlc .dt{font-size:15px;flex-direction:column;align-items:flex-start;justify-content:center}.wd-ohlc .dt small{font-size:12px;color:var(--muted)}
+.wd-ohlc .ch{grid-column:1/-1;border-right:0;border-bottom:0;justify-content:flex-end;font-size:17px}
+#wd-k .wd-ma{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;margin:2px 0 2px}
+#wd-k .wd-mv{margin:6px 0 8px}#wd-k .wd-mv button{min-height:44px;font-size:18px}.ix-sec{font-size:19px;font-weight:800;color:var(--ink);padding:16px 2px 6px;border-bottom:2px solid var(--gold)}
 .igo{cursor:pointer}.inst-go{all:unset;box-sizing:border-box;display:block;width:100%;margin:10px 0 2px;padding:13px 10px;text-align:center;border-radius:12px;background:var(--gold);color:#3a2a00;font-size:18px;font-weight:800;cursor:pointer}
 #inst .watch-tabs{margin:0 0 10px}#inst .inst-n{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 10px}#inst .inst-n button{all:unset;cursor:pointer;text-align:center;padding:10px 0;border-radius:10px;font-size:17px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line)}#inst .inst-n button[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
 #inst .inst-w button{font-size:18px;padding:10px 2px}.inst-asof{text-align:right;font-weight:800;font-size:16px;margin:2px 0 6px}
@@ -704,7 +719,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M34</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M35</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -3214,6 +3229,9 @@ function watchInit(){
 const wdCache={};
 let wdCode="";
 document.addEventListener("click",e=>{const b=e.target.closest("#wd-body [data-wd]");if(!b)return;wdOpen(b.dataset.wd);window.scrollTo(0,0)});
+/* 個股、大盤詳細頁上面一排（Luna 2026-11-25，照看盤 App）：◀ 名稱代號 價格 漲跌 ▶ */
+function wdTop(pv,pvN,nx,nxN,nm,cd,px,cls,chg,pct){const ar=(k,n,t)=>k?`<button class="wd-arr" data-wd="${esc(k)}" aria-label="${t} ${esc(n||"")}">${t==="上一檔"?"◀":"▶"}</button>`:'<span class="wd-arr"></span>';
+  return `<div class="wd-top">${ar(pv,pvN,"上一檔")}<div class="wt-nm"><b${String(nm).length>3&&String(px).length>8?' style="font-size:17px"':""}>${nm}</b><small>${cd}</small></div><div class="wt-px ${cls}${String(px).length>8?" sm":""}">${px}</div><div class="wt-chg ${cls}"><b>${chg}</b><b>${pct}</b></div>${ar(nx,nxN,"下一檔")}</div>`}
 function wdOpen(c){wdCode=c;try{sessionStorage.setItem("facai-wd",c)}catch(_){}show("wdetail")}
 calc.wdetail=()=>{if(!wdCode)try{wdCode=sessionStorage.getItem("facai-wd")||""}catch(_){}
   if(wdCode&&STOCK)wdRender(wdCode);else setTimeout(()=>show("watch"))};
@@ -3233,7 +3251,8 @@ async function wdRender(c){
   const gi=grp.indexOf(c),nb=k=>{const n=idxOf[k][1];return esc(n.length>6?n.slice(0,6)+"…":n)};
   const nav=grp.length>1&&gi>=0?(()=>{const pv=grp[(gi-1+grp.length)%grp.length],nx=grp[(gi+1)%grp.length];
     return `<div class="wd-nav"><button data-wd="${esc(pv)}">‹ 上一檔<small>${nb(pv)}</small></button><span>${gi+1} / ${grp.length}</span><button data-wd="${esc(nx)}">下一檔 ›<small>${nb(nx)}</small></button></div>`})():"";
-  const head=nav+`<div class="wd-head"><h1>${esc(r[1])}</h1><span class="cd">${esc(c)}${us?"・美元":""}</span><div class="big ${cls}">${f2(it.last)}</div><div class="chg ${cls}">${d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）`}</div></div>`;
+  const pvK=grp.length>1&&gi>=0?grp[(gi-1+grp.length)%grp.length]:null,nxK=grp.length>1&&gi>=0?grp[(gi+1)%grp.length]:null;
+  const head=wdTop(pvK,pvK&&idxOf[pvK][1],nxK,nxK&&idxOf[nxK][1],esc(r[1]),esc(c)+(us?"・美元":""),f2(it.last),cls,d==null?"":`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}`,d==null?"":`${Math.abs(d/it.prev*100).toFixed(2)}%`);
   if(!ON_CF){body.innerHTML=head+'<div class="wd-sec"><p>K 線圖、配息、EPS、本益比和河流圖要用你的網站（money.h24511355.workers.dev）打開才看得到，這裡沒辦法即時抓資料。</p></div>';return}
   body.innerHTML=head+'<div class="wd-sec"><p class="muted">資料載入中…</p></div>';
   // 抓不到時自動再試 2 次（資料來源偶爾會忙線）
@@ -3355,7 +3374,7 @@ async function wdRenderIx(c){
   const pv=items[(gi-1+items.length)%items.length],nx=items[(gi+1)%items.length];
   const nav=`<div class="wd-nav"><button data-wd="${esc(codeOf(pv))}">‹ 上一個<small>${sh(pv)}</small></button><span>${gi+1} / ${items.length}</span><button data-wd="${esc(codeOf(nx))}">下一個 ›<small>${sh(nx)}</small></button></div>`;
   const last=it.pts[it.pts.length-1][1],d=last-it.prev,cls=d>0?"up":d<0?"down":"flat";
-  const head=nav+`<div class="wd-head"><h1>${esc(nm(it))}</h1><span class="cd">${it.cr||it.mt?ixUnit(it):it.fx?FX_UNIT[it.key]||"匯率":it.us?"美股":it.as?(it.key==="^N225"?"日股":"韓股"):"台股"}</span><div class="big ${cls}">${f2(last)}</div><div class="chg ${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${d>0?"+":d<0?"−":""}${Math.abs(d/it.prev*100).toFixed(2)}%）</div></div>`;
+  const head=items.length>1?wdTop(codeOf(pv),nm(pv),codeOf(nx),nm(nx),esc(nm(it)),it.cr||it.mt?ixUnit(it):it.fx?FX_UNIT[it.key]||"匯率":it.us?"美股":it.as?(it.key==="^N225"?"日股":"韓股"):"台股",f2(last),cls,`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}`,`${Math.abs(d/it.prev*100).toFixed(2)}%`):wdTop(null,"",null,"",esc(nm(it)),"",f2(last),cls,`${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}`,`${Math.abs(d/it.prev*100).toFixed(2)}%`);
   if(!ON_CF){body.innerHTML=head+'<div class="wd-sec"><p>K 線圖要用你的網站（money.h24511355.workers.dev）打開才看得到。</p></div>';return}
   body.innerHTML=head+'<div class="wd-sec"><p class="muted">資料載入中…</p></div>';
   let x=wdCache[c];
@@ -3468,7 +3487,7 @@ function wdKDraw(){
   const W=360,R=52,L=4,X=i=>L+(i+.5)*(W-R-L)/N,bw=Math.max(1,(W-R-L)/N*.66);
   // 主圖
   if(wdK.rawFor!==wdK.daily){wdK.rawFor=wdK.daily;wdK.rawM=wdRawM(wdK.daily,wdK.divs||[])}const tl=wdTL(all,c.kk,c.dd,wdK.rawM);
-  const H=230,ma=c.ma.map(T),vals=[...k.flatMap(x=>[x[2],x[3]]),...ma.flat().filter(v=>v!=null),...[tl.dr,tl.tg].filter(Boolean).map(x=>x[1])],hi=Math.max(...vals),lo=Math.min(...vals),sp=hi-lo||1,Y=v=>8+(hi-v)/sp*(H-16);
+  const H=380,ma=c.ma.map(T),vals=[...k.flatMap(x=>[x[2],x[3]]),...ma.flat().filter(v=>v!=null),...[tl.dr,tl.tg].filter(Boolean).map(x=>x[1])],hi=Math.max(...vals),lo=Math.min(...vals),sp=hi-lo||1,Y=v=>8+(hi-v)/sp*(H-16);
   let g="";
   for(let t=0;t<=4;t++){const v=lo+sp*t/4;g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${W-2}" y="${Y(v)+4}" text-anchor="end">${v>=1000?Math.round(v):r2(v)}</text>`}
   k.forEach((x,i)=>{const up=x[4]>=x[1],col=`var(${up?"--up":"--down"})`,y1=Y(Math.max(x[1],x[4])),y2=Y(Math.min(x[1],x[4]));
@@ -3481,7 +3500,7 @@ function wdKDraw(){
   const dl=[0,Math.floor(N/2),N-1].map((i,j)=>`<text x="${j===0?L:j===2?W-R:X(i)}" y="${H+14}" text-anchor="${j===0?"start":j===2?"end":"middle"}">${k[i][0].slice(2).replace(/-/g,"/")}</text>`).join("");
   const main=`<svg class="wd-chart" viewBox="0 0 ${W} ${H+18}" data-n="${N}">${g}${cross}${dl}</svg>`;
   // 副圖
-  const SH=110;let sv=[],sl=[],sb=null,sbc=null,ref=[],fix=null,vals2="";
+  const SH=140;let sv=[],sl=[],sb=null,sbc=null,ref=[],fix=null,vals2="";
   const dot=(col,t)=>`<span><i style="background:${col}"></i>${t}</span>`;
   if(wdK.ind==="vol"){sb=k.map(x=>x[5]);sbc=k.map(x=>`var(${x[4]>=x[1]?"--up":"--down"})`);
     const v=b[5],u=!v?"—（今天收盤後才有）":wdK.volUnit==="money"?(v/1e8).toLocaleString("zh-TW",{maximumFractionDigits:0})+" 億元":wdK.volUnit==="lots"?Math.round(v).toLocaleString()+" 口":wdK.volUnit==="twshares"?Math.round(v/1000).toLocaleString()+" 張":wdK.us?(v>=1e6?(v/1e6).toFixed(1)+" 百萬股":Math.round(v).toLocaleString()+" 股"):Math.round(v/1000).toLocaleString()+" 張";vals2=`成交量 <b>${u}</b>`}
@@ -3498,13 +3517,13 @@ function wdKDraw(){
   sl.forEach(([a,col])=>g2+=line(a,col,Y2));
   const sub=`<svg class="wd-chart" viewBox="0 0 ${W} ${SH}" data-n="${N}">${g2}<line x1="${X(sel)}" x2="${X(sel)}" y1="0" y2="${SH}" stroke="var(--muted)" stroke-dasharray="3 3"/></svg>`;
   const tab=(grp,v,t,cur)=>`<button data-${grp}="${v}" aria-pressed="${v===cur}">${t}</button>`;
-  box.innerHTML=`<h2>K 線圖 ${wdK.ix?"":`<small class="muted">還原</small>`}</h2>
-  ${seg}
-  <div class="wd-info"><b>${b[0].replace(/-/g,"/")}</b>　開 <b>${f2(b[1])}</b>　高 <b>${f2(b[2])}</b>　低 <b>${f2(b[3])}</b>　收 <b class="${cls}">${f2(b[4])}</b>${d==null?"":`　<b class="${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</b>`}</div>
+  const oc=v=>!pv?"":v>pv[4]?"up":v<pv[4]?"down":"",vv=b[5],vt=!vv?"—":wdK.volUnit==="money"?(vv/1e8).toLocaleString("zh-TW",{maximumFractionDigits:0})+" 億":wdK.volUnit==="lots"?Math.round(vv).toLocaleString()+" 口":wdK.us&&wdK.volUnit!=="twshares"?(vv>=1e6?(vv/1e6).toFixed(1)+" 百萬股":Math.round(vv).toLocaleString()+" 股"):Math.round(vv/1000).toLocaleString()+" 張";
+  box.innerHTML=`${seg}
+  <div class="wd-ohlc${f2(b[2]).length>8?" sm":""}"><div class="dt">${b[0].replace(/-/g,"/")}${wdK.ix?"":"<small>還原</small>"}</div><div><span>開</span><b class="${oc(b[1])}">${f2(b[1])}</b></div><div><span>低</span><b class="${oc(b[3])}">${f2(b[3])}</b></div><div><span>量</span><b>${vt}</b></div><div><span>高</span><b class="${oc(b[2])}">${f2(b[2])}</b></div><div><span>收</span><b class="${cls}">${f2(b[4])}</b></div>${d==null?"":`<div class="ch ${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</div>`}</div>
   ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b class="tlD">壓力線 ${f2(tl.dr[2])}</b>（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高</b></span>　'}${tl.tg?`<span class="nw"><b class="tlT">支撐線 ${f2(tl.tg[2])}</b>（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
-  <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
   ${main}
+  <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","布林%b",wdK.ind)}</div><p class="glrow" style="margin:4px 0 0">${(()=>{const m={vol:["成交量","成交量"],kdj:["KD","KDJ"],macd:["MACD","MACD"],pb:["布林","布林%b"]}[wdK.ind]||["成交量","成交量"];return `<button class="qc" data-term="${m[0]}">${m[1]} 是什麼？</button>`})()}</p>
   <div class="wd-vals">${vals2}</div>
   ${sub}

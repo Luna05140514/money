@@ -394,7 +394,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wtip-row{display:flex;align-items:center;gap:10px}.wlist.wfit{overflow:auto!important;overscroll-behavior:contain;border-radius:12px}.wlist.wfit .wthead{position:sticky;top:0;z-index:3}.wlist.wfit .wthead span:nth-child(-n+2){z-index:4}.wtip-row .swipe-tip{margin:0 2px 0 auto}
 .wedit2{margin-left:0}
 #watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
-.bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}
+.bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}.ix-sec{font-size:19px;font-weight:800;color:var(--ink);padding:16px 2px 6px;border-bottom:2px solid var(--gold)}
 .igo{cursor:pointer}.inst-go{all:unset;box-sizing:border-box;display:block;width:100%;margin:10px 0 2px;padding:13px 10px;text-align:center;border-radius:12px;background:var(--gold);color:#3a2a00;font-size:18px;font-weight:800;cursor:pointer}
 #inst .watch-tabs{margin:0 0 10px}#inst .inst-n{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 10px}#inst .inst-n button{all:unset;cursor:pointer;text-align:center;padding:10px 0;border-radius:10px;font-size:17px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line)}#inst .inst-n button[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
 #inst .inst-w button{font-size:18px;padding:10px 2px}.inst-asof{text-align:right;font-weight:800;font-size:16px;margin:2px 0 6px}
@@ -704,7 +704,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M33</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M34</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -1946,7 +1946,7 @@ function idxInit(){
   let tab=0;try{tab=+localStorage.getItem("facai-idx-tab")||0}catch(_){}
   $("idx-tabs").innerHTML=["台股","美股","日韓","匯率"].map((t,i)=>`<button role="tab" data-it="${i}" aria-selected="${i===tab}">${t}</button>`).join("");
   const row=(it,i)=>ixRow(it,`data-big="${i}"`);
-  $("idx-cards").innerHTML=anaHead(false)+items.map((it,i)=>idxRg(it)===tab?row(it,i):"").join("");
+  let fh=0;$("idx-cards").innerHTML=anaHead(false)+items.map((it,i)=>idxRg(it)===tab?((it.us&&/=F$/.test(it.key)&&!fh++)?'<div class="ix-sec">夜盤期貨</div>':"")+row(it,i):"").join(""); /* 美股期貨上面加「夜盤期貨」（Luna 2026-11-25） */
   idxKdLoad();
   if(!idxInit.tabs){idxInit.tabs=1;$("idx-tabs").addEventListener("click",e=>{const t=e.target.closest("[data-it]");if(!t)return;try{localStorage.setItem("facai-idx-tab",t.dataset.it)}catch(_){}idxInit()})}
   if(idxInit.bound)return;idxInit.bound=1;

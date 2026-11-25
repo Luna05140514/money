@@ -396,7 +396,7 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 #watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
 .bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}
 .igo{cursor:pointer}.inst-go{all:unset;box-sizing:border-box;display:block;width:100%;margin:10px 0 2px;padding:13px 10px;text-align:center;border-radius:12px;background:var(--gold);color:#3a2a00;font-size:18px;font-weight:800;cursor:pointer}
-#inst .watch-tabs{margin:0 0 10px}#inst .inst-n{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:0 0 10px}#inst .inst-n button{all:unset;cursor:pointer;text-align:center;padding:10px 0;border-radius:10px;font-size:17px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line)}#inst .inst-n button[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
+#inst .watch-tabs{margin:0 0 10px}#inst .inst-n{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 10px}#inst .inst-n button{all:unset;cursor:pointer;text-align:center;padding:10px 0;border-radius:10px;font-size:17px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line)}#inst .inst-n button[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#3a2a00}
 #inst .inst-w button{font-size:18px;padding:10px 2px}.inst-asof{text-align:right;font-weight:800;font-size:16px;margin:2px 0 6px}
 .inst-row{display:flex;align-items:center;gap:8px;padding:12px 2px;border-bottom:1px solid var(--line)}.ir-l{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .ir-nm{font-size:21px;font-weight:800;color:var(--ink)}.ir-nm i{font-style:normal;font-size:14px;color:var(--muted);margin-right:6px}.ir-nm small{font-size:15px;margin-left:5px;color:var(--muted);font-weight:700}
@@ -704,7 +704,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M30</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M31</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -834,7 +834,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
     <div class="watch-tabs inst-w" role="tablist"><button role="tab" data-iw="0">外資</button><button role="tab" data-iw="1">投信</button><button role="tab" data-iw="2">自營</button><button role="tab" data-iw="3">合計</button></div>
     <p class="inst-asof" id="inst-asof"></p>
     <div id="inst-body"><p class="muted">資料載入中…</p></div>
-    <p class="note">上市＋上櫃個股（不含 ETF），買賣超單位是張（1 張＝1,000 股）。外資不含外資自營商；合計是三大法人合計。幾日＝最近幾個交易日加起來。右邊小圖是最近一個交易日的走勢，虛線是前一天收盤價。</p>
+    <p class="note">上市＋上櫃個股（不含 ETF），買賣超單位是張（1 張＝1,000 股）。外資不含外資自營商；合計是三大法人合計。幾日＝最近幾個交易日加起來（最多 10 日）。右邊小圖是最近一個交易日的走勢，虛線是前一天收盤價。</p>
     <p class="src">資料來源：臺灣證券交易所、證券櫃檯買賣中心（三大法人買賣明細）、Yahoo Finance／Yahoo 奇摩股市（股價）。數字的版權屬於原提供者，本站只做整理和計算，僅供參考。</p>
   </section>
   <section id="corp" class="page" hidden>
@@ -3846,7 +3846,7 @@ function corpRender(){const box=$("corp-body");
 async function corpInit(){corpRender();if(!ON_CF)return;const d=await api("/api/corp?c="+CORP.map(x=>x[0]).join(",")+"&v=1");if(d){corpData=d;corpRender()}else if(!corpData){$("corp-body").innerHTML='<p class="wempty">公告暫時抓不到，等一下按「重新整理」。</p>'}}
 calc.corp=corpInit;
 /* 法人動向（Luna 2026-11-25）：高低指標的三大法人點進來；買超／賣超、1～60 日、外資／投信／自營／合計，列出個股 */
-const INST_N=[1,2,3,5,10,20,60];let instQd=[],instDays=[],instNm={},instQ={},instBusy=null,instTried=0,instCur=null,instS={bs:1,n:1,w:0};try{Object.assign(instS,JSON.parse(localStorage.getItem("facai-inst")||"{}"))}catch(_){}
+const INST_N=[1,2,3,5,10]; /* 20、60 日跑不動，拿掉（Luna 2026-11-25） */let instQd=[],instDays=[],instNm={},instQ={},instBusy=null,instTried=0,instCur=null,instS={bs:1,n:1,w:0};try{Object.assign(instS,JSON.parse(localStorage.getItem("facai-inst")||"{}"))}catch(_){}if(!INST_N.includes(instS.n))instS.n=1;
 const instSave=()=>{try{localStorage.setItem("facai-inst",JSON.stringify(instS))}catch(_){}};
 const iGet=p=>fetch(p).then(r=>r.ok?r.json():null).catch(()=>null);
 async function instNeed(n){if(instDays.length>=n)return;if(instBusy)return instBusy;instBusy=(async()=>{

@@ -1218,7 +1218,7 @@ async function mgDay(d) {
   const mg = await twseGet(`marginTrading/MI_MARGN?date=${d.replace(/-/g, "")}&selectType=MS&response=json`).catch(() => null), o = { d };
   const s = mg && mg.stat === "OK" && (mg.tables || []).find(x => (x.fields || [])[0] === "項目");
   const row = s && s.data.find(r => String(r[0]).startsWith("融資金額")); if (row) o.mg = Math.round(fnum(row[5]) / 1e5);
-  await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": `max-age=${o.mg ? 2592000 : 1800}` } })).catch(() => {});
+  await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": `max-age=${o.mg ? 2592000 : 300}` } })).catch(() => {});
   return o;
 }
 async function mgCmp() {
@@ -1230,7 +1230,10 @@ async function mgCmp() {
   const q = r.indicators.quote[0], K = [];
   const ts = r.timestamp || [];
   // Yahoo 日線最後一天常常是空的（11/25 就是），用即時價補，才比得到最新一天（Luna 2026-11-26）
-  ts.forEach((t, i) => { const c = q.close[i] ?? (i === ts.length - 1 ? r.meta.regularMarketPrice : null); if (c != null) K.push([new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), c]); });
+  // 最新收盤那天是空的、或整天沒有，就用即時報價（日期看 regularMarketTime）補上
+  const mt = r.meta.regularMarketTime, mp = r.meta.regularMarketPrice, md = mt ? new Date((mt + 8 * 3600) * 1000).toISOString().slice(0, 10) : "";
+  ts.forEach((t, i) => { const d = new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), c = q.close[i] ?? (d === md ? mp : null); if (c != null) K.push([d, c]); });
+  if (md && mp && K.length && md > K[K.length - 1][0]) K.push([md, mp]);
   let L = -1, mL = null;
   for (let i = K.length - 1; i >= K.length - 5 && i >= 0; i--) { const m = await mgDay(K[i][0]); if (m.mg) { L = i; mL = m.mg; break; } }
   if (L < 0) throw new Error("no margin");
@@ -1238,7 +1241,7 @@ async function mgCmp() {
   const win = [["近 2 天", L - 1], ["近 5 天", L - 5], ["近 20 天", L - 20], ["從高點", p]].filter(w => w[1] >= 0 && w[1] < L);
   const ms = await Promise.all(win.map(w => mgDay(K[w[1]][0])));
   const r1 = v => Math.round(v * 10) / 10;
-  return { d: K[L][0], mg: mL, ix: Math.round(K[L][1]), rows: win.map((w, i) => ms[i].mg ? { k: w[0], d0: K[w[1]][0], ix0: Math.round(K[w[1]][1]), mg0: ms[i].mg, ixp: r1((K[L][1] / K[w[1]][1] - 1) * 100), mgp: r1((mL / ms[i].mg - 1) * 100) } : null).filter(Boolean) };
+  return { ...(L < K.length - 1 && K[K.length - 1][0] < twDay() ? { __partial: 1 } : {}), d: K[L][0], mg: mL, ix: Math.round(K[L][1]), rows: win.map((w, i) => ms[i].mg ? { k: w[0], d0: K[w[1]][0], ix0: Math.round(K[w[1]][1]), mg0: ms[i].mg, ixp: r1((K[L][1] / K[w[1]][1] - 1) * 100), mgp: r1((mL / ms[i].mg - 1) * 100) } : null).filter(Boolean) };
 }
 async function stopSig() {
   const now = twDay(), ms = [2, 1, 0].map(b => { const x = new Date(now + "T00:00:00Z"); x.setUTCDate(1); x.setUTCMonth(x.getUTCMonth() - b); return x.toISOString().slice(0, 7).replace("-", ""); });

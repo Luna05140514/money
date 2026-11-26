@@ -730,7 +730,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M45</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M46</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -3510,7 +3510,7 @@ function wdKDraw(){
   /* 現在價格的虛線（Luna 2026-11-26）：最後一根收盤（盤中是即時價），顏色跟今天漲跌 */
   {const z=k[N-1],dy=wdK.daily,yc=dy.length>1?dy[dy.length-2][4]:null,cp=z[4],col=yc==null||cp===yc?"var(--muted)":`var(${cp>yc?"--up":"--down"})` /* 比昨天收盤高＝漲（紅）、低＝跌（綠），週／月 K 也看昨收（Luna 2026-11-26） */,y=Y(cp).toFixed(1);
     g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="1.6" stroke-dasharray="6 4"/><rect x="${W-R+1}" y="${y-11}" width="${R-1}" height="22" rx="3" fill="var(--surface,#fff)" stroke="${col}" stroke-width="1.6"/><text x="${W-3}" y="${+y+5}" text-anchor="end" style="fill:${col};font-weight:800;font-size:15px">${cp>=1000?Math.round(cp):r2(cp)}</text>`}
-  const WVON=wdWaveOn&&wdK.ix,wv=WVON?wdWave(k):null,WC="#7b3fe4",nf=v=>v>=1000?Math.round(v).toLocaleString():r2(v);
+  const WVON=false,wv=WVON?wdWave(k):null,WC="#7b3fe4",nf=v=>v>=1000?Math.round(v).toLocaleString():r2(v);
   if(wv&&wv.tg&&wv.tg[1]>=lo&&wv.tg[1]<=hi){const y=Y(wv.tg[1]).toFixed(1);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${WC}" stroke-width="1.4" stroke-dasharray="6 3"/><text x="${L+30}" y="${+y-3}" style="fill:${WC};font-size:13px;font-weight:800">目標</text>`}
   if(wv){const pts=wv.P.slice(wv.st);let p=pts.map((x,j)=>`${j?"L":"M"}${X(x.i).toFixed(1)},${Y(x.p).toFixed(1)}`).join("");
     g+=`<path d="${p}" fill="none" stroke="${WC}" stroke-width="2.2"/><path d="M${X(wv.last.i).toFixed(1)},${Y(wv.last.p).toFixed(1)}L${X(N-1).toFixed(1)},${Y(k[N-1][4]).toFixed(1)}" fill="none" stroke="${WC}" stroke-width="2" stroke-dasharray="4 3"/>`;
@@ -3543,7 +3543,7 @@ function wdKDraw(){
   <div class="wd-ohlc${f2(b[2]).length>8?" sm":""}"><div class="dt">${b[0].replace(/-/g,"/")}${wdK.ix?"":"<small>還原</small>"}</div><div><span>開</span><b class="${oc(b[1])}">${f2(b[1])}</b></div><div><span>低</span><b class="${oc(b[3])}">${f2(b[3])}</b></div><div><span>量</span><b>${vt}</b></div><div><span>高</span><b class="${oc(b[2])}">${f2(b[2])}</b></div><div><span>收</span><b class="${cls}">${f2(b[4])}</b></div>${d==null?"":`<div class="ch ${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</div>`}</div>
   ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b class="tlD">壓力線 ${f2(tl.dr[2])}</b>（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高</b></span>　'}${tl.tg?`<span class="nw"><b class="tlT">支撐線 ${f2(tl.tg[2])}</b>（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
-  ${wdK.ix?`<button class="bt-q60 wd-wvb${wdWaveOn?" on":""}" data-wave aria-pressed="${wdWaveOn}">${wdWaveOn?"☑":"☐"} 🌊 波浪理論位置預估</button>`:""}
+  ${false?`<button class="bt-q60 wd-wvb${wdWaveOn?" on":""}" data-wave aria-pressed="${wdWaveOn}">${wdWaveOn?"☑":"☐"} 🌊 波浪理論位置預估</button>`:""}
   ${main}
   ${WVON?(wv?`<div class="wd-wave"><p class="wv-h">🌊 現在大概在 <b>${wv.nm}</b>（${wv.dir>0?"上漲":"下跌"}中）</p>
     ${wv.fib.length?`<p>${wv.dir>0?"反彈":"回檔"}常見到前一段的：${wv.fib.map(([r,v])=>`<span class="nw">${r} → <b>${nf(v)}</b></span>`).join("　")}</p>`:""}

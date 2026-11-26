@@ -212,6 +212,21 @@ async function build() {
     }
     if (v && (Array.isArray(v) ? v.some(has) : has(v))) await keep.put(key, new Response(JSON.stringify(v), { headers: { "Cache-Control": "max-age=172800" } })).catch(() => {});
   }));
+  // 台指期日盤收盤後 Yahoo 只剩夜盤，留下的那份可能停在 13:2x（Luna 2026-11-26：11/25 停在 37,932，實際收 38,062），用 FinMind 期貨日資料補上 13:45 收盤
+  if (got.txf && got.txf.pts && got.txf.pts.length) {
+    const t = got.txf, last = t.pts[t.pts.length - 1][0], now = new Date(Date.now() + 8 * 3600e3).toISOString(), nd = now.slice(0, 10), nh = now.slice(11, 16);
+    if (last < "13:45" && (nd > t.date || nh >= "13:50")) {
+      const nk = new Request(`https://idx.keep/txfp-${t.date}`);
+      if (!(await keep.match(nk).catch(() => null))) {
+        const j = await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanFuturesDaily&data_id=TX&start_date=${t.date}&end_date=${t.date}`).then(r => r.json()).catch(() => null);
+        const rs = ((j && j.data) || []).filter(x => x.trading_session === "position" && !String(x.contract_date).includes("/") && x.close > 0).sort((a, b) => String(a.contract_date).localeCompare(String(b.contract_date)));
+        if (rs.length) {
+          got.txf = { ...t, pts: [...t.pts, ["13:45", r2(rs[0].close)]] };
+          await keep.put(new Request("https://idx.keep/txf"), new Response(JSON.stringify(got.txf), { headers: { "Cache-Control": "max-age=172800" } })).catch(() => {});
+        } else await keep.put(nk, new Response("1", { headers: { "Cache-Control": "max-age=600" } })).catch(() => {});
+      }
+    }
+  }
   const items = [];
   for (const k of ["twii", "txf", "txfn", "otc"]) if (got[k]) items.push({ key: k, ...got[k] });
   if (got.tw2330) items.push({ key: "2330", pick: 1, ...got.tw2330 }); // Luna：大盤台股最下面放台積電
@@ -1218,7 +1233,7 @@ async function mgCmp() {
   for (let i = K.length - 1; i >= K.length - 5 && i >= 0; i--) { const m = await mgDay(K[i][0]); if (m.mg) { L = i; mL = m.mg; break; } }
   if (L < 0) throw new Error("no margin");
   let p = 0; for (let i = 0; i <= L; i++) if (K[i][1] >= K[p][1]) p = i;
-  const win = [["近 5 天", L - 5], ["近 20 天", L - 20], ["從高點", p]].filter(w => w[1] >= 0 && w[1] < L);
+  const win = [["近 2 天", L - 2], ["近 5 天", L - 5], ["近 20 天", L - 20], ["從高點", p]].filter(w => w[1] >= 0 && w[1] < L);
   const ms = await Promise.all(win.map(w => mgDay(K[w[1]][0])));
   const r1 = v => Math.round(v * 10) / 10;
   return { d: K[L][0], mg: mL, ix: Math.round(K[L][1]), rows: win.map((w, i) => ms[i].mg ? { k: w[0], d0: K[w[1]][0], ix0: Math.round(K[w[1]][1]), mg0: ms[i].mg, ixp: r1((K[L][1] / K[w[1]][1] - 1) * 100), mgp: r1((mL / ms[i].mg - 1) * 100) } : null).filter(Boolean) };

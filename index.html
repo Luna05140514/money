@@ -395,6 +395,11 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wedit2{margin-left:0}
 #watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
 .bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}
+.mg-tb{width:100%;border-collapse:collapse;margin:6px 0 4px;font-family:var(--num);font-variant-numeric:tabular-nums}
+.mg-tb th{font-family:var(--body);font-size:14px;color:var(--muted);font-weight:700;padding:6px 2px;border-bottom:1px solid var(--line);text-align:center;line-height:1.2}
+.mg-tb td{font-size:15px;font-weight:700;padding:9px 1px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.mg-tb td:first-child{text-align:left;font-family:var(--body)}.mg-tb td:first-child b{display:block;font-size:17px}.mg-tb td:first-child small{font-size:12px;color:var(--muted);font-weight:600}
+.mg-tb .pill{font-size:12.5px;line-height:1.25;padding:3px 4px;white-space:nowrap;display:inline-block}.mg-tb th small{font-size:11px}.mg-tb td:last-child{padding-right:0}
 .wd-top{display:grid;grid-template-columns:26px minmax(64px,1fr) auto auto 26px;align-items:center;gap:6px;margin:2px -4px 10px;padding:8px 2px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
 .wd-arr{all:unset;cursor:pointer;text-align:center;font-size:20px;color:var(--ink);padding:10px 0}.wd-arr:focus-visible{outline:2px solid var(--red)}
 .wt-nm b{display:block;font-size:21px;font-weight:800;line-height:1.15;word-break:keep-all;overflow-wrap:anywhere}.wt-nm small{display:block;font-family:var(--num);font-size:16px;font-weight:700;color:var(--muted)}
@@ -719,7 +724,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M36</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M37</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2099,9 +2104,9 @@ function mgcRender(d){const el=$("mkt-mgc");if(!el||!d||!d.rows||!d.rows.length)
   const verdict=x=>{if(x.ixp>=0)return["","大盤沒跌"];const r=x.mgp/x.ixp;return r>=1.5?["hot",`融資減 ${r.toFixed(1)} 倍，籌碼較乾淨`]:r>=1?["mid",`融資減 ${r.toFixed(1)} 倍，跟著減`]:["cold",`融資只減 ${Math.max(0,r).toFixed(1)} 倍，還沒退場`]};
   el.innerHTML=`<h2>融資減幅 vs 大盤跌幅<i class="qm" data-term="融資減幅" role="button" tabindex="0" aria-label="說明">?</i></h2>
     <p class="asof">${d.d.replace(/-/g,"/")}：融資餘額 ${f(d.mg)} 億</p>
-    ${d.rows.map(x=>{const [t,lab]=verdict(x);return `<div class="mg-row"><div class="mg-k">${x.k}<small>（${dt(x.d0)} 起）</small></div>
-      <div class="mg-v"><span>大盤 <b class="${x.ixp<0?"down":"up"}">${pc(x.ixp)}</b></span><span>融資 <b class="${x.mgp<0?"down":"up"}">${pc(x.mgp)}</b>${x.mg0!=null?`<small class="mg-amt">${d.mg<=x.mg0?"少":"多"} ${f(Math.abs(x.mg0-d.mg))} 億</small>`:""}</span></div>
-      <span class="pill ${t}">${lab}</span></div>`}).join("")}
+    <table class="mg-tb"><thead><tr><th>期間</th><th>大盤</th><th>融資</th><th>融資增減<br><small>（億）</small></th><th>判斷</th></tr></thead><tbody>
+    ${d.rows.map(x=>{const r=x.ixp<0?x.mgp/x.ixp:null,[t,lab]=r==null?["","大盤沒跌"]:r>=1.5?["hot","籌碼乾淨"]:r>=1?["mid","跟著減"]:["cold","還沒退場"],a=x.mg0!=null?d.mg-x.mg0:null;
+      return `<tr><td><b>${x.k.replace("近 ","").replace(" ","")}</b><small>${dt(x.d0)} 起</small></td><td class="${x.ixp<0?"down":"up"}">${pc(x.ixp)}</td><td class="${x.mgp<0?"down":"up"}">${pc(x.mgp)}</td><td class="${a==null?"":a<0?"down":"up"}">${a==null?"－":(a<0?"少":"多")+f(Math.abs(a))}</td><td><span class="pill ${t}">${r==null?"":r.toFixed(1)+" 倍<br>"}${lab}</span></td></tr>`}).join("")}</tbody></table>
     <p class="what">大跌時，融資減少的幅度最好是大盤跌幅的 1.5 倍以上，表示散戶的融資已經退場，比較接近低點。</p>`;el.hidden=false}
 // 高低指標上面的總表也放一列止跌訊號，在散戶多空比下面（Luna 2026-11-18），點了跳到止跌訊號卡片
 let stopData=null;const stopLab=n=>n>=5?["hot","止跌訊號明確"]:n>=3?["mid","出現止跌跡象"]:["cold","還沒止跌"];
@@ -2432,7 +2437,7 @@ function ddRender(d){
   $("dd-body").innerHTML=`
     <h2 class="dd-h">近 25 年跌 20% 以上：${big.length} 次</h2>${avg(big)}${table(big.slice().reverse())}${evTable(big.slice().reverse())}${big.some(x=>x.ox!==undefined)?'<p class="dd-tn">往左滑那頁用加權指數週線 MACD（12、26、9）算：DIF 跌破 0 軸那週的收盤價，到這波最低點再跌幾 %；0 軸上死叉＝DIF、MACD 都在 0 軸上時 DIF 往下穿過 MACD，到 DIF 跌破 0 軸隔多久，沒有就寫「無」。</p>':""}<p class="dd-tn">國安基金、限空令的已跌、再跌用收盤價算；過去不代表未來。</p>
     <p class="note">跌幅用加權指數的最高價、最低價算，從高點算到再創新高為止（中途從低點反彈 30% 以上也算一段結束）。10 年前的用每週高低點，日期是那一週。</p>`}
-async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=1").then(mgcRender);
+async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=2").then(mgcRender);
   const d=await api("/api/mkt?v=2");if(!d||!MKT)return;
   ["inst","vix","usvix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});
   MKT.updated=d.updated+LIVE;mktInit();

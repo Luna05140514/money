@@ -396,6 +396,10 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 #watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
 .bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}
 #wd-k .wd-wvb{margin:6px 0 4px;font-size:17px;padding:10px 12px}
+.wd-wave .wv-db{margin:8px 0 6px;font-size:16px;padding:10px 12px}.wv-st{font-size:16px!important}
+.wv-tb{width:100%;border-collapse:collapse;margin:4px 0;font-family:var(--num);font-variant-numeric:tabular-nums}.wv-tb th{font-family:var(--body);font-size:14px;color:var(--muted);padding:5px 2px;border-bottom:1px solid var(--line)}
+.wv-tb td{font-size:15px;font-weight:700;padding:7px 2px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}.wv-tb td:first-child{font-size:18px;color:#7b3fe4}.wv-tb td small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.wv-tb tr.cur{background:rgba(123,63,228,.12)}.wv-now{color:#7b3fe4}
 .wd-wave{border:2px solid #7b3fe4;border-radius:12px;padding:10px 12px;margin:6px 0 8px;background:rgba(123,63,228,.06)}.wd-wave p{margin:4px 0;font-size:17px;line-height:1.6}.wd-wave .wv-h{font-size:19px}.wd-wave .wv-h b{color:#7b3fe4;font-size:22px}.wd-wave .muted{font-size:14px}
 .mg-tb{width:100%;border-collapse:collapse;margin:6px 0 4px;font-family:var(--num);font-variant-numeric:tabular-nums}
 .mg-tb th{font-family:var(--body);font-size:14px;color:var(--muted);font-weight:700;padding:6px 2px;border-bottom:1px solid var(--line);text-align:center;line-height:1.2}
@@ -726,7 +730,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M44</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M45</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -3545,6 +3549,14 @@ function wdKDraw(){
     ${wv.fib.length?`<p>${wv.dir>0?"反彈":"回檔"}常見到前一段的：${wv.fib.map(([r,v])=>`<span class="nw">${r} → <b>${nf(v)}</b></span>`).join("　")}</p>`:""}
     ${wv.tg?`<p>${wv.tg[0]}：<b>${nf(wv.tg[1])}</b></p>`:""}
     ${!wv.fib.length&&!wv.tg?`<p>這一浪剛開始，還算不出目標價，等它走完再估。</p>`:""}
+    <button class="bt-q60 wv-db${wdWaveDet?" on":""}" data-wvdet aria-expanded="${wdWaveDet}">📋 ${wdWaveDet?"收起":"看"} 1–5 浪＋ABC 明細（預估 vs 實際）</button>
+    ${wdWaveDet?(()=>{const rows=wdWaveRows(wv,k),cp=k[N-1][4],st=wv.P[wv.st];
+      return `<p class="wv-st">起點：${st.t>0?"高點":"低點"} <b>${nf(st.p)}</b>（${k[st.i][0].slice(5).replace("-","/")}）</p><table class="wv-tb"><thead><tr><th>浪</th><th>預估</th><th>實際</th><th>差</th></tr></thead><tbody>${rows.map(x=>{
+        const e=x.r?`${nf(Math.min(...x.r))}～${nf(Math.max(...x.r))}`:x.e==null?"—":nf(x.e),ev=x.r?(x.r[0]+x.r[1])/2:x.e;
+        const a=x.a?`<b>${nf(x.a.p)}</b><small>${x.a.d.slice(5).replace("-","/")}</small>`:x.now?`<b class="wv-now">進行中</b><small>現在 ${nf(cp)}</small>`:'<span class="muted">還沒到</span>';
+        const df=x.a&&ev?((x.a.p/ev-1)*100):null;
+        return `<tr class="${x.now?"cur":""}"><td><b>${/\d/.test(x.t)?x.t:x.t}</b></td><td>${e}</td><td>${a}</td><td>${df==null?"":(df>0?"+":"")+df.toFixed(1)+"%"}</td></tr>`}).join("")}</tbody></table>
+      <p class="muted">預估用常見比例：2 浪回檔 1 浪 0.5～0.618、3 浪＝1 浪 1.618 倍、4 浪回檔 3 浪 0.382、5 浪＝1 浪一樣長、A 回檔整段 0.382、B 反彈 A 的 0.5～0.618、C＝A 一樣長。還沒走到的浪是用前面的預估接著算。</p>`})():""}
     <p class="muted">電腦自動找畫面上的高低點來數浪，數浪本來就很主觀，只能當參考，不保證準。</p></div>`:`<div class="wd-wave"><p class="muted">這段 K 線起伏太小，數不出波浪。換週 K 或月 K 看看。</p></div>`):""}
   <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","布林%b",wdK.ind)}</div><p class="glrow" style="margin:4px 0 0">${(()=>{const m={vol:["成交量","成交量"],kdj:["KD","KDJ"],macd:["MACD","MACD"],pb:["布林","布林%b"]}[wdK.ind]||["成交量","成交量"];return `<button class="qc" data-term="${m[0]}">${m[1]} 是什麼？</button>`})()}</p>
@@ -3582,6 +3594,22 @@ function wdWaveZ(k,H,Lw,th){const n=k.length;
   const nm=/\d/.test(cur)?`第 ${cur} 浪`:`${cur} 浪`;
   const cor=["2","4","B"].includes(cur); // 修正浪才用費波南希回檔；推動浪看延伸目標
   return {P,lab,st,cur,nm,dir,fib:cor?fib:[],tg,last,cor}}
+/* 波浪明細（Luna 2026-11-26）：每一浪用常見比例估價位，已走完的浪附實際高低點；還沒走到的浪用前面的估計值接著算
+   2 浪回檔 1 浪 0.5～0.618、3 浪＝1 浪×1.618、4 浪回檔 3 浪 0.382、5 浪＝1 浪長、A 回檔整段 1–5 的 0.382、B 反彈 A 的 0.5～0.618、C＝A 浪長 */
+let wdWaveDet=false;
+function wdWaveRows(wv,k){const up=wv.P[wv.st].t<0,seq=up?["1","2","3","4","5","A","B","C"]:["A","B","C","1","2","3","4","5"],act={};
+  wv.P.forEach((x,j)=>{const t=wv.lab[j];if(t!=null)act[t]={p:x.p,d:k[x.i][0]}});
+  const S0=wv.P[wv.st].p,est={},rng={},v=t=>act[t]?act[t].p:est[t];let S=S0,top=null;
+  for(const t of seq){
+    if(t==="1"){if(!up)S=v("C");est[t]=null}
+    else if(t==="2"){const w=v("1")-S;rng[t]=[v("1")-w*.5,v("1")-w*.618];est[t]=rng[t][1]}
+    else if(t==="3")est[t]=v("2")+(v("1")-S)*1.618;
+    else if(t==="4")est[t]=v("3")-(v("3")-v("2"))*.382;
+    else if(t==="5"){est[t]=v("4")+(v("1")-S);top=v("5")}
+    else if(t==="A")est[t]=up?v("5")-(v("5")-S0)*.382:null;
+    else if(t==="B"){const h=up?v("5"):S0,w=h-v("A");rng[t]=[v("A")+w*.5,v("A")+w*.618];est[t]=rng[t][0]}
+    else if(t==="C")est[t]=v("B")-((up?v("5"):S0)-v("A"));}
+  return seq.map(t=>({t,e:est[t],r:rng[t],a:act[t],now:t===wv.cur}))}
 function wdKBind(){
   if(!wdKDraw.bound){wdKDraw.bound=1;
     $("wd-body").addEventListener("click",e=>{const pb=e.target.closest("[data-per]"),ib=e.target.closest("[data-ind]");
@@ -3589,6 +3617,7 @@ function wdKBind(){
       if(ib){wdK.ind=ib.dataset.ind;wdKDraw();return}
       const yb=e.target.closest("[data-pey]");if(yb){wdK.pey=yb.dataset.pey;wdKDraw();return}
       const mv=e.target.closest("[data-mv]");if(mv){wdKMove(+mv.dataset.mv);return}
+      if(e.target.closest("[data-wvdet]")){wdWaveDet=!wdWaveDet;wdKDraw();return}
       if(e.target.closest("[data-wave]")){wdWaveOn=!wdWaveOn;try{localStorage.setItem("facai-wave",wdWaveOn?"1":"0")}catch(_){}wdKDraw();return}});
     document.addEventListener("keydown",e=>{if(curPage()!=="wdetail"||!wdK.selN||!$("wd-k"))return;if(e.key==="ArrowLeft")wdKMove(-1);else if(e.key==="ArrowRight")wdKMove(1)});
     $("wd-body").addEventListener("pointerdown",e=>{const sv=e.target.closest(".wd-chart");if(!sv)return;

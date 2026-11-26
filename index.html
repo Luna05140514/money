@@ -395,6 +395,8 @@ th,td{padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 .wedit2{margin-left:0}
 #watch h1{position:relative}.twii-bar{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:-12px;top:50%;transform:translateY(-50%);line-height:1.3;padding:2px 8px;border:2px solid #fff;border-radius:999px;font:600 12px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;letter-spacing:0;color:#fff;background:#7a7a7a;box-shadow:0 0 0 1px var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.twii-bar[data-dir="down"]{background:#4e8a2a}.twii-bar[data-dir="up"]{background:#d0021b}.twii-bar[hidden]{display:none}#watch-twii,.lvrow .twii-bar{position:static;transform:none;flex:none;font-size:13px;padding:3px 9px}#watch-time{margin-left:auto;flex:none!important;width:auto}#watch-time,.page .lvrow .lead,#stk-lead,#divc-lead,#pl-lead{font:700 13px/1.3 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:var(--ink);letter-spacing:0}#watch-twii,.lvrow .twii-bar{font-size:13px;font-weight:700}.bar-c{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px}.bar-c .brand{max-width:100%}.bar-c .twii-bar,.bar-c #watch-twii{position:static;transform:none;font-size:12px;font-weight:700;padding:1px 8px;border-width:1.5px;line-height:1.35}
 .bar-rc{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.bar-rc .lead,.bar-rc .watch-time{font:700 12px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;margin:0;white-space:normal;max-width:112px;overflow-wrap:anywhere;color:var(--ink);letter-spacing:0;text-align:right}.lvrow:empty{display:none}
+#wd-k .wd-wvb{margin:6px 0 4px;font-size:17px;padding:10px 12px}
+.wd-wave{border:2px solid #7b3fe4;border-radius:12px;padding:10px 12px;margin:6px 0 8px;background:rgba(123,63,228,.06)}.wd-wave p{margin:4px 0;font-size:17px;line-height:1.6}.wd-wave .wv-h{font-size:19px}.wd-wave .wv-h b{color:#7b3fe4;font-size:22px}.wd-wave .muted{font-size:14px}
 .mg-tb{width:100%;border-collapse:collapse;margin:6px 0 4px;font-family:var(--num);font-variant-numeric:tabular-nums}
 .mg-tb th{font-family:var(--body);font-size:14px;color:var(--muted);font-weight:700;padding:6px 2px;border-bottom:1px solid var(--line);text-align:center;line-height:1.2}
 .mg-tb td{font-size:15px;font-weight:700;padding:9px 1px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
@@ -724,7 +726,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M42</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M44</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -3502,8 +3504,15 @@ function wdKDraw(){
   [[tl.dr,"壓","#2f7de1"],[tl.tg,"撐","#c25e00"]].forEach(([x,t,col])=>{if(!x)return;const y=Y(x[1]).toFixed(1);
     g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="2.2"/><circle cx="${L+12}" cy="${y}" r="12" fill="${col}"/><text x="${L+12}" y="${+y+5}" text-anchor="middle" style="fill:#fff;font-weight:800;font-size:15px">${t}</text><rect x="${W-R+1}" y="${y-11}" width="${R-1}" height="22" rx="3" fill="${col}"/><text x="${W-2}" y="${+y+5}" text-anchor="end" style="fill:#fff;font-weight:800;font-size:15px">${x[2]>=1000?Math.round(x[2]):r2(x[2])}</text>`});
   /* 現在價格的虛線（Luna 2026-11-26）：最後一根收盤（盤中是即時價），顏色跟今天漲跌 */
-  {const z=k[N-1],zp=all[s0+N-2],cp=z[4],col=`var(${zp&&cp<zp[4]?"--down":"--up"})`,y=Y(cp).toFixed(1);
+  {const z=k[N-1],dy=wdK.daily,yc=dy.length>1?dy[dy.length-2][4]:null,cp=z[4],col=yc==null||cp===yc?"var(--muted)":`var(${cp>yc?"--up":"--down"})` /* 比昨天收盤高＝漲（紅）、低＝跌（綠），週／月 K 也看昨收（Luna 2026-11-26） */,y=Y(cp).toFixed(1);
     g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="1.6" stroke-dasharray="6 4"/><rect x="${W-R+1}" y="${y-11}" width="${R-1}" height="22" rx="3" fill="var(--surface,#fff)" stroke="${col}" stroke-width="1.6"/><text x="${W-3}" y="${+y+5}" text-anchor="end" style="fill:${col};font-weight:800;font-size:15px">${cp>=1000?Math.round(cp):r2(cp)}</text>`}
+  const WVON=wdWaveOn&&wdK.ix,wv=WVON?wdWave(k):null,WC="#7b3fe4",nf=v=>v>=1000?Math.round(v).toLocaleString():r2(v);
+  if(wv&&wv.tg&&wv.tg[1]>=lo&&wv.tg[1]<=hi){const y=Y(wv.tg[1]).toFixed(1);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${WC}" stroke-width="1.4" stroke-dasharray="6 3"/><text x="${L+30}" y="${+y-3}" style="fill:${WC};font-size:13px;font-weight:800">目標</text>`}
+  if(wv){const pts=wv.P.slice(wv.st);let p=pts.map((x,j)=>`${j?"L":"M"}${X(x.i).toFixed(1)},${Y(x.p).toFixed(1)}`).join("");
+    g+=`<path d="${p}" fill="none" stroke="${WC}" stroke-width="2.2"/><path d="M${X(wv.last.i).toFixed(1)},${Y(wv.last.p).toFixed(1)}L${X(N-1).toFixed(1)},${Y(k[N-1][4]).toFixed(1)}" fill="none" stroke="${WC}" stroke-width="2" stroke-dasharray="4 3"/>`;
+    wv.fib.forEach(([r,v])=>{if(v<lo||v>hi)return;const y=Y(v).toFixed(1);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${WC}" stroke-width="1" stroke-dasharray="2 3"/><text x="${L+2}" y="${+y-3}" style="fill:${WC};font-size:12px;font-weight:700">${r}</text>`});
+    wv.P.forEach((x,j)=>{const t=wv.lab[j];if(t==null&&j!==wv.st)return;const cy=Y(x.p)+(x.t>0?-13:13);
+      g+=`<circle cx="${X(x.i)}" cy="${cy}" r="10" fill="${WC}"/><text x="${X(x.i)}" y="${cy+5}" text-anchor="middle" style="fill:#fff;font-weight:800;font-size:13px">${t==null?(x.t>0?"高":"低"):t}</text>`})}
   const cross=`<line x1="${X(sel)}" x2="${X(sel)}" y1="0" y2="${H}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
   const dl=[0,Math.floor(N/2),N-1].map((i,j)=>`<text x="${j===0?L:j===2?W-R:X(i)}" y="${H+14}" text-anchor="${j===0?"start":j===2?"end":"middle"}">${k[i][0].slice(2).replace(/-/g,"/")}</text>`).join("");
   const main=`<svg class="wd-chart" viewBox="0 0 ${W} ${H+18}" data-n="${N}">${g}${cross}${dl}</svg>`;
@@ -3530,7 +3539,13 @@ function wdKDraw(){
   <div class="wd-ohlc${f2(b[2]).length>8?" sm":""}"><div class="dt">${b[0].replace(/-/g,"/")}${wdK.ix?"":"<small>還原</small>"}</div><div><span>開</span><b class="${oc(b[1])}">${f2(b[1])}</b></div><div><span>低</span><b class="${oc(b[3])}">${f2(b[3])}</b></div><div><span>量</span><b>${vt}</b></div><div><span>高</span><b class="${oc(b[2])}">${f2(b[2])}</b></div><div><span>收</span><b class="${cls}">${f2(b[4])}</b></div>${d==null?"":`<div class="ch ${cls}">${d>0?"▲":d<0?"▼":"－"}${f2(Math.abs(d))}（${(d/pv[4]*100).toFixed(2)}%）</div>`}</div>
   ${tl.dr||tl.tg?`<div class="wd-info">${tl.dr?`<span class="nw"><b class="tlD">壓力線 ${f2(tl.dr[2])}</b>（${tl.dr[0].replace(/-/g,"/")}）</span>　`:'<span class="nw"><b>創新高</b></span>　'}${tl.tg?`<span class="nw"><b class="tlT">支撐線 ${f2(tl.tg[2])}</b>（${tl.tg[0].replace(/-/g,"/")}）</span>`:""}${qm("天龍地虎")}</div>`:""}
   <div class="wd-legend wd-ma">${WD_MA.map(([n,col],j)=>dot(col,`${n}MA ${f2(ma[j][sel])}`)).join("")}</div>
+  ${wdK.ix?`<button class="bt-q60 wd-wvb${wdWaveOn?" on":""}" data-wave aria-pressed="${wdWaveOn}">${wdWaveOn?"☑":"☐"} 🌊 波浪理論位置預估</button>`:""}
   ${main}
+  ${WVON?(wv?`<div class="wd-wave"><p class="wv-h">🌊 現在大概在 <b>${wv.nm}</b>（${wv.dir>0?"上漲":"下跌"}中）</p>
+    ${wv.fib.length?`<p>${wv.dir>0?"反彈":"回檔"}常見到前一段的：${wv.fib.map(([r,v])=>`<span class="nw">${r} → <b>${nf(v)}</b></span>`).join("　")}</p>`:""}
+    ${wv.tg?`<p>${wv.tg[0]}：<b>${nf(wv.tg[1])}</b></p>`:""}
+    ${!wv.fib.length&&!wv.tg?`<p>這一浪剛開始，還算不出目標價，等它走完再估。</p>`:""}
+    <p class="muted">電腦自動找畫面上的高低點來數浪，數浪本來就很主觀，只能當參考，不保證準。</p></div>`:`<div class="wd-wave"><p class="muted">這段 K 線起伏太小，數不出波浪。換週 K 或月 K 看看。</p></div>`):""}
   <div class="wd-mv"><button data-mv="-1" aria-label="往前一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel<=0?" disabled":""}>‹ 前一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"}</button><button data-mv="1" aria-label="往後一${wdK.period==="m"?"個月":wdK.period==="w"?"週":"天"}"${sel>=N-1?" disabled":""}>後一${wdK.period==="m"?"月":wdK.period==="w"?"週":"天"} ›</button></div>
   <div class="wd-seg wd-ind">${tab("ind","vol","成交量",wdK.ind)}${tab("ind","kdj","KDJ",wdK.ind)}${tab("ind","macd","MACD",wdK.ind)}${tab("ind","pb","布林%b",wdK.ind)}</div><p class="glrow" style="margin:4px 0 0">${(()=>{const m={vol:["成交量","成交量"],kdj:["KD","KDJ"],macd:["MACD","MACD"],pb:["布林","布林%b"]}[wdK.ind]||["成交量","成交量"];return `<button class="qc" data-term="${m[0]}">${m[1]} 是什麼？</button>`})()}</p>
   <div class="wd-vals">${vals2}</div>
@@ -3540,13 +3555,41 @@ function wdKDraw(){
 }
 // 左右箭頭：虛線往前／往後移一根 K 棒
 function wdKMove(dir){const n=wdK.selN||0;if(!n)return;const i=Math.max(0,Math.min(n-1,(wdK.selAt==null?n-1:wdK.selAt)+dir));if(i===wdK.selAt)return;wdK.sel=i;wdKDraw()}
+/* 波浪理論位置預估（Luna 2026-11-26，可開關）：在畫面上的 K 棒找轉折點（漲跌超過畫面高低差 10% 才算），
+   從最近的最高點或最低點開始數浪：從低點起 1–5 浪再 A、B、C；從高點起 A、B、C 再 1–5。用最後一段算費波南希 0.382／0.5／0.618 */
+let wdWaveOn=(()=>{try{return localStorage.getItem("facai-wave")==="1"}catch(_){return false}})();
+function wdWave(k){const n=k.length;if(n<10)return null;
+  const H=k.map(x=>x[2]),Lw=k.map(x=>x[3]),rg=Math.max(...H)-Math.min(...Lw);if(!(rg>0))return null;
+  // 轉折門檻從畫面高低差的 10% 開始，數出來超過 5 個轉折就放大門檻，只留大波段
+  for(const fr of [.1,.14,.18,.23,.3,.4]){const w=wdWaveZ(k,H,Lw,rg*fr);if(w&&w.P.length-1-w.st<=5)return w}
+  return null}
+function wdWaveZ(k,H,Lw,th){const n=k.length;
+  const P=[];let dir=0,hi=0,lo=0;
+  for(let i=0;i<n;i++){
+    if(dir===0){if(H[i]>=H[hi])hi=i;if(Lw[i]<=Lw[lo])lo=i;if(H[hi]-Lw[lo]>=th){if(hi>lo){P.push({i:lo,p:Lw[lo],t:-1});dir=1;}else{P.push({i:hi,p:H[hi],t:1});dir=-1}}}
+    else if(dir===1){if(H[i]>=H[hi])hi=i;if(H[hi]-Lw[i]>=th){P.push({i:hi,p:H[hi],t:1});dir=-1;lo=i}}
+    else{if(Lw[i]<=Lw[lo])lo=i;if(H[i]-Lw[lo]>=th){P.push({i:lo,p:Lw[lo],t:-1});dir=1;hi=i}}}
+  if(P.length<2||dir===0)return null;
+  // 從畫面上最高點和最低點比較早的那一個開始數（整段大波段）
+  let gH=-1,gL=-1;P.forEach((x,j)=>{if(x.t>0&&(gH<0||x.p>=P[gH].p))gH=j;if(x.t<0&&(gL<0||x.p<=P[gL].p))gL=j});
+  const st=Math.min(gH,gL),up=P[st].t<0,seq=up?["1","2","3","4","5","A","B","C"]:["A","B","C","1","2","3","4","5"];
+  const lab=P.map((x,j)=>j<=st?null:seq[(j-st-1)%8]),m=P.length,cur=seq[(m-1-st)%8];
+  const last=P[m-1],prev=P[m-2],leg=last.p-prev.p,fib=[.382,.5,.618].map(r=>[r,last.p-leg*r]);
+  const wl=t=>{const j=lab.indexOf(t);return j>0?Math.abs(P[j].p-P[j-1].p):null},w1=wl("1"),wA=wl("A");let tg=null;
+  if(cur==="3"&&w1)tg=["第 3 浪常見到 1.618 倍",last.p+w1*1.618];
+  else if(cur==="5"&&w1)tg=["第 5 浪常見和第 1 浪一樣長",last.p+w1];
+  else if(cur==="C"&&wA)tg=["C 浪常見和 A 浪一樣長",last.p-wA];
+  const nm=/\d/.test(cur)?`第 ${cur} 浪`:`${cur} 浪`;
+  const cor=["2","4","B"].includes(cur); // 修正浪才用費波南希回檔；推動浪看延伸目標
+  return {P,lab,st,cur,nm,dir,fib:cor?fib:[],tg,last,cor}}
 function wdKBind(){
   if(!wdKDraw.bound){wdKDraw.bound=1;
     $("wd-body").addEventListener("click",e=>{const pb=e.target.closest("[data-per]"),ib=e.target.closest("[data-ind]");
       if(pb){wdK.period=pb.dataset.per;wdK.sel=null;wdKDraw();return}
       if(ib){wdK.ind=ib.dataset.ind;wdKDraw();return}
       const yb=e.target.closest("[data-pey]");if(yb){wdK.pey=yb.dataset.pey;wdKDraw();return}
-      const mv=e.target.closest("[data-mv]");if(mv){wdKMove(+mv.dataset.mv);return}});
+      const mv=e.target.closest("[data-mv]");if(mv){wdKMove(+mv.dataset.mv);return}
+      if(e.target.closest("[data-wave]")){wdWaveOn=!wdWaveOn;try{localStorage.setItem("facai-wave",wdWaveOn?"1":"0")}catch(_){}wdKDraw();return}});
     document.addEventListener("keydown",e=>{if(curPage()!=="wdetail"||!wdK.selN||!$("wd-k"))return;if(e.key==="ArrowLeft")wdKMove(-1);else if(e.key==="ArrowRight")wdKMove(1)});
     $("wd-body").addEventListener("pointerdown",e=>{const sv=e.target.closest(".wd-chart");if(!sv)return;
       const r=sv.getBoundingClientRect(),n=+sv.dataset.n,x=(e.clientX-r.left)/r.width*360,i=Math.round((x-4)/((360-44-4)/n)-.5);

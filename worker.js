@@ -1218,6 +1218,10 @@ async function mgDay(d) {
   const mg = await twseGet(`marginTrading/MI_MARGN?date=${d.replace(/-/g, "")}&selectType=MS&response=json`).catch(() => null), o = { d };
   const s = mg && mg.stat === "OK" && (mg.tables || []).find(x => (x.fields || [])[0] === "項目");
   const row = s && s.data.find(r => String(r[0]).startsWith("融資金額")); if (row) o.mg = Math.round(fnum(row[5]) / 1e5);
+  if (!o.mg) { // 證交所從 Cloudflare 常抓不到（11/25 就是），改用 FinMind 的融資金額（同一份證交所資料）
+    const j = await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockTotalMarginPurchaseShortSale&start_date=${d}&end_date=${d}`).then(r => r.json()).catch(() => null);
+    const x = ((j && j.data) || []).find(x => x.name === "MarginPurchaseMoney" && x.date === d); if (x && x.TodayBalance) o.mg = Math.round(x.TodayBalance / 1e8);
+  }
   await caches.default.put(key, new Response(JSON.stringify(o), { headers: { "Cache-Control": `max-age=${o.mg ? 2592000 : 300}` } })).catch(() => {});
   return o;
 }
@@ -1232,7 +1236,14 @@ async function mgCmp() {
   // Yahoo 日線最後一天常常是空的（11/25 就是），用即時價補，才比得到最新一天（Luna 2026-11-26）
   // 最新收盤那天是空的、或整天沒有，就用即時報價（日期看 regularMarketTime）補上
   const mt = r.meta.regularMarketTime, mp = r.meta.regularMarketPrice, md = mt ? new Date((mt + 8 * 3600) * 1000).toISOString().slice(0, 10) : "";
-  ts.forEach((t, i) => { const d = new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), c = q.close[i] ?? (d === md ? mp : null); if (c != null) K.push([d, c]); });
+  // 白天開盤後 regularMarketTime 變成今天，昨天的空格還在（11/26 看到 11/25 空的）：用 FinMind 加權指數收盤補最近空掉的日子
+  const ds = ts.map(t => new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10)), miss = ds.filter((d, i) => q.close[i] == null && d !== md && i >= ds.length - 10);
+  const fm = {};
+  if (miss.length) {
+    const j = await get(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TAIEX&start_date=${miss[0]}`).then(r => r.json()).catch(() => null);
+    for (const x of (j && j.data) || []) if (x.close) fm[x.date] = x.close;
+  }
+  ds.forEach((d, i) => { const c = q.close[i] ?? (d === md ? mp : fm[d] ?? null); if (c != null) K.push([d, c]); });
   if (md && mp && K.length && md > K[K.length - 1][0]) K.push([md, mp]);
   let L = -1, mL = null;
   for (let i = K.length - 1; i >= K.length - 5 && i >= 0; i--) { const m = await mgDay(K[i][0]); if (m.mg) { L = i; mL = m.mg; break; } }

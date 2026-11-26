@@ -1228,12 +1228,14 @@ async function mgCmp() {
   }
   if (!r) throw new Error("no index");
   const q = r.indicators.quote[0], K = [];
-  (r.timestamp || []).forEach((t, i) => { if (q.close[i] != null) K.push([new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), q.close[i]]); });
+  const ts = r.timestamp || [];
+  // Yahoo 日線最後一天常常是空的（11/25 就是），用即時價補，才比得到最新一天（Luna 2026-11-26）
+  ts.forEach((t, i) => { const c = q.close[i] ?? (i === ts.length - 1 ? r.meta.regularMarketPrice : null); if (c != null) K.push([new Date((t + 8 * 3600) * 1000).toISOString().slice(0, 10), c]); });
   let L = -1, mL = null;
   for (let i = K.length - 1; i >= K.length - 5 && i >= 0; i--) { const m = await mgDay(K[i][0]); if (m.mg) { L = i; mL = m.mg; break; } }
   if (L < 0) throw new Error("no margin");
   let p = 0; for (let i = 0; i <= L; i++) if (K[i][1] >= K[p][1]) p = i;
-  const win = [["近 2 天", L - 2], ["近 5 天", L - 5], ["近 20 天", L - 20], ["從高點", p]].filter(w => w[1] >= 0 && w[1] < L);
+  const win = [["近 2 天", L - 1], ["近 5 天", L - 5], ["近 20 天", L - 20], ["從高點", p]].filter(w => w[1] >= 0 && w[1] < L);
   const ms = await Promise.all(win.map(w => mgDay(K[w[1]][0])));
   const r1 = v => Math.round(v * 10) / 10;
   return { d: K[L][0], mg: mL, ix: Math.round(K[L][1]), rows: win.map((w, i) => ms[i].mg ? { k: w[0], d0: K[w[1]][0], ix0: Math.round(K[w[1]][1]), mg0: ms[i].mg, ixp: r1((K[L][1] / K[w[1]][1] - 1) * 100), mgp: r1((mL / ms[i].mg - 1) * 100) } : null).filter(Boolean) };

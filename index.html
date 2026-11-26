@@ -724,7 +724,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M37</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M38</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2437,7 +2437,7 @@ function ddRender(d){
   $("dd-body").innerHTML=`
     <h2 class="dd-h">近 25 年跌 20% 以上：${big.length} 次</h2>${avg(big)}${table(big.slice().reverse())}${evTable(big.slice().reverse())}${big.some(x=>x.ox!==undefined)?'<p class="dd-tn">往左滑那頁用加權指數週線 MACD（12、26、9）算：DIF 跌破 0 軸那週的收盤價，到這波最低點再跌幾 %；0 軸上死叉＝DIF、MACD 都在 0 軸上時 DIF 往下穿過 MACD，到 DIF 跌破 0 軸隔多久，沒有就寫「無」。</p>':""}<p class="dd-tn">國安基金、限空令的已跌、再跌用收盤價算；過去不代表未來。</p>
     <p class="note">跌幅用加權指數的最高價、最低價算，從高點算到再創新高為止（中途從低點反彈 30% 以上也算一段結束）。10 年前的用每週高低點，日期是那一週。</p>`}
-async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=2").then(mgcRender);
+async function liveMkt(){api("/api/stop?v=2").then(stopRender);api("/api/mgc?v=3").then(mgcRender);
   const d=await api("/api/mkt?v=2");if(!d||!MKT)return;
   ["inst","vix","usvix","retail","ndc","m1b"].forEach(k=>{if(d[k]&&d[k].length)MKT[k]=d[k]});
   MKT.updated=d.updated+LIVE;mktInit();

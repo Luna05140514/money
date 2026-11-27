@@ -730,7 +730,7 @@ button.wrow{border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 
 <div class="wrap">
   <section id="home">
-    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M46</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
+    <div class="bar home-bar"><span class="hver" id="ver">版本 <span id="ver-n">M47</span></span><button class="reload" data-reload>↻ 重新整理</button></div>
     <header class="hero">
       <div class="hmrow"><button class="twii-bar twii-home" id="home-twii" data-go="idx" hidden></button><div class="hmode" id="home-mode" role="group" aria-label="切換簡易版或專業版"><button data-hm="simple">簡易版</button><button data-hm="full">專業版</button></div></div>
       <h1>賺大錢發發發</h1>
@@ -2397,6 +2397,8 @@ calc.dd=()=>ddLoad();
 async function ddLoad(){
   if(!ON_CF){$("dd-body").innerHTML='<p>歷史跌幅要用你的網站（Cloudflare 版）打開才看得到。</p>';return}
   if(!ddNsf&&new Date().toISOString().slice(0,10)>="2026-11-09")api("/api/nsf?d=2026-11-09").then(v=>{if(v&&v.d){ddNsf=v;if(ddData)ddRender(ddData)}});
+  /* 先用高低指標算好存在手機的大盤融資維持率（facai-mgc），沒有才向 worker 要；一次全算很重，常超過 Cloudflare 免費版上限（2026-11-27 系統檢查） */
+  if(!ddMg){try{const o=JSON.parse(localStorage.getItem("facai-mgc")||"null");if(o&&o.d&&o.a)ddMg=[o.d,o.a]}catch(_){}}
   if(!ddMg)api("/api/mval?k=mg&v=4").then(m=>{const a=m&&m.margin;if(a&&a.length){ddMg=a[a.length-1];if(ddData)ddRender(ddData)}});
   if(!ddData){const d=await api("/api/dd?v=7");if(!d||!d.big){$("dd-body").innerHTML='<p>暫時抓不到資料，請稍後按右上角「重新整理」。</p>';return}ddData=d}
   ddRender(ddData)}
@@ -2474,8 +2476,10 @@ async function mgLoad(){{let o=null;try{o=JSON.parse(localStorage.getItem("facai
 function mgcSet(o){if(!o||!MKT)return;MKT.margin=[[o.d,o.a]];MKT.marginEx=[[o.d,o.x]];mktInit()}
 async function mgEtf(){const m=MKT&&MKT.mgSum;if(!m||!m.top||!m.stk)return;let old=null;try{old=JSON.parse(localStorage.getItem("facai-mgc")||"null")}catch(_){}
   if(old&&old.d===m.d)return mgcSet(old);
-  const sum=async L=>{let bc=0,ln=0;for(let i=0;i<L.length;i+=6){const R=await Promise.all(L.slice(i,i+6).map(([c,,r])=>api(`/api/mgr?c=${c}${r?"&r="+r:""}&v=2`)));for(const r of R)if(r&&r.b>0&&r.loan>0&&r.c>0){bc+=r.b*r.c;ln+=r.loan}}return ln?bc/ln:null};
-  const [rs,re]=await Promise.all([sum(m.stk),sum(m.top)]);if(!rs||!re)return;
+  /* 2026-11-27 系統檢查：每檔要向 FinMind 抓 2 次，150 檔會用完 FinMind 免費額度，大部分抓不到、只用少數幾檔算出來。
+     改成只算融資市值最大的 60 檔個股＋15 檔 ETF，而且抓到的市值要占 7 成以上才更新，不夠就沿用上次的結果 */
+  const sum=async L=>{let bc=0,ln=0,tot=0,got=0;for(let i=0;i<L.length;i+=6){const S=L.slice(i,i+6),R=await Promise.all(S.map(([c,,r])=>api(`/api/mgr?c=${c}${r?"&r="+r:""}&v=2`)));R.forEach((r,j)=>{tot+=S[j][1];if(r&&r.b>0&&r.loan>0&&r.c>0){bc+=r.b*r.c;ln+=r.loan;got+=S[j][1]}})}return ln&&got>=tot*.7?bc/ln:null};
+  const [rs,re]=await Promise.all([sum(m.stk.slice(0,60)),sum(m.top)]);if(!rs||!re){if(old)mgcSet(old);return}
   const S=m.V-m.E,r2=v=>Math.round(v*10000)/100,o={d:m.d,a:r2(m.V/(S/rs+m.E/re)),x:r2(rs),e:r2(re)};
   try{localStorage.setItem("facai-mgc",JSON.stringify(o))}catch(_){}mgcSet(o)}
 // 股票報酬比較、回測：選到的那幾檔向 /api/stk 拿最新日線和當日走勢，每檔每次開網頁只抓一次

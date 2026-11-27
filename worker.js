@@ -1293,7 +1293,8 @@ async function marketPe() { return twseRecent(async d => { const x = await dayCl
 // 指定那一天的大盤融資維持率（%）：上市＋上櫃合計（和財經 M 平方「上市櫃融資維持率」同口徑，Luna 2026-11-07）
 // ＝ Σ(每檔融資餘額張數 × 1000 × 收盤價) ÷ 融資金額
 async function tpexMg(d) {
-  const ds = d.replace(/-/g, "/"), H = { headers: { "User-Agent": UA } };
+  // 櫃買從 Cloudflare 常常卡 30 秒才失敗，讓高低指標的融資維持率等很久（2026-11-27 系統檢查）：10 秒沒回就放棄
+  const ds = d.replace(/-/g, "/"), H = { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(10000) };
   const [mb, cl] = await Promise.all([
     fetch(`https://www.tpex.org.tw/www/zh-tw/margin/balance?date=${ds}&response=json`, H).then(r => r.json()),
     fetch(`https://www.tpex.org.tw/www/zh-tw/afterTrading/otc?date=${ds}&type=EW&response=json`, H).then(r => r.json())]);

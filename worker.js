@@ -1728,7 +1728,7 @@ export default {
         if (!/^[0-9A-Z]{4,6}$/.test(c) && !/^[A-Z][A-Z.\-]{0,9}$/.test(u)) return new Response("{}", { status: 400 });
         return cached(request, ctx, 3600, () => sfcHist(c || u, !c));} // 站穩季線（週線，Luna 2026-11-19）
       case "/api/sfcbt": {const c = (url.searchParams.get("c") || "").toUpperCase(), u = (url.searchParams.get("us") || "").toUpperCase();
-        if (!/^[0-9A-Z]{4,6}$/.test(c) && !/^[A-Z][A-Z.\-]{0,9}$/.test(u)) return new Response("{}", { status: 400 });
+        if (!/^[0-9A-Z]{4,6}$/.test(c) && !/^\^?[A-Z][A-Z.\-]{0,9}$/.test(u)) return new Response("{}", { status: 400 });
         return cached(request, ctx, 6 * 3600, () => sfcBtK(c || u, !c));} // 個股回測查詢（Luna 2026-11-19）
       case "/api/stop": return cached(request, ctx, 3600, stopSig); // 止跌訊號（Luna 2026-11-04）
       case "/api/instd": { const d = url.searchParams.get("d") || ""; if (!/^20\d{6}$/.test(d)) return new Response("{}", { status: 400 });
